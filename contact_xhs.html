@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小红书联系方式</title>
+    <style>
+        :root{--font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;}
+        *{box-sizing:border-box}
+        body{margin:0;min-height:100vh;font-family:var(--font);background:#f5f5f5;color:#222;}
+        .site-header{width:100%;background:rgba(255,255,255,0.8);border:1px solid rgba(0,0,0,0.08);position:sticky;top:0;left:0;right:0;z-index:100;margin:0;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 8px 30px rgba(2,6,23,0.12);}
+        .site-header .container{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0.75rem 1rem;max-width:1200px;margin:0 auto;}
+        .brand{font-weight:700;font-size:1.05rem;color:#111;text-decoration:none;}
+        .nav-links{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;}
+        .nav-links .nav-item{position:relative;}
+        .nav-links a,.nav-links .nav-item > a{color:#111;text-decoration:none;padding:0.35rem 0.5rem;border-radius:6px;transition:color 150ms ease, background 150ms ease, transform 150ms ease;font-size:0.96rem;display:inline-block;}
+        .nav-links a:hover,.nav-links a:focus,.nav-links .nav-item:hover > a,.nav-links .nav-item:focus-within > a{color:#061126;background:rgba(0,0,0,0.08);transform:translateY(-1px);}
+        .nav-links .dropdown-menu{position:absolute;top:calc(100% + 0.35rem);left:0;min-width:110px;margin:0;padding:0.35rem;list-style:none;background:#ffffff;border:1px solid rgba(0,0,0,0.08);border-radius:8px;box-shadow:0 8px 24px rgba(2,6,23,0.12);opacity:0;visibility:hidden;transform:translateY(-6px);transition:opacity 180ms ease, transform 180ms ease, visibility 180ms ease, all 1s ease;pointer-events:none;z-index:20;}
+        .nav-links .nav-item:hover .dropdown-menu,.nav-links .nav-item:focus-within .dropdown-menu{opacity:1;visibility:visible;transform:translateY(0);pointer-events:auto;}
+        .nav-links .dropdown-menu a{display:block;padding:0.45rem 0.6rem;border-radius:6px;white-space:nowrap;color:#000000;}
+        .nav-links .dropdown-menu a:hover,.nav-links .dropdown-menu a:focus{background:rgba(0,0,0,0.06);color:#061126;}
+        .page-content{min-height:calc(100vh - 64px);display:flex;align-items:center;justify-content:center;padding:2rem 1rem;}
+        .content{text-align:center;font-size:1.1rem;}
+    </style>
+</head>
+<body>
+    <header class="site-header" role="banner">
+        <div class="container">
+            <a href="https://www.ljiao.me" class="brand" target="_blank" rel="noopener noreferrer">www.ljiao.me</a>
+            <nav class="nav-links" role="navigation" aria-label="主导航">
+                <a href="index.html">首页</a>
+                <a href="about.html">关于我</a>
+                <a href="project.html">我的项目</a>
+                <div class="nav-item">
+                联系我
+                    <ul class="dropdown-menu" aria-label="联系我下拉菜单">
+                        <li><a href="contact_weixin.html">微信</a></li>
+                        <li><a href="contact_qq.html">QQ</a></li>
+                        <li><a href="contact_dy.html">抖音</a></li>
+                        <li><a href="contact_xhs.html">小红书</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </header>
+    <main class="page-content">
+        <div class="content">开发中，敬请期待！</div>
+    </main>
+</body>
+</html>

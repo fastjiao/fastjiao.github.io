@@ -1,0 +1,846 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Lovejiao</title>
+    <style>
+        /* 全局 CSS 变量，定义字体、毛玻璃背景、边框和文本颜色 */
+        :root{
+            --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --glass-bg: rgba(255,255,255,0.12);
+            --glass-border: rgba(255,255,255,0.18);
+            --glass-text: #fff;
+            --accent: #A1C4F6;
+            --accent-strong: #80a9f0;
+        }
+
+        /* 使用 border-box 盒模型，便于布局计算 */
+        *{box-sizing:border-box}
+        body{
+            /* 页面主体背景与字体样式 */
+            margin:0;
+            font-family: var(--font);
+            background: transparent;
+            color:var(--glass-text);
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+            min-height:100vh;
+            padding-bottom:40px;
+            position:relative;
+            overflow-x:hidden;
+        }
+        .bg-video{
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -2;
+            pointer-events: none;
+        }
+        body::before{
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* 顶部导航（毛玻璃效果） */
+        .site-header{
+            width:100%;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            position:sticky;
+            top:0;
+            left:0;
+            right:0;
+            z-index:100;
+            margin:0;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius:0;
+            box-shadow: 0 8px 30px rgba(2,6,23,0.45);
+        }
+        .site-header{
+            width:100%;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            position:sticky;
+            top:0;
+            left:0;
+            right:0;
+            z-index:100;
+            margin:0;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius:0;
+            box-shadow: 0 8px 30px rgba(2,6,23,0.45);
+            position:relative;
+        }
+        .site-header .container{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:1rem;
+            padding:0.75rem 1rem;
+            max-width:1200px;
+            margin:0 auto;
+        }
+
+        .brand{
+            font-weight:700;
+            font-size:1.05rem;
+            color:var(--glass-text);
+            text-decoration:none;
+        }
+
+        .nav-links{
+            display:flex;
+            gap:1rem;
+            align-items:center;
+            flex-wrap:wrap; /* 窄屏时允许换行 */
+        }
+
+        .nav-links .nav-item{
+            position:relative;
+        }
+
+        .nav-links a,
+        .nav-links .nav-item > a{
+            color: var(--glass-text);
+            text-decoration:none;
+            padding:0.35rem 0.5rem;
+            border-radius:6px;
+            transition: color 150ms ease, background 150ms ease, transform 150ms ease;
+            font-size:0.96rem;
+            display:inline-block;
+        }
+
+        .nav-links a:hover,
+        .nav-links a:focus,
+        .nav-links .nav-item:hover > a,
+        .nav-links .nav-item:focus-within > a{
+            color: #061126;
+            background: rgba(255,255,255,0.85);
+            transform: translateY(-1px);
+        }
+
+        .nav-links .dropdown-menu{
+            position:absolute;
+            top:calc(100% + 0.35rem);
+            left:0;
+            min-width:110px;
+            margin:0;
+            padding:0.35rem;
+            list-style:none;
+            background: #ffffff;/* 使用白色背景，确保下拉菜单内容清晰可见 */
+            border: 1px solid var(--glass-border);
+            border-radius:8px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 8px 24px rgba(2,6,23,0.3);
+            opacity:0;
+            visibility:hidden;
+            transform:translateY(-6px);
+            transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease, all 1s ease;
+            pointer-events:none;
+            z-index:20;
+        }
+
+        .nav-links .nav-item:hover .dropdown-menu,
+        .nav-links .nav-item:focus-within .dropdown-menu{
+            opacity:1;
+            visibility:visible;
+            transform:translateY(0);
+            pointer-events:auto;
+        }
+
+        .nav-links .dropdown-menu a{
+            display:block;
+            padding:0.45rem 0.6rem;
+            border-radius:6px;
+            white-space:nowrap;
+            color:#000000;/* 使用黑色文本，确保下拉菜单内容清晰可见 */
+        }
+
+        .nav-links .dropdown-menu a:hover,
+        .nav-links .dropdown-menu a:focus{
+            background: rgba(255,255,255,0.85);
+            color:#061126;
+        }
+
+        /* 页面主体布局：左右固定侧栏和居中内容 */
+        .site-main{ padding:1rem 300px 1rem 440px; max-width:none; width:100%; margin:1rem 0; overflow-x:auto; position:relative; }
+        .site-main .layout{
+            display:flex;
+            justify-content:center;
+            align-items:flex-start;
+            width:100%;
+            position:relative;
+        }
+        /* 左侧固定栏 */
+        .left-column{
+            display:flex;
+            flex-direction:column;
+            gap:1.5rem;
+            position:fixed;
+            left:100px;/*距离左侧像素*/
+            top:80px;/*距离顶部像素*/
+            width:400px;
+            z-index:10;
+        }
+        /* 右侧固定栏 */
+        .right-column{
+            display:flex;
+            flex-direction:column;
+            gap:1.5rem;
+            width:260px;
+            position:fixed;
+            right:100px;/*距离右侧像素*/
+            top:80px;/*距离顶部像素*/
+            z-index:10;
+        }
+
+        /* 个人资料卡片 */
+        .profile-card{
+            width:100%;
+            height:auto;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius:12px;
+            padding:20px;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            color:var(--glass-text);
+            flex:0 0 400px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(2,6,23,0.45);
+        }
+        .middle-card{
+            /* 个人介绍卡片 */
+            width:550px;
+            height:200px;
+            min-width:320px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius:24px;
+            padding:24px;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            color:var(--glass-text);
+            text-align:left;/* 左对齐文本 */
+            font-family: "SimSun", "Songti SC", "NSimSun", serif;
+            font-size:1.1rem;
+            position:relative;
+            margin:0 auto;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(2,6,23,0.35);
+        }
+        .center-stack{
+            display:flex;
+            flex-direction:column;
+            gap:1.5rem;
+            width:550px;
+            min-width:320px;
+            position:relative;
+            z-index:10;
+            margin:0 auto;
+        }
+        .photo-wall-card{
+            width:100%;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius:24px;
+            padding:24px 24px 28px;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            box-shadow: none;
+            position:relative;
+            overflow:visible;
+        }
+        .photo-wall-card::before{
+            content:'';
+            position:absolute;
+            inset:16px 18px auto;
+            height:70px;
+            background:transparent;
+            border-radius:18px;
+            pointer-events:none;
+        }
+        .photo-wall-rope{
+            position:absolute;
+            top:30px;
+            left:-18px;
+            right:-18px;
+            height:160px;
+            pointer-events:none;
+            z-index:1;
+        }
+        .photo-wall-frame{
+            position:relative;
+            z-index:2;
+            display:grid;
+            grid-template-columns:repeat(2, minmax(0, 1fr));
+            gap:16px;
+            margin-top:44px;
+        }
+        .photo-wall-item{
+            border-radius:16px;
+            overflow:hidden;
+            border:2px solid rgba(255,255,255,0.65);
+            box-shadow:0 10px 20px rgba(0,0,0,0.16);
+            background:#f4eee7;
+            min-height:120px;
+            transform:rotate(-2deg);
+        }
+        .photo-wall-item:nth-child(2n){
+            transform:rotate(2deg);
+        }
+        .photo-wall-item img{
+            display:block;
+            width:100%;
+            height:100%;
+            object-fit:cover;
+        }
+        .calendar-panel{
+            /* 日历 */
+            width:100%;
+            height:auto;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius:24px;
+            padding:16px;
+            color:var(--glass-text);
+            flex:0 0 auto;
+            display:flex;
+            flex-direction:column;
+            gap:0.75rem;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(2,6,23,0.35);
+        }
+        /* 日程安排表 */
+        .schedule-card{
+            width:100%;
+            min-height:180px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius:24px;
+            padding:24px;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+            justify-content:center;
+            text-align:center;
+            color:var(--glass-text);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(2,6,23,0.35);
+        }
+        .schedule-card h3{
+            margin:0 0 0.75rem;
+            font-size:1.35rem;
+        }
+        .schedule-card-body{
+            max-width:420px;
+            display:flex;
+            flex-direction:column;
+            gap:0.5rem;
+            justify-content:center;
+            align-items:center;
+        }
+        .schedule-card-body p{
+            margin:0;
+            color:rgba(255,255,255,0.9);
+            line-height:1.6;
+        }
+        .calendar-panel .schedule-dot{
+            width:8px;
+            height:8px;
+            border-radius:50%;
+            background:#ff6b6b;
+            position:absolute;
+            bottom:8px;
+            left:50%;
+            transform:translateX(-50%);
+        }
+        .calendar-panel h3{
+            margin:0;
+            font-size:1.75rem;
+            letter-spacing:0.02em;
+        }
+        .calendar-panel .month-year{
+            margin:0.35rem 0 0;
+            color:rgba(255,255,255,0.85);
+            font-size:1rem;
+        }
+        .calendar-panel .calendar-header{
+            display:flex;
+            justify-content:space-between;
+            align-items:flex-start;
+            gap:1rem;
+        }
+        .calendar-panel .calendar-actions{
+            display:flex;
+            gap:0.5rem;
+        }
+        .calendar-panel .calendar-actions button{
+            width:42px;
+            height:28px;
+            border:none;
+            border-radius:10px;
+            background:rgba(255,255,255,0.1);
+            color:var(--glass-text);
+            cursor:pointer;
+            font-size:0.9rem;
+            transition:background 150ms ease, transform 150ms ease;
+        }
+        .calendar-panel .calendar-actions button:hover{
+            background:rgba(255,255,255,0.2);
+            transform:translateY(-1px);
+        }
+        .calendar-panel .calendar-grid{
+            display:grid;
+            grid-template-columns:repeat(7, minmax(0, 1fr));
+            gap:6px;
+        }
+        .calendar-panel .calendar-day-name{
+            text-align:center;
+            font-size:0.78rem;
+            color:rgba(255,255,255,0.75);
+            text-transform:uppercase;
+            letter-spacing:0.06em;
+            padding:8px 0 6px;
+        }
+        .calendar-panel .calendar-day{
+            min-height:32px;
+            border-radius:14px;
+            background:rgba(255,255,255,0.08);
+            display:flex;
+            align-items:flex-start;
+            justify-content:flex-end;
+            padding:6px;
+            color:var(--glass-text);
+            position:relative;
+            transition: background 150ms ease, transform 150ms ease;
+            cursor:pointer;
+        }
+        .calendar-panel .calendar-day:hover{
+            background:rgba(255,255,255,0.16);
+            transform:translateY(-1px);
+        }
+        .calendar-panel .calendar-day--today{
+            background:rgba(161,196,246,0.25);
+            border:1px solid rgba(161,196,246,0.45);
+            box-shadow:0 0 0 2px rgba(161,196,246,0.15);
+        }
+        .calendar-panel .calendar-day--outside{
+            color:rgba(255,255,255,0.55);
+        }
+        .calendar-panel .calendar-day span{
+            display:block;
+            font-size:0.78rem;
+            font-weight:700;
+            line-height:1;
+        }
+        .calendar-panel .calendar-day .schedule-dot{
+            width:8px;
+            height:8px;
+            border-radius:50%;
+            background:#ff6b6b;
+            position:absolute;
+            bottom:8px;
+            left:50%;
+            transform:translateX(-50%);
+        }
+
+        .nav-links{
+            display:flex;
+            gap:1rem;
+            align-items:center;
+            flex-wrap:wrap; /* 窄屏时允许换行 */
+        }
+
+        /* 响应式：窄屏时堆叠 */
+        @media (max-width:1300px){
+            .site-main{ padding:1rem 1rem 1rem 1rem; }
+            .site-main .layout{ flex-direction:column; align-items:center; }
+            .left-column,
+            .right-column,
+            .middle-card,
+            .center-stack{ position:static; width:90%; }
+            .calendar-panel{ width:100%; height:auto; min-height:700px; }
+            .profile-card{ width:100%; min-height:280px; }
+        }
+        @media (max-width:900px){
+            .site-main .layout{ flex-direction:column; align-items:center; }
+            .left-column,
+            .right-column,
+            .middle-card,
+            .center-stack{ position:static; width:90%; }
+            .profile-card{ width:100%; height:auto; min-height:280px; }
+        }
+        .profile-card .avatar{
+            width:120px;
+            height:120px;
+            border-radius:50%;
+            object-fit:cover;
+            margin-bottom:1rem;
+            border:3px solid rgba(255,255,255,0.2);
+            background:linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+        }
+        .profile-card h2{ margin:0 0 0.25rem; }
+        .profile-card p{ color:rgba(255,255,255,0.9); line-height:1.5; text-align:center; }
+
+        .project-card{
+            /* 项目卡片 */
+            width:100%;
+            max-width:400px;
+            height:100px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius:16px;
+            padding:24px;
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            color:var(--glass-text);
+            text-decoration:none;
+            box-shadow: 0 10px 30px rgba(2,6,23,0.35);
+            transition: transform 150ms ease, border-color 150ms ease, background-color 150ms ease;
+        }
+        .project-card:hover{
+            transform: translateY(-3px);
+            border-color: rgba(255,255,255,0.28);
+            background: rgba(255,255,255,0.16);
+        }
+        .project-card .project-info{
+            display:flex;
+            flex-direction:column;
+            justify-content:center;
+            gap:0.5rem;
+        }
+        .project-card h3{
+            margin:0;
+            font-size:1.35rem;
+        }
+        .project-card p{
+            margin:0;
+            color:rgba(255,255,255,0.85);
+            line-height:1.6;
+        }
+        .project-card-icon{
+            /* 箭头大小 */
+            width:20px;
+            height:20px;
+            object-fit:contain;
+            margin-left:24px;
+        }
+
+        .nav-links{
+            display:flex;
+            gap:1rem;
+            align-items:center;
+            flex-wrap:wrap; /* 窄屏时允许换行 */
+        }
+
+        /* 响应式：窄屏时堆叠 */
+        @media (max-width:900px){
+            .site-main .layout{ flex-direction:column; align-items:center; }
+            .profile-card{ width:90%; height:auto; min-height:280px; }
+        }
+    </style>
+</head>
+
+<!-- ------------------------------------------------------------------------------------------------------------ -->
+<!-- ------------------------------------------------------------------------------------------------------------ -->
+<!-- ------------------------------------------------------------------------------------------------------------ -->
+
+<body>
+    <!-- 页面背景 -->
+    <video class="bg-video" autoplay muted loop playsinline poster="image/bj.png">
+        <!-- <source src="image/bj.mp4" type="video/mp4"> -->   <!-- 已被注释掉了；正常用cpu占用太高了！！！电脑性能不行，撑不住 -->
+    </video>
+
+    <!-- 页面导航 -->
+    <header class="site-header" role="banner">
+        <div class="container">
+            <a href="https://www.ljiao.me" class="brand" target="_blank" rel="noopener noreferrer">www.ljiao.me</a>
+            <nav class="nav-links" role="navigation" aria-label="主导航">
+                <a href="index.html">首页</a>
+                <a href="about.html">关于我</a>
+                <a href="project.html">我的项目</a>
+                <div class="nav-item">
+                    联系我
+                    <ul class="dropdown-menu" aria-label="联系我下拉菜单">
+                        <li><a href="contact_weixin.html">微信</a></li>
+                        <li><a href="contact_qq.html">QQ</a></li>
+                        <li><a href="contact_xhs.html">小红书</a></li>
+                        <li><a href="contact_dy.html">抖音</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 页面主体内容 -->
+    <main class="site-main">
+        <div class="layout">
+            <div class="left-column">
+                <aside class="profile-card" aria-label="个人信息卡">
+                    <img src="image/touxiang.png" alt="头像占位" class="avatar">
+                    <h2>伊教</h2>
+                    <p>
+                        你好，我是伊教。这里是我的个人博客，分享开发与生活点滴。
+                    </p>
+                </aside>
+                <a href="project.html" class="project-card" aria-label="我的项目卡片">
+                    <div class="project-info">
+                        <h3>我的项目</h3>
+                    </div>
+                    <img src="image/jt.png" alt="点击前进" class="project-card-icon" />
+                </a>
+            </div>
+            <div class="center-stack">
+                <section class="middle-card" aria-label="个人介绍卡片">
+                    <!--大家好！我是“伊教”，今年16岁,很遗憾中考失利，没能考上理想的高中，现在某所中专学习，
+                    但我并不气馁，在学校里努力学习文化与专业知识，现学习的主要是《计算机应用技术》等到三年
+                    后，对接上大专，主要学习《计算机网络技术》的一些相关知识，我会努力学习，争取在未来的计
+                    算机领域有所成就。希望大家多多支持我的博客和项目！<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2026年8月-->
+                    啊哦，内容正在开发中，敬请期待！
+                </section>
+                <section class="photo-wall-card" aria-label="照片墙卡片">
+                    <svg class="photo-wall-rope" viewBox="0 0 520 220" preserveAspectRatio="none" aria-hidden="true">
+                        <g transform="rotate(15 260 110)">
+                            <path d="M -10 98 C 70 70, 155 72, 225 92 C 290 112, 370 138, 530 118" fill="none" stroke="#A67C52" stroke-width="4.2" stroke-linecap="round"/>
+                            <path d="M -10 98 C 70 70, 155 72, 225 92 C 290 112, 370 138, 530 118" fill="none" stroke="#C8A57B" stroke-width="2.3" stroke-linecap="round" stroke-dasharray="1 8" opacity="0.72"/>
+                            <path d="M -10 98 C 70 72, 156 74, 226 93 C 291 112, 368 138, 530 118" fill="none" stroke="#8B5A2B" stroke-width="0.9" stroke-linecap="round" opacity="0.34"/>
+                        </g>
+                    </svg>
+                    <div class="photo-wall-frame">
+                        <div class="photo-wall-item"><img src="image/xzssbz.png" alt="照片1"></div>
+                        <div class="photo-wall-item"><img src="image\pxzz.jpg" alt="照片2"></div>
+                        <div class="photo-wall-item"><img src="image/default.png" alt="照片3"></div>
+                        <div class="photo-wall-item"><img src="image/default.png" alt="照片4"></div>
+                    </div>
+                </section>
+            </div>
+            <div class="right-column">
+                <section class="calendar-panel" aria-label="日历面板">
+                <div class="calendar-header">
+                    <div>
+                        <h3>日历</h3>
+                        <p class="month-year">2026年 8月</p>
+                    </div>
+                    <div class="calendar-actions" aria-label="日历导航">
+                        <button type="button" data-calendar-prev aria-label="上一月">‹</button>
+                        <button type="button" data-calendar-next aria-label="下一月">›</button>
+                    </div>
+                </div>
+                    <div class="calendar-weekdays calendar-grid" aria-hidden="true">
+                    <div class="calendar-day-name">日</div>
+                    <div class="calendar-day-name">一</div>
+                    <div class="calendar-day-name">二</div>
+                    <div class="calendar-day-name">三</div>
+                    <div class="calendar-day-name">四</div>
+                    <div class="calendar-day-name">五</div>
+                    <div class="calendar-day-name">六</div>
+                </div>
+                <div class="calendar-days calendar-grid" aria-label="日历网格"></div>
+            </section>
+            <section class="schedule-card" aria-label="今日日程">
+                <h3>今日日程</h3>
+                <div class="schedule-card-body" id="todayScheduleBody">
+                    <p>今天没有任务哦~</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+
+<!-- ------------------------------------------------------------------------------------------------------------ -->
+<!-- ------------------------------------------------------------------------------------------------------------ -->
+<!-- ------------------------------------------------------------------------------------------------------------ -->
+
+
+    <script>
+        // 页面加载完成后初始化日历和日程逻辑
+        document.addEventListener('DOMContentLoaded', function() {
+            const monthYearLabel = document.querySelector('.calendar-panel .month-year');
+            const calendarDays = document.querySelector('.calendar-days');
+            const prevButton = document.querySelector('[data-calendar-prev]');
+            const nextButton = document.querySelector('[data-calendar-next]');
+            const scheduleBody = document.getElementById('todayScheduleBody');
+            const today = new Date();
+            let activeYear = today.getFullYear();
+            let activeMonth = today.getMonth();
+
+            // 获取指定年月的天数
+            function getDaysInMonth(year, month) {
+                return new Date(year, month + 1, 0).getDate();
+            }
+
+            function formatDateKey(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                return `${year}-${month}-${day}`;
+            }
+
+            // 从 localStorage 中读取已保存的日程数据
+            function getStoredSchedules() {
+                const stored = localStorage.getItem('calendarSchedules');
+                if (!stored) return {};
+                try {
+                    return JSON.parse(stored);
+                } catch (error) {
+                    return {};
+                }
+            }
+
+            // 将日程数据保存回 localStorage
+            function saveSchedules(schedules) {
+                localStorage.setItem('calendarSchedules', JSON.stringify(schedules));
+            }
+
+            // 获取今天的日程文本，用于显示今日日程卡片
+            function getTodayScheduleText() {
+                const schedules = getStoredSchedules();
+                const todayKey = formatDateKey(today);
+                return schedules[todayKey] || null;
+            }
+
+            // 更新右侧“今日日程”卡片显示内容
+            function updateTodayScheduleCard() {
+                const scheduleText = getTodayScheduleText();
+                if (!scheduleText) {
+                    scheduleBody.innerHTML = '<p>今天没有任务哦~</p>';
+                    return;
+                }
+                const schedule = JSON.parse(scheduleText);
+                scheduleBody.innerHTML = `
+                    <p><strong>标题：</strong>${schedule.title}</p>
+                    <p><strong>时间：</strong>${schedule.time}</p>
+                    <p><strong>内容：</strong>${schedule.content || '无'}</p>
+                `;
+            }
+
+            // 生成日历网格并渲染到页面
+            function renderCalendar(year, month) {
+                calendarDays.innerHTML = '';
+                monthYearLabel.textContent = `${year}年 ${month + 1}月`;
+                const schedules = getStoredSchedules();
+                const firstOfMonth = new Date(year, month, 1);
+                const startDay = firstOfMonth.getDay();
+                const monthDays = getDaysInMonth(year, month);
+                const prevMonth = month === 0 ? 11 : month - 1;
+                const prevYear = month === 0 ? year - 1 : year;
+                const prevMonthDays = getDaysInMonth(prevYear, prevMonth);
+                const nextMonth = month === 11 ? 0 : month + 1;
+                const nextYear = month === 11 ? year + 1 : year;
+
+                for (let i = 0; i < 42; i++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'calendar-day';
+                    let dayNumber;
+                    let cellDate;
+                    let isOutside = false;
+
+                    if (i < startDay) {
+                        dayNumber = prevMonthDays - startDay + i + 1;
+                        isOutside = true;
+                        cellDate = new Date(prevYear, prevMonth, dayNumber);
+                    } else if (i >= startDay + monthDays) {
+                        dayNumber = i - startDay - monthDays + 1;
+                        isOutside = true;
+                        cellDate = new Date(nextYear, nextMonth, dayNumber);
+                    } else {
+                        dayNumber = i - startDay + 1;
+                        cellDate = new Date(year, month, dayNumber);
+                    }
+
+                    if (isOutside) {
+                        cell.classList.add('calendar-day--outside');
+                    }
+
+                    const span = document.createElement('span');
+                    span.textContent = dayNumber;
+                    cell.appendChild(span);
+
+                    const cellKey = formatDateKey(cellDate);
+                    if (schedules[cellKey]) {
+                        const dot = document.createElement('div');
+                        dot.className = 'schedule-dot';
+                        cell.appendChild(dot);
+                    }
+
+                    if (cellDate.toDateString() === today.toDateString()) {
+                        cell.classList.add('calendar-day--today');
+                        cell.setAttribute('aria-current', 'date');
+                    }
+
+                    // 点击日期单元格后，弹出表单录入日程并保存
+                    cell.addEventListener('click', function() {
+                        const title = prompt('请输入日程标题（必填）');
+                        if (!title) {
+                            alert('标题为必填项。');
+                            return;
+                        }
+                        const time = prompt('请输入日程时间（必填）');
+                        if (!time) {
+                            alert('时间为必填项。');
+                            return;
+                        }
+                        const content = prompt('请输入日程内容（可选）') || '';
+                        const schedules = getStoredSchedules();
+                        schedules[cellKey] = JSON.stringify({ title, time, content });
+                        saveSchedules(schedules);
+                        renderCalendar(activeYear, activeMonth);
+                        updateTodayScheduleCard();
+                    });
+
+                    calendarDays.appendChild(cell);
+                }
+            }
+
+            // 切换日历月份，支持上一月和下一月按钮
+            function changeMonth(offset) {
+                activeMonth += offset;
+                if (activeMonth < 0) {
+                    activeMonth = 11;
+                    activeYear -= 1;
+                } else if (activeMonth > 11) {
+                    activeMonth = 0;
+                    activeYear += 1;
+                }
+                renderCalendar(activeYear, activeMonth);
+                updateTodayScheduleCard();
+            }
+
+            prevButton.addEventListener('click', function() {
+                changeMonth(-1);
+            });
+
+            nextButton.addEventListener('click', function() {
+                changeMonth(1);
+            });
+
+            renderCalendar(activeYear, activeMonth);
+            updateTodayScheduleCard();
+        });
+    </script>
+</body>
+</html>
