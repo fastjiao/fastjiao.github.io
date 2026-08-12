@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网页库</title>
+    <style>
+        #links-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            row-gap: 20px;
+            column-gap: 100px;
+            width: 100%;
+            max-width: 1000px;
+            padding: 30 12px;
+            box-sizing: border-box;
+        }
+        #links-container > div {
+            width: 100%;
+            display: block;
+            padding: 0;
+            background: transparent;
+            box-shadow: none;
+        }
+        #links-container a {
+            display: block;
+            width: 100%;
+            padding: 16px 18px;
+            border-radius: 12px;
+            background: #f8f8f8;
+            text-align: center;
+            text-decoration: none;
+            color: #111;
+            box-shadow: 0 1px 4px rgba(0,0,0,.08);
+            transition: background .2s ease, transform .2s ease, box-shadow .2s ease;
+            border: 1px solid rgba(0,0,0,.06);
+        }
+        #links-container a:hover {
+            background: #ececec;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,.1);
+        }
+    </style>
+</head>
+
+<body style="display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding-top: 150px;">
+        <div style="display:flex; align-items:center; gap:12px;">
+            <div style="display:flex; flex-direction:row; gap:6px; align-items:center;">
+                <a id="clear-counts" href="#" style="position:fixed; top:50px; left:50px; display:flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:8px; border:1px solid #ccc; background:#fff; cursor:pointer; text-decoration:none; z-index:999;">
+                    <img src="image/圆叉.png" alt="清空计数器" style="width:22px; height:22px;" />
+                </a>
+                <button id="toggle-badges" style="position:fixed; top:50px; left:100px; font-size:1.17em; padding:6px 10px; border-radius:6px; border:1px solid #ccc; background:#fff; cursor:pointer;">显示计数</button>
+                <button id="manage-url" onclick="location.href='manage.html'" style="position:fixed; top:50px; left:220px; font-size:1.17em; padding:6px 10px; border-radius:6px; border:1px solid #ccc; background:#fff; cursor:pointer;">管理URL</button>
+                <button id="return-home" onclick="location.href='index.html'" style="position:fixed; top:50px; left:330px; font-size:1.17em; padding:6px 10px; border-radius:6px; border:1px solid #ccc; background:#fff; cursor:pointer;">返回主页</button>
+            </div>
+        </div>
+
+        <div id="links-container">
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://www.qianwen.com/chat" target="_blank">千问</a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://github.com/" target="_blank">GitHub</a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://www.guangyapan.com/#/home/all" target="_blank"> 光鸭云盘 </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://www.jyshare.com/" target="_blank"> 菜鸟工具 </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://ncre.neea.edu.cn/" target="_blank"> 中国教育考试网 </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://www.ruankao.org.cn/" target="_blank"> 中国计算机技术职业资格网（软考） </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://www.w3school.com.cn/" target="_blank"> W3School </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://www.guangya.cc/" target="_blank"> 光鸭资源设 </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://xiaobaocampus.com/" target="_blank"> 校园知问 </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://poorgpt.com/" target="_blank"> 赛博丐帮 </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://www.51miz.com/?utm_term=5495868&utm_source=x360&guanggao&qhclickid=9a41eeb8f87985b7" target="_blank"> 觅知网 </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://color.adobe.com/cn/create/color-wheel?tab=primary-color" target="_blank"> 调色板生成器和色轮工具 </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://www.aboutppt.com/#term-2-3" target="_blank"> aboutppt </a>
+            </div>
+             <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://remove-bg.io/zh-CN/" target="_blank"> 即时移除背景 </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://picwish.cn/remove-background?apptype=aps-bing-zh-webpin&msclkid=d8d5f74bd2e1129556ed9d1b29d964e7" target="_blank"> 佐糖AI </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://www.iconfont.cn/" target="_blank"> 阿里巴巴矢量图标库 </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://hao.uisdc.com/font/" target="_blank"> 优设字体 </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://www.maoken.com/" target="_blank"> 猫啃网 </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="key.html" target="_blank"> key </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://www.doubao.com/chat/" target="_blank"> 豆包 </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://www.douyin.com/?recommend=1" target="_blank"> 抖音 </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://outlook.live.com/calendar/view/month?culture=zh-cn&country=cn" target="_blank"> Outlook </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://magiceraser.org/zh/object-remover/" target="_blank"> AI去水印 </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="https://go.kiwik.cn/app/wob/devices/4A3843D34040" target="_blank"> 优智云家 </a>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 10px; align-items: center;">
+                <a href="#" target="_blank"> @@@@ </a>
+            </div>
+        </div>
+        <script>
+            (function(){
+                const STORAGE_KEY = 'linkClicks_v1';
+                const COOKIE_KEY = 'linkClicks_backup_v1';
+                const USER_LINKS_KEY = 'customLinks_v1';
+                const BACKUP_DAYS = 3650; // 10 years
+                const container = document.getElementById('links-container');
+                if(!container) return;
+
+                function setCookie(name, value, days){
+                    try{
+                        const expires = new Date(Date.now() + days*24*60*60*1000).toUTCString();
+                        document.cookie = name + '=' + encodeURIComponent(value) + '; expires=' + expires + '; path=/';
+                    }catch(e){ console.error('setCookie', e); }
+                }
+                function getCookie(name){
+                    const match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()[]\\\/\\+^])/g,'\\$1') + '=([^;]*)'));
+                    return match ? decodeURIComponent(match[1]) : null;
+                }
+
+                // 尝试从 localStorage 加载，若无则从 cookie 恢复
+                let counts = {};
+                try{ counts = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}') || {}; }
+                catch(e){ counts = {}; }
+                if(Object.keys(counts).length === 0){
+                    try{
+                        const fromCookie = getCookie(COOKIE_KEY);
+                        if(fromCookie){ counts = JSON.parse(fromCookie) || {}; localStorage.setItem(STORAGE_KEY, JSON.stringify(counts)); }
+                    }catch(e){ console.error('restore cookie', e); }
+                }
+
+                function saveCounts(){
+                    try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(counts)); }
+                    catch(e){ console.error('localStorage set failed', e); }
+                    try{ setCookie(COOKIE_KEY, JSON.stringify(counts), BACKUP_DAYS); }
+                    catch(e){ console.error('cookie set failed', e); }
+                    try{ updateBadges(); }catch(e){}
+                }
+
+                const USER_LINKS_COOKIE_KEY = 'customLinks_backup_v1';
+
+                function saveCustomLinks(links){
+                    try{ localStorage.setItem(USER_LINKS_KEY, JSON.stringify(links)); }
+                    catch(e){ console.error('saveCustomLinks failed', e); }
+                    try{ setCookie(USER_LINKS_COOKIE_KEY, JSON.stringify(links), BACKUP_DAYS); }
+                    catch(e){ console.error('saveCustomLinks cookie backup failed', e); }
+                }
+
+                function loadCustomLinks(){
+                    try{
+                        const raw = localStorage.getItem(USER_LINKS_KEY);
+                        if (raw){
+                            const parsed = JSON.parse(raw);
+                            return Array.isArray(parsed) ? parsed : [];
+                        }
+                    }catch(e){ console.error('loadCustomLinks failed', e); }
+
+                    try{
+                        const cookieRaw = getCookie(USER_LINKS_COOKIE_KEY);
+                        if (!cookieRaw) return [];
+                        const parsed = JSON.parse(cookieRaw);
+                        return Array.isArray(parsed) ? parsed : [];
+                    }catch(e){ console.error('loadCustomLinks cookie restore failed', e); return []; }
+                }
+
+                function restoreCustomLinks(){
+                    const savedLinks = loadCustomLinks();
+                    savedLinks.forEach(item => {
+                        if (!item || !item.url || !item.name) return;
+                        const newBlock = createLinkBlock(item.url, item.name);
+                        container.appendChild(newBlock);
+                    });
+                }
+
+                // 初始化每个链接的 data-key，并绑定点击事件（不显示任何数字）
+                function initLinks(){
+                    const anchors = container.querySelectorAll('a');
+                    anchors.forEach((a, idx)=>{
+                        if (a.dataset.key) return; // 已初始化的链接跳过
+                        const key = (a.getAttribute('href')||'') + '||' + (a.textContent||'') + '||' + idx;
+                        a.dataset.key = key;
+                        if(!counts[key]) counts[key] = 0;
+                        a.addEventListener('click', function(){
+                            try{ counts[key] = (counts[key]||0) + 1; saveCounts(); }
+                            catch(err){ console.error(err); }
+                            setTimeout(sortAndRender, 50);
+                        });
+                    });
+                }
+
+                function createLinkBlock(url, name){
+                    const linkDiv = document.createElement('div');
+                    linkDiv.style.display = 'flex';
+                    linkDiv.style.flexDirection = 'column';
+                    linkDiv.style.gap = '10px';
+                    linkDiv.style.alignItems = 'center';
+
+                    const anchor = document.createElement('a');
+                    anchor.href = url;
+                    anchor.target = '_blank';
+                    anchor.textContent = name;
+                    linkDiv.appendChild(anchor);
+                    return linkDiv;
+                }
+
+                function normalizeUrl(url){
+                    const trimmed = (url || '').trim();
+                    if (!trimmed) return '';
+                    if (/^https?:\/\//i.test(trimmed)) return trimmed;
+                    return 'https://' + trimmed;
+                }
+
+                function addNewLink(){
+                    const urlInput = document.getElementById('new-link-url');
+                    const nameInput = document.getElementById('new-link-name');
+                    if(!urlInput || !nameInput) return;
+
+                    const rawUrl = urlInput.value.trim();
+                    const name = nameInput.value.trim();
+                    if (!rawUrl){
+                        alert('请输入一个URL');
+                        return;
+                    }
+                    if (!name){
+                        alert('请输入一个名称');
+                        return;
+                    }
+
+                    const existingNames = Array.from(container.querySelectorAll('a')).map(a => (a.textContent || '').trim().toLowerCase());
+                    if (existingNames.includes(name.toLowerCase())){
+                        alert('名称已被添加  换一个名称再试试吧！');
+                        return;
+                    }
+
+                    const url = normalizeUrl(rawUrl);
+                    const newBlock = createLinkBlock(url, name);
+                    container.appendChild(newBlock);
+                    initLinks();
+                    sortAndRender();
+
+                    const savedLinks = loadCustomLinks();
+                    savedLinks.push({ url, name });
+                    saveCustomLinks(savedLinks);
+
+                    urlInput.value = '';
+                    nameInput.value = '';
+                }
+
+                // 按点击次数排序链接但不改变显示文本；当所有计数为 0 时按名称排序以保持稳定顺序
+                // 若链接名包含 '@@@@' 则在最终排列中移动到末尾（保留这些项的相对顺序）
+                function sortAndRender(){
+                    const cols = Array.from(container.children);
+                    if(cols.length === 0) return;
+                    const anchors = Array.from(container.querySelectorAll('a'));
+                    const anchorData = anchors.map(a=>({ key: a.dataset.key, node: a, name: (a.textContent||'').trim() }));
+
+                    // 将包含 '@@@@' 的项分离
+                    const specialMarker = '@@@@';
+                    const marked = anchorData.filter(item => item.name.includes(specialMarker));
+                    let normal = anchorData.filter(item => !item.name.includes(specialMarker));
+
+                    // 判断是否所有计数都为 0 或 counts 为空（仅考虑 normal 中的项）
+                    const hasAnyCount = normal.some(item => (counts[item.key]||0) > 0);
+
+                    if(hasAnyCount){
+                        // 按计数降序，计数相同时按名称升序保证稳定性
+                        normal.sort((x,y)=> {
+                            const cx = counts[x.key] || 0;
+                            const cy = counts[y.key] || 0;
+                            if(cy !== cx) return cy - cx;
+                            return x.name.localeCompare(y.name, undefined, {sensitivity:'base'});
+                        });
+                    }else{
+                        // 全为 0：按名称升序排列
+                        normal.sort((x,y)=> x.name.localeCompare(y.name, undefined, {sensitivity:'base'}));
+                    }
+
+                    // 将 normal 项与 marked 项合并，marked 保持原始顺序（已在 filter 中保留顺序）
+                    const combined = normal.concat(marked);
+
+                    cols.forEach(c=> c.innerHTML = '');
+                    combined.forEach((item,i)=>{ cols[i % cols.length].appendChild(item.node); });
+                    // 更新包含标记的颜色显示并同步徽章显示
+                    updateMarkerColors();
+                    try{ updateBadges(); }catch(e){}
+                }
+
+                // 将包含 '@@@@' 的链接块隐藏；若刷新后文本不再包含 '@@@@'，则恢复显示
+                function updateMarkerColors(){
+                    try{
+                        const anchors = Array.from(container.querySelectorAll('a'));
+                        anchors.forEach(a => {
+                            const name = (a.textContent||'').trim();
+                            const block = a.parentElement;
+                            if(name.includes('@@@@')){
+                                a.style.color = '#ffffff';
+                                if(block) block.style.display = 'none';
+                            }else{
+                                a.style.color = '';
+                                if(block) block.style.display = '';
+                            }
+                        });
+                    }catch(e){ console.error('updateMarkerColors', e); }
+                }
+
+                // 是否显示计数徽章
+                let showBadges = false;
+
+                // 更新或创建计数徽章（默认隐藏，点击切换显示）
+                function updateBadges(){
+                    try{
+                        const anchors = Array.from(container.querySelectorAll('a'));
+                        anchors.forEach(a => {
+                            const key = a.dataset.key;
+                            let span = a.querySelector('.link-badge');
+                            if(!span){
+                                span = document.createElement('span');
+                                span.className = 'link-badge';
+                                span.style.marginLeft = '6px';
+                                span.style.fontSize = '12px';
+                                span.style.padding = '2px 6px';
+                                span.style.borderRadius = '10px';
+                                span.style.background = '#ff5722';
+                                span.style.color = '#fff';
+                                a.appendChild(span);
+                            }
+                            span.textContent = (counts[key] || 0);
+                            span.style.display = showBadges ? 'inline-block' : 'none';
+                        });
+                    }catch(e){ console.error('updateBadges', e); }
+                }
+
+                // 在页面卸载时再保存一次（保险）
+                window.addEventListener('beforeunload', saveCounts);
+
+                // 绑定显示/隐藏计数按钮
+                const toggleBtn = document.getElementById('toggle-badges');
+                if(toggleBtn){
+                    toggleBtn.addEventListener('click', function(){
+                        showBadges = !showBadges;
+                        toggleBtn.textContent = showBadges ? '隐藏计数' : '显示计数';
+                        updateBadges();
+                    });
+                }
+
+                // 绑定清空按钮（一次点击清空所有计数）
+                const clearBtn = document.getElementById('clear-counts');
+                if(clearBtn){
+                    clearBtn.addEventListener('click', function(){
+                        counts = {};
+                        saveCounts();
+                        sortAndRender();
+                    });
+                }
+
+                const addLinkBtn = document.getElementById('add-link-btn');
+                if(addLinkBtn){
+                    addLinkBtn.addEventListener('click', addNewLink);
+                }
+
+                restoreCustomLinks();
+                initLinks();
+                sortAndRender();
+            })();
+        </script>
+</body>
+
+</html>

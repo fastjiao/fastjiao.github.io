@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>默认标签页</title>
+    <style>
+        .search-bar {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            width: 600px;
+            max-width: 100%;
+            min-height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 30px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            position: relative;
+        }
+
+        .search-engine-dropdown {
+            position: relative;
+            display: flex;
+            align-items: center;
+            min-width: 80px;
+            max-width: 220px;
+            height: 60px;
+            border-right: 1px solid rgba(255, 255, 255, 0.18);
+            background: transparent;
+            border-radius: 30px 0 0 30px;
+            flex: 0 0 auto;
+        }
+
+        .search-engine-button {
+            width: 100%;
+            height: 100%;
+            padding: 0 20px;
+            font-size: 18px;
+            color: #fff;
+            background: transparent;
+            border: none;
+            outline: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 500;
+            border-radius: 30px 0 0 30px;
+        }
+
+        .search-engine-button:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .search-engine-button:focus {
+            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+        }
+
+        .search-engine-button::after {
+            content: '';
+            display: inline-block;
+            width: 0;
+            height: 0;
+            margin-left: 10px;
+            border-left: 6px solid transparent;
+            border-right: 6px solid transparent;
+            border-top: 6px solid #fff;
+        }
+
+        .dropdown-list {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            margin-top: 10px;
+            background: rgba(10, 20, 60, 0.95);
+            border-radius: 18px;
+            overflow: hidden;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.35);
+            z-index: 20;
+        }
+
+        .search-engine-dropdown.active .dropdown-list {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 14px 20px;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(100, 160, 255, 0.18);
+        }
+
+        .search-input-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            min-height: 60px;
+        }
+
+        .search-bar input {
+            flex: 1;
+            height: 60px;
+            border: none;
+            padding: 0 28px;
+            font-size: 24px;
+            color: #fff;
+            background: transparent;
+            outline: none;
+            border-radius: 0;
+        }
+
+        .search-bar input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .search-bar input:focus {
+            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+        }
+
+        .search-submit {
+            height: 60px;
+            border: none;
+            border-left: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 0 30px 30px 0;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: #fff;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0 30px;
+            transition: background 0.2s ease;
+        }
+
+        .search-submit:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .action-button-group {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .action-button {
+            padding: 10px 20px;
+            font-size: 20px;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.18);
+            color: #fff;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .action-button:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .action-button:focus {
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.25);
+        }
+
+        .search-section {
+            margin-top: 20px;
+            transform: translateY(-20px);
+        }
+
+        .search-bar input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        .search-bar input:focus {
+            box-shadow: inset 0 0 0 2px rgba(255, 255, 255, 0.35);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="menuWrapper" style="position:fixed; top:50px; right:50px; z-index:10;">
+        <img id="menuToggle" src="image/更多功能.png" alt="更多功能"
+            style="width:48px; height:48px; cursor:pointer; display:block;" />
+        <div id="colorMenu"
+            style="display:none; position:absolute; top:58px; right:0; padding:10px; background:rgba(255,255,255,0.95); border:1px solid #ccc; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.15);">
+            <button id="blackBg"
+                style="display:block; width:180px; margin-bottom:8px; padding:8px 12px; cursor:pointer;">切换背景色为黑色</button>
+            <button id="whiteBg" style="display:block; width:180px; padding:8px 12px; cursor:pointer;">切换背景色为白色</button>
+        </div>
+    </div>
+    <div style="width:100vw; height:100vh; display:flex; justify-content:center; align-items:center;">
+        <div style="display:flex; flex-direction:column; align-items:center; text-align:center;">
+            <span id="welcomeText"
+                style="font-size:100px; font-family:'FangSong', SimSun, serif; font-weight:bold;">欢迎访问互联网</span>
+            <div class="search-section">
+                <form id="searchForm" class="search-bar" target="_blank">
+                    <div id="engineSelector" class="search-engine-dropdown">
+                        <button type="button" id="engineButton" class="search-engine-button">百度</button>
+                        <div id="engineList" class="dropdown-list">
+                            <div class="dropdown-item" data-engine="baidu">百度</div>
+                            <div class="dropdown-item" data-engine="so">360</div>
+                            <div class="dropdown-item" data-engine="bing">必应</div>
+                        </div>
+                    </div>
+                    <div class="search-input-wrapper">
+                        <input id="searchBox" name="wd" type="text" placeholder="搜索...">
+                        <button id="searchSubmit" type="submit" class="search-submit">搜索</button>
+                    </div>
+                </form>
+                <div class="action-button-group">
+                    <button id="moreLinksBtn" type="button" class="action-button">更多网址</button>
+                    <a href="manage.html" class="action-button">管理URL</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        const menuToggle = document.getElementById('menuToggle');
+        const colorMenu = document.getElementById('colorMenu');
+        const menuWrapper = document.getElementById('menuWrapper');
+        const blackBg = document.getElementById('blackBg');
+        const whiteBg = document.getElementById('whiteBg');
+        const welcomeText = document.getElementById('welcomeText');
+        const moreLinksBtn = document.getElementById('moreLinksBtn');
+        const searchForm = document.getElementById('searchForm');
+        const engineSelector = document.getElementById('engineSelector');
+        const engineButton = document.getElementById('engineButton');
+        const engineList = document.getElementById('engineList');
+        const engineItems = Array.from(document.querySelectorAll('.dropdown-item'));
+        const searchBox = document.getElementById('searchBox');
+        const searchSubmit = document.getElementById('searchSubmit');
+
+        document.body.style.backgroundColor = '#000';
+        document.body.style.backgroundImage = "url('image/Internet.png')";
+        document.body.style.backgroundSize = 'cover';
+        document.body.style.backgroundPosition = 'center';
+        document.body.style.backgroundRepeat = 'no-repeat';
+        document.body.style.margin = '0';
+        welcomeText.style.color = '#fff';
+
+        let hideTimer;
+
+        const showMenu = () => {
+            clearTimeout(hideTimer);
+            colorMenu.style.display = 'block';
+        };
+
+        const hideMenu = () => {
+            clearTimeout(hideTimer);
+            hideTimer = setTimeout(() => {
+                colorMenu.style.display = 'none';
+            }, 500);
+        };
+
+        menuWrapper.addEventListener('mouseenter', showMenu);
+        menuWrapper.addEventListener('mouseleave', hideMenu);
+
+        blackBg.addEventListener('click', () => {
+            document.body.style.backgroundColor = '#000';
+            welcomeText.style.color = '#fff';
+            menuToggle.src = 'image/更多功能-白.png';
+        });
+
+        whiteBg.addEventListener('click', () => {
+            document.body.style.backgroundColor = '#fff';
+            welcomeText.style.color = '#000';
+            menuToggle.src = 'image/更多功能.png';
+        });
+
+        moreLinksBtn.addEventListener('click', () => {
+            window.location.href = 'start web ku.html';
+        });
+
+        const updateSearchEngine = (engine) => {
+            if (engine === 'baidu') {
+                engineButton.textContent = '百度';
+                searchForm.action = 'https://www.baidu.com/s';
+                searchBox.name = 'wd';
+            } else if (engine === 'so') {
+                engineButton.textContent = '360';
+                searchForm.action = 'https://www.so.com/s';
+                searchBox.name = 'q';
+            } else {
+                engineButton.textContent = '必应';
+                searchForm.action = 'https://www.bing.com/search';
+                searchBox.name = 'q';
+            }
+        };
+
+        const toggleEngineList = (event) => {
+            event.stopPropagation();
+            engineSelector.classList.toggle('active');
+        };
+
+        const closeEngineList = () => {
+            engineSelector.classList.remove('active');
+        };
+
+        const selectEngine = (event) => {
+            event.stopPropagation();
+            const engine = event.currentTarget.dataset.engine;
+            updateSearchEngine(engine);
+            closeEngineList();
+        };
+
+        engineButton.addEventListener('click', toggleEngineList);
+        engineItems.forEach((item) => item.addEventListener('click', selectEngine));
+
+        document.addEventListener('click', closeEngineList);
+        engineList.addEventListener('click', (event) => event.stopPropagation());
+
+        updateSearchEngine('bing');
+
+        searchForm.addEventListener('submit', (event) => {
+            if (!searchBox.value.trim()) {
+                event.preventDefault();
+            }
+        });
+
+        searchSubmit.addEventListener('click', (event) => {
+            if (!searchBox.value.trim()) {
+                event.preventDefault();
+            }
+        });
+    </script>
+</body>
+
+</html>
