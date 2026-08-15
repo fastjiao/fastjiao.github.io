@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>安全图片上传工具</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; line-height: 1.6; }
+        .box { border: 1px solid #ddd; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        input[type="text"], input[type="file"] { width: 100%; padding: 8px; margin: 10px 0; box-sizing: border-box; }
+        button { background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        #status { margin-top: 15px; font-weight: bold; }
+        .warning { color: #d9534f; font-size: 0.9em; margin-bottom: 10px; }
+        img { max-width: 100%; margin-top: 10px; border: 1px solid #eee; display: none; }
+    </style>
+</head>
+<body>
+
+    <h1>🖼️ 博客图片替换工具</h1>
+    
+    <div class="box">
+        <h3>1. 配置信息 (已预设)</h3>
+        <p><strong>目标路径：</strong> <code>images/photo-a.png</code></p>
+        <p><strong>仓库：</strong> fastjiao/fastjiao.github.io</p>
+    </div>
+
+    <div class="box">
+        <h3>2. 身份验证</h3>
+        <p class="warning">⚠️ 请输入你的 GitHub Token (ghp_...)。<br>Token 仅在浏览器内存中使用，<b>不会</b>被保存到服务器或代码中。</p>
+        <input type="password" id="tokenInput" placeholder="在此粘贴 ghp_ 开头的 Token">
+    </div>
+
+    <div class="box">
+        <h3>3. 选择新图片</h3>
+        <input type="file" id="fileInput" accept="image/png, image/jpeg, image/jpg">
+        <img id="preview" alt="预览图">
+        <br><br>
+        <button id="uploadBtn" disabled>开始替换</button>
+    </div>
+
+    <div id="status"></div>
+
+    <script>
+        // --- 配置区域 (这些是公开的，没问题) ---
+        const OWNER = "fastjiao";
+        const REPO = "fastjiao.github.io";
+        const PATH = "images/photo-a.png"; 
+        // ------------------------------------
+
+        const fileInput = document.getElementById('fileInput');
+        const tokenInput = document.getElementById('tokenInput');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const statusDiv = document.getElementById('status');
+        const previewImg = document.getElementById('preview');
+
+        // 监听输入，只有选了文件且填了 Token 才能点按钮
+        function checkReady() {
+            if (fileInput.files.length > 0 && tokenInput.value.trim().startsWith('ghp_')) {
+                uploadBtn.disabled = false;
+                uploadBtn.style.background = '#28a745'; // 变绿
+            } else {
+                uploadBtn.disabled = true;
+                uploadBtn.style.background = '#ccc';
+            }
+        }
+
+        fileInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    previewImg.src = evt.target.result;
+                    previewImg.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+            checkReady();
+        });
+
+        tokenInput.addEventListener('input', checkReady);
+
+        uploadBtn.addEventListener('click', async () => {
+            const token = tokenInput.value.trim();
+            const file = fileInput.files[0];
+            
+            if (!token || !file) return;
+
+            uploadBtn.disabled = true;
+            statusDiv.textContent = "正在获取旧文件信息...";
+            statusDiv.style.color = "blue";
+
+            try {
+                // 1. 获取旧文件的 SHA (GitHub 更新文件必须知道旧的 SHA)
+                const apiUrl = `https://api.github.com/repos/${OWNER}/${REPO}/contents/${PATH}`;
+                
+                let sha = null;
+                try {
+                    const response = await fetch(apiUrl, {
+                        headers: { 'Authorization': `token ${token}` }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        sha = data.sha;
+                    }
+                } catch (e) {
+                    console.log("可能是新文件，不需要 SHA");
+                }
+
+                // 2. 读取文件内容并转为 Base64
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onloadend = async () => {
+                    const base64Content = reader.result.split(',')[1]; // 去掉 data:image/png;base64, 前缀
+
+                    statusDiv.textContent = "正在上传...";
+
+                    // 3. 发送 PUT 请求更新文件
+                    const body = {
+                        message: `Update ${PATH} via safe uploader`,
+                        content: base64Content,
+                        branch: "main" // 或者是 "master"，看你仓库的主分支叫什么
+                    };
+                    
+                    if (sha) {
+                        body.sha = sha;
+                    }
+
+                    const putResponse = await fetch(apiUrl, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(body)
+                    });
+
+                    if (putResponse.ok) {
+                        statusDiv.textContent = "✅ 上传成功！图片已更新。";
+                        statusDiv.style.color = "green";
+                    } else {
+                        const err = await putResponse.json();
+                        statusDiv.textContent = "❌ 失败: " + (err.message || "未知错误");
+                        statusDiv.style.color = "red";
+                        console.error(err);
+                    }
+                    uploadBtn.disabled = false;
+                };
+
+            } catch (error) {
+                statusDiv.textContent = "❌ 发生网络错误: " + error;
+                statusDiv.style.color = "red";
+                uploadBtn.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
