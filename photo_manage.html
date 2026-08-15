@@ -186,6 +186,71 @@
             border-left: 4px solid #1B6ACE;
             border-radius: 4px;
         }
+
+        /* ===== GitHub 远程上传配置区（融合自 p.html） ===== */
+        .github-config {
+            width: 1000px;                 /* 与照片墙大块同宽 */
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            padding: 16px 20px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+        }
+
+        .github-config-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin: 0 0 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .github-config-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .github-config-row label {
+            width: 90px;
+            flex-shrink: 0;
+            color: #333;
+            font-weight: bold;
+        }
+
+        /* Token 输入框 - 与 p.html 风格统一 */
+        .github-token-input {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .github-token-input:focus {
+            border-color: #1B6ACE;
+            outline: none;
+        }
+
+        .github-warning {
+            color: #d9534f;
+            font-size: 13px;
+            margin: 6px 0 0;
+        }
+
+        /* 远程上传状态提示行 */
+        .upload-status {
+            font-size: 13px;
+            margin-top: 6px;
+            min-height: 18px;
+        }
     </style>
 </head>
 <body>
@@ -210,6 +275,27 @@
                 <div class="tip">
                     提示：点击每行右侧的"修改图片"按钮可选择新图片，仅支持图像文件。
                 </div>
+
+                <!-- ===== GitHub 远程上传配置区（融合自 p.html） ===== -->
+                <!-- 顶部统一输入一次 Token，4 张照片共用 -->
+                <div class="github-config">
+                    <div class="github-config-title">GitHub 远程同步配置</div>
+                    <div class="github-config-row">
+                        <label>仓库：</label>
+                        <span>fastjiao/fastjiao.github.io</span>
+                    </div>
+                    <div class="github-config-row">
+                        <label>主分支：</label>
+                        <span>main</span>
+                    </div>
+                    <div class="github-config-row">
+                        <label>Token：</label>
+                        <input type="password" id="github-token" class="github-token-input" placeholder="在此粘贴 ghp_ 开头的 Token（留空则仅本地保存，不上传远程）">
+                    </div>
+                    <p class="github-warning">⚠️ Token 仅在浏览器内存中使用，不会被保存到服务器或代码中。填写后，每次修改图片会同步上传到 GitHub 仓库对应路径。</p>
+                    <div id="upload-status" class="upload-status"></div>
+                </div>
+
                 <!-- 首页图片管理大块 - 包含4张照片 -->
                 <div class="photo-wall-frame">
                     <div class="photo-block-title">首页图片管理</div>
@@ -218,7 +304,7 @@
                     <div class="photo-wall-item" data-index="0">
                         <span class="photo-label">照片1</span>
                         <div class="photo-preview">
-                            <img src="image/xzssbz.png" alt="照片1">
+                            <img src="image/photo_a.png" alt="照片1">
                         </div>
                         <div class="photo-info">照片1 - 首页照片墙第1张</div>
                         <button class="photo-btn" type="button">修改图片</button>
@@ -227,7 +313,7 @@
                     <div class="photo-wall-item" data-index="1">
                         <span class="photo-label">照片2</span>
                         <div class="photo-preview">
-                            <img src="image/pxzz.jpg" alt="照片2">
+                            <img src="image/photo_b.png" alt="照片2">
                         </div>
                         <div class="photo-info">照片2 - 首页照片墙第2张</div>
                         <button class="photo-btn" type="button">修改图片</button>
@@ -236,7 +322,7 @@
                     <div class="photo-wall-item" data-index="2">
                         <span class="photo-label">照片3</span>
                         <div class="photo-preview">
-                            <img src="image/default.png" alt="照片3">
+                            <img src="image/phtoo_c.png" alt="照片3">
                         </div>
                         <div class="photo-info">照片3 - 首页照片墙第3张</div>
                         <button class="photo-btn" type="button">修改图片</button>
@@ -245,7 +331,7 @@
                     <div class="photo-wall-item" data-index="3">
                         <span class="photo-label">照片4</span>
                         <div class="photo-preview">
-                            <img src="image/default.png" alt="照片4">
+                            <img src="image/photo_d.png" alt="照片4">
                         </div>
                         <div class="photo-info">照片4 - 首页照片墙第4张</div>
                         <button class="photo-btn" type="button">修改图片</button>
@@ -261,11 +347,101 @@
     <!-- 引入共享的图片管理模块（IndexedDB 持久化存储） -->
     <script src="photo-manager.js"></script>
     <script>
+        // ===== GitHub 远程上传配置（融合自 p.html） =====
+        const GITHUB_OWNER = "fastjiao";                    // 仓库所有者
+        const GITHUB_REPO = "fastjiao.github.io";           // 仓库名
+        const GITHUB_BRANCH = "main";                       // 主分支名
+        // 4 张照片对应的远程路径映射（与 index.html 的 image/photo_a~d.png 一致）
+        const GITHUB_PATH_MAP = [
+            "image/photo_a.png",
+            "image/photo_b.png",
+            "image/photo_c.png",
+            "image/photo_d.png"
+        ];
+
+        /**
+         * 上传单张图片到 GitHub 仓库（融合自 p.html 的上传逻辑）
+         * 流程：1. 获取旧文件 SHA → 2. 转 Base64 → 3. PUT 请求更新
+         * @param {string} token - GitHub Token（ghp_ 开头）
+         * @param {string} remotePath - 远程仓库中的目标路径
+         * @param {File} file - 本地图片文件
+         * @param {Function} setStatus - 状态文案更新回调
+         * @returns {Promise<boolean>} 是否上传成功
+         */
+        async function uploadToGithub(token, remotePath, file, setStatus) {
+            const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${remotePath}`;
+
+            // 1. 获取旧文件的 SHA（GitHub 更新已存在文件必须携带旧 SHA）
+            let sha = null;
+            try {
+                const resp = await fetch(apiUrl, {
+                    headers: { 'Authorization': `token ${token}` }
+                });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    sha = data.sha;
+                }
+            } catch (e) {
+                console.log("可能是新文件，不需要 SHA：", e);
+            }
+
+            // 2. 读取文件内容并转为 Base64（去掉 data:image/xxx;base64, 前缀）
+            const base64Content = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    if (typeof reader.result === 'string') {
+                        resolve(reader.result.split(',')[1]);
+                    } else {
+                        reject(new Error('文件读取失败'));
+                    }
+                };
+                reader.onerror = () => reject(reader.error);
+                reader.readAsDataURL(file);
+            });
+
+            setStatus("正在上传到 GitHub...", "blue");
+
+            // 3. 发送 PUT 请求更新远程文件
+            const body = {
+                message: `Update ${remotePath} via lovejiao管理平台`,
+                content: base64Content,
+                branch: GITHUB_BRANCH
+            };
+            if (sha) body.sha = sha;
+
+            const putResp = await fetch(apiUrl, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `token ${token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (putResp.ok) {
+                setStatus(`✅ 远程同步成功：${remotePath}`, "green");
+                return true;
+            } else {
+                const err = await putResp.json().catch(() => ({}));
+                setStatus("❌ 远程同步失败：" + (err.message || "未知错误"), "red");
+                console.error(err);
+                return false;
+            }
+        }
+
         // 获取所有照片项与修改按钮
         const photoItems = document.querySelectorAll('.photo-wall-item');
         const photoButtons = document.querySelectorAll('.photo-btn');
         const fileInput = document.getElementById('file-input');
+        const githubTokenInput = document.getElementById('github-token');   // GitHub Token 输入框
+        const uploadStatusDiv = document.getElementById('upload-status');    // 远程上传状态提示
         let currentItem = null; // 记录当前点击的照片项
+
+        /** 更新远程上传状态文案 */
+        function setUploadStatus(text, color) {
+            uploadStatusDiv.textContent = text;
+            uploadStatusDiv.style.color = color;
+        }
 
         /**
          * 页面加载时，从 IndexedDB 读取已保存的图片并显示
@@ -327,11 +503,27 @@
             // 2. 持久化保存到 IndexedDB，使 index.html 也能同步显示
             try {
                 await savePhoto(photoId, file, file.name);
-                alert(`照片${parseInt(idx) + 1} 已成功替换并永久保存！\nindex.html 中的对应位置将同步更新。`);
             } catch (err) {
-                console.error('保存失败：', err);
-                alert('保存失败，请重试。');
+                console.error('本地保存失败：', err);
+                alert('本地保存失败，请重试。');
+                return;
             }
+
+            // 3. 若填写了 GitHub Token，则同步上传到远程仓库（融合自 p.html）
+            const token = githubTokenInput.value.trim();
+            if (token.startsWith('ghp_')) {
+                const remotePath = GITHUB_PATH_MAP[parseInt(idx)];
+                try {
+                    await uploadToGithub(token, remotePath, file, setUploadStatus);
+                } catch (err) {
+                    setUploadStatus("❌ 远程同步发生错误：" + err, "red");
+                    console.error(err);
+                }
+            } else {
+                setUploadStatus("ℹ️ 未填写 Token，仅本地保存，未上传远程。", "#888");
+            }
+
+            alert(`照片${parseInt(idx) + 1} 已成功替换并本地保存！\nindex.html 中的对应位置将同步更新。`);
         });
 
         // 导航菜单项点击切换 active 状态
