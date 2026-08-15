@@ -561,6 +561,8 @@
             .profile-card{ width:90%; height:auto; min-height:280px; }
         }
     </style>
+    <!-- 引入共享的图片管理模块（IndexedDB 持久化存储），用于同步 admin.html 中替换的照片 -->
+    <script src="photo-manager.js"></script>
 </head>
 
 <!-- ------------------------------------------------------------------------------------------------------------ -->
@@ -581,6 +583,7 @@
                 <a href="index.html">首页</a>
                 <a href="about.html">关于我</a>
                 <a href="project.html">我的项目</a>
+                <a href="photo.html">我的精选照片</a>
                 <div class="nav-item">
                     联系我
                     <ul class="dropdown-menu" aria-label="联系我下拉菜单">
@@ -598,7 +601,7 @@
     <main class="site-main">
         <div class="layout">
             <div class="left-column">
-                <aside class="profile-card" aria-label="个人信息卡">
+                <aside class="profile-card" aria-label="个人信息卡" onclick="window.location.href='admin.html'" style="cursor:pointer">
                     <img src="image/touxiang.png" alt="头像占位" class="avatar">
                     <h2>伊教</h2>
                     <p>
@@ -841,6 +844,25 @@
             renderCalendar(activeYear, activeMonth);
             updateTodayScheduleCard();
         });
+
+        // ===== 图片同步模块：从 IndexedDB 读取管理员替换的照片 =====
+        // 引入 photo-manager.js 后，遍历照片墙，用持久化的图片替换默认图片
+        (async function syncPhotosFromAdmin() {
+            const photoItems = document.querySelectorAll('.photo-wall-frame .photo-wall-item');
+            for (let i = 0; i < photoItems.length; i++) {
+                const photoId = 'photo-' + i;   // 与 admin.html 保持一致的 id 规则
+                try {
+                    const record = await getPhoto(photoId);
+                    if (record) {
+                        // 存在管理员保存的图片，替换默认图片
+                        const imgEl = photoItems[i].querySelector('img');
+                        imgEl.src = URL.createObjectURL(record.blob);
+                    }
+                } catch (err) {
+                    console.error('同步图片失败：', photoId, err);
+                }
+            }
+        })();
     </script>
 </body>
 </html>

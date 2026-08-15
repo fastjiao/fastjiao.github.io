@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>lovejiao管理平台</title>
+    <style>
+        /* 页面基础样式 */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+            background: #f5f7fa;
+        }
+
+        /* 顶部标题样式 - 100px 优设标题黑，黑色，水平居中 */
+        .title {
+            font-size: 100px;              /* 字体大小 100px */
+            font-family: "优设标题黑";      /* 字体样式：优设标题黑 */
+            color: black;                   /* 字体颜色：黑色 */
+            text-align: center;             /* 水平居中 */
+            margin: 0;
+            padding: 20px 0;
+            background: #f5f7fa;            /* 标题背景色 */
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        /* 主体布局：左侧导航 + 右侧内容区 */
+        .layout {
+            display: flex;
+            min-height: calc(100vh - 160px);
+        }
+
+        /* 左侧导航栏 - 颜色 #1B6ACE */
+        .sidebar {
+            width: 220px;
+            background: #1B6ACE;            /* 导航栏背景色 */
+            color: #fff;
+            padding: 20px 0;
+            flex-shrink: 0;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* 导航菜单项 */
+        .sidebar-menu li {
+            padding: 16px 24px;
+            cursor: pointer;
+            font-size: 18px;
+            transition: background 150ms ease;
+            border-left: 4px solid transparent;
+        }
+
+        /* 导航菜单项悬停效果 */
+        .sidebar-menu li:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        /* 导航菜单项选中状态 */
+        .sidebar-menu li.active {
+            background: rgba(255, 255, 255, 0.2);
+            border-left-color: #fff;
+            font-weight: bold;
+        }
+
+        /* 右侧内容区 */
+        .content {
+            flex: 1;
+            padding: 30px;
+            background: #f5f7fa;
+        }
+
+        /* 内容区标题 */
+        .content h2 {
+            margin-top: 0;
+            color: #333;
+        }
+
+        /* 照片墙大块容器 - "首页图片管理" */
+        .photo-wall-frame {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            width: 1000px;                 /* 大块总宽度 1000px */
+        }
+
+        /* 大块标题 - "首页图片管理" */
+        .photo-block-title {
+            font-size: 22px;
+            font-weight: bold;
+            color: #333;
+            margin: 0 0 8px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #1B6ACE;
+        }
+
+        /* 单个照片项 - 1000px × 100px，左侧预览 + 右侧按钮 */
+        .photo-wall-item {
+            width: 1000px;                 /* 块宽度 1000px */
+            height: 100px;                 /* 块高度 100px */
+            display: flex;
+            align-items: center;
+            background: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* 照片序号标签 */
+        .photo-label {
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            background: rgba(27, 106, 206, 0.9);
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 12px;
+            z-index: 2;
+        }
+
+        /* 左侧图片预览区域 - 高度固定，宽度根据图片宽高比自适应 */
+        .photo-preview {
+            height: 100px;                 /* 预览区高度固定 100px */
+            flex-shrink: 0;
+            background: #f4eee7;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            align-items: center;
+        }
+
+        /* 图片完整显示 - 高度固定，宽度按比例自适应，不裁剪 */
+        .photo-preview img {
+            display: block;
+            height: 100px;                 /* 高度固定 100px */
+            width: auto;                   /* 宽度根据高度按比例自适应 */
+            object-fit: contain;           /* 完整显示图片，不裁剪 */
+        }
+
+        /* 中间信息区域 - 显示文件名等信息 */
+        .photo-info {
+            flex: 1;
+            padding: 0 20px;
+            color: #555;
+            font-size: 14px;
+        }
+
+        /* 右侧修改按钮 */
+        .photo-btn {
+            margin-right: 20px;
+            padding: 10px 24px;
+            background: #1B6ACE;
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: background 150ms ease, transform 150ms ease;
+            flex-shrink: 0;
+        }
+
+        /* 修改按钮悬停效果 */
+        .photo-btn:hover {
+            background: #1559a8;
+            transform: translateY(-1px);
+        }
+
+        /* 隐藏的文件输入框 - 用于选择图片 */
+        .file-input-hidden {
+            display: none;
+        }
+
+        /* 操作提示信息 */
+        .tip {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+            padding: 10px 14px;
+            background: #eef4fb;
+            border-left: 4px solid #1B6ACE;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部标题 -->
+    <div class="title">lovejiao管理平台</div>
+
+    <!-- 主体布局 -->
+    <!-- 左侧内容区 -->
+    <div class="layout">
+        <nav class="sidebar">
+            <ul class="sidebar-menu">
+                <li data-target="back-home">返回首页</li>
+                <li class="active" data-target="photo-panel">管理照片</li>
+            </ul>
+        </nav>
+
+        <!-- 右侧内容区 -->
+        <main class="content">
+            <!-- 管理照片面板 -->
+            <section id="photo-panel">
+                <h2>管理照片</h2>
+                <div class="tip">
+                    提示：点击每行右侧的"修改图片"按钮可选择新图片，仅支持图像文件。
+                </div>
+                <!-- 首页图片管理大块 - 包含4张照片 -->
+                <div class="photo-wall-frame">
+                    <div class="photo-block-title">首页图片管理</div>
+
+                    <!-- 单张照片块：左侧预览 + 右侧修改按钮 -->
+                    <div class="photo-wall-item" data-index="0">
+                        <span class="photo-label">照片1</span>
+                        <div class="photo-preview">
+                            <img src="image/xzssbz.png" alt="照片1">
+                        </div>
+                        <div class="photo-info">照片1 - 首页照片墙第1张</div>
+                        <button class="photo-btn" type="button">修改图片</button>
+                    </div>
+
+                    <div class="photo-wall-item" data-index="1">
+                        <span class="photo-label">照片2</span>
+                        <div class="photo-preview">
+                            <img src="image/pxzz.jpg" alt="照片2">
+                        </div>
+                        <div class="photo-info">照片2 - 首页照片墙第2张</div>
+                        <button class="photo-btn" type="button">修改图片</button>
+                    </div>
+
+                    <div class="photo-wall-item" data-index="2">
+                        <span class="photo-label">照片3</span>
+                        <div class="photo-preview">
+                            <img src="image/default.png" alt="照片3">
+                        </div>
+                        <div class="photo-info">照片3 - 首页照片墙第3张</div>
+                        <button class="photo-btn" type="button">修改图片</button>
+                    </div>
+
+                    <div class="photo-wall-item" data-index="3">
+                        <span class="photo-label">照片4</span>
+                        <div class="photo-preview">
+                            <img src="image/default.png" alt="照片4">
+                        </div>
+                        <div class="photo-info">照片4 - 首页照片墙第4张</div>
+                        <button class="photo-btn" type="button">修改图片</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- 隐藏的文件输入框 - 仅支持图像文件 -->
+    <input type="file" id="file-input" class="file-input-hidden" accept="image/*">
+
+    <!-- 引入共享的图片管理模块（IndexedDB 持久化存储） -->
+    <script src="photo-manager.js"></script>
+    <script>
+        // 获取所有照片项与修改按钮
+        const photoItems = document.querySelectorAll('.photo-wall-item');
+        const photoButtons = document.querySelectorAll('.photo-btn');
+        const fileInput = document.getElementById('file-input');
+        let currentItem = null; // 记录当前点击的照片项
+
+        /**
+         * 页面加载时，从 IndexedDB 读取已保存的图片并显示
+         * 这样管理员可以看到上次替换后的图片
+         */
+        async function loadSavedPhotos() {
+            for (const item of photoItems) {
+                const idx = item.dataset.index;
+                const photoId = 'photo-' + idx;   // 与 index.html 保持一致的 id 规则
+                try {
+                    const record = await getPhoto(photoId);
+                    if (record) {
+                        // 存在已保存的图片，显示它
+                        const imgEl = item.querySelector('img');
+                        imgEl.src = URL.createObjectURL(record.blob);
+                        // 更新信息区显示的文件名
+                        const infoEl = item.querySelector('.photo-info');
+                        infoEl.textContent = `照片${parseInt(idx) + 1} - ${record.fileName}（已修改）`;
+                    }
+                } catch (err) {
+                    console.error('读取图片失败：', photoId, err);
+                }
+            }
+        }
+
+        // 为每个修改按钮绑定点击事件 - 弹出文件选择
+        photoButtons.forEach((btn, i) => {
+            btn.addEventListener('click', (e) => {
+                e.stopPropagation();              // 阻止事件冒泡
+                currentItem = photoItems[i];       // 记录当前点击的照片项
+                fileInput.value = '';              // 清空上次选择
+                fileInput.click();                 // 触发文件选择对话框
+            });
+        });
+
+        // 文件选择后的处理 - 替换原本的照片并持久化保存
+        fileInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file || !currentItem) return;
+
+            // 校验是否为图像文件
+            if (!file.type.startsWith('image/')) {
+                alert('仅支持选择图像文件！');
+                return;
+            }
+
+            const idx = currentItem.dataset.index;
+            const photoId = 'photo-' + idx;     // 图片唯一标识
+
+            // 1. 前端立即替换显示
+            const imgUrl = URL.createObjectURL(file);
+            const imgEl = currentItem.querySelector('img');
+            imgEl.src = imgUrl;
+
+            // 更新信息区显示新文件名
+            const infoEl = currentItem.querySelector('.photo-info');
+            infoEl.textContent = `照片${parseInt(idx) + 1} - ${file.name}（已修改）`;
+
+            // 2. 持久化保存到 IndexedDB，使 index.html 也能同步显示
+            try {
+                await savePhoto(photoId, file, file.name);
+                alert(`照片${parseInt(idx) + 1} 已成功替换并永久保存！\nindex.html 中的对应位置将同步更新。`);
+            } catch (err) {
+                console.error('保存失败：', err);
+                alert('保存失败，请重试。');
+            }
+        });
+
+        // 导航菜单项点击切换 active 状态
+        const menuItems = document.querySelectorAll('.sidebar-menu li');
+        menuItems.forEach(li => {
+            li.addEventListener('click', () => {
+                // "返回首页"特殊处理 - 直接跳转 index.html
+                if (li.dataset.target === 'back-home') {
+                    window.location.href = 'index.html';
+                    return;
+                }
+                menuItems.forEach(x => x.classList.remove('active'));
+                li.classList.add('active');
+            });
+        });
+
+        // 登录状态校验 - 未登录则跳回登录页
+        if (sessionStorage.getItem('lovejiao_admin_logged_in') !== 'true') {
+            window.location.href = 'admin.html';
+        }
+
+        // 页面加载时读取已保存的图片
+        loadSavedPhotos();
+    </script>
+</body>
+</html>
