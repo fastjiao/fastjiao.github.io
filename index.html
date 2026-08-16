@@ -112,8 +112,8 @@
             position:relative;
         }
 
-        .nav-links a,
-        .nav-links .nav-item > a{
+        .nav-links a:not(.nav-link),
+        .nav-links .nav-item > a:not(.nav-link){
             color: var(--glass-text);
             text-decoration:none;
             padding:0.35rem 0.5rem;
@@ -123,13 +123,57 @@
             display:inline-block;
         }
 
-        .nav-links a:hover,
-        .nav-links a:focus,
-        .nav-links .nav-item:hover > a,
-        .nav-links .nav-item:focus-within > a{
-            color: #061126;
-            background: rgba(255,255,255,0.85);
-            transform: translateY(-1px);
+        /* ===== 导航链接效果（依据 t.html 意见融合） ===== */
+        /* 默认半透明白色文字 */
+        .nav-link {
+            position: relative;
+            color: rgba(255, 255, 255, 0.85);   /* 默认稍微暗一点点的白 */
+            text-decoration: none;
+            padding: 8px 16px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.96rem;                 /* 与原导航字号保持一致 */
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        /* 鼠标悬停时的文字变化 */
+        .nav-link:hover {
+            color: #ffffff;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.6);   /* 轻微的文字发光 */
+        }
+
+        /* 使用伪元素制作底部渐变下划线 */
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            /* 使用契合背景的蓝绿渐变色 */
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border-radius: 2px;
+            box-shadow: 0 0 5px rgba(79, 172, 254, 0.5);     /* 下划线发光 */
+        }
+
+        /* 悬停时下划线展开 */
+        .nav-link:hover::after {
+            width: 80%;                           /* 不占满 100%，留点呼吸感 */
+        }
+
+        /* 当前激活状态（如本页对应的导航项） */
+        .nav-link.active {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        .nav-link.active::after {
+            display: none;                        /* 激活状态隐藏下划线 */
         }
 
         .nav-links .dropdown-menu{
@@ -580,11 +624,11 @@
         <div class="container">
             <a href="https://www.ljiao.me" class="brand" target="_blank" rel="noopener noreferrer">www.ljiao.me</a>
             <nav class="nav-links" role="navigation" aria-label="主导航">
-                <a href="index.html">首页</a>
-                <a href="about.html">关于我</a>
-                <a href="project.html">我的项目</a>
-                <a href="photo.html">我的精选照片</a>
-                <div class="nav-item">
+                <a href="index.html" class="nav-link active">首页</a>
+                <a href="about.html" class="nav-link">关于我</a>
+                <a href="project.html" class="nav-link">我的项目</a>
+                <a href="photo.html" class="nav-link">我的精选照片</a>
+                <div class="nav-item nav-link">
                     联系我
                     <ul class="dropdown-menu" aria-label="联系我下拉菜单">
                         <li><a href="contact_weixin.html">微信</a></li>

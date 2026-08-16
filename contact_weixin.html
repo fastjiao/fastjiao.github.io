@@ -63,8 +63,8 @@
 
         .nav-links .nav-item{position:relative;}
 
-        .nav-links a,
-        .nav-links .nav-item > a{
+        .nav-links a:not(.nav-link),
+        .nav-links .nav-item > a:not(.nav-link){
             color:#111;
             text-decoration:none;
             padding:0.35rem 0.5rem;
@@ -74,13 +74,47 @@
             display:inline-block;
         }
 
-        .nav-links a:hover,
-        .nav-links a:focus,
-        .nav-links .nav-item:hover > a,
-        .nav-links .nav-item:focus-within > a{
-            color:#061126;
-            background: rgba(0,0,0,0.08);
-            transform: translateY(-1px);
+        /* ===== 导航链接效果（依据 t.html 意见融合，浅色背景自适应版） ===== */
+        .nav-link {
+            position: relative;
+            color: rgba(0, 0, 0, 0.75);            /* 默认深色文字（浅色背景） */
+            text-decoration: none;
+            padding: 8px 16px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.96rem;                    /* 与原导航字号一致 */
+            display: inline-block;
+            cursor: pointer;
+        }
+        .nav-link:hover {
+            color: #000000;
+            text-shadow: 0 0 8px rgba(79, 172, 254, 0.6);   /* 蓝绿发光 */
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);  /* 蓝绿渐变下划线 */
+            transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border-radius: 2px;
+            box-shadow: 0 0 5px rgba(79, 172, 254, 0.5);
+        }
+        .nav-link:hover::after {
+            width: 80%;
+        }
+        .nav-link.active {
+            color: #061126;
+            background: rgba(0, 0, 0, 0.06);
+            border-radius: 20px;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        .nav-link.active::after {
+            display: none;
         }
 
         .nav-links .dropdown-menu{
@@ -153,16 +187,17 @@
         <div class="container">
             <a href="https://www.ljiao.me" class="brand" target="_blank" rel="noopener noreferrer">www.ljiao.me</a>
             <nav class="nav-links" role="navigation" aria-label="主导航">
-                <a href="index.html">首页</a>
-                <a href="about.html">关于我</a>
-                <a href="project.html">我的项目</a>
-                <div class="nav-item">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="about.html" class="nav-link">关于我</a>
+                <a href="project.html" class="nav-link">我的项目</a>
+                <div class="nav-item nav-link active">
                 联系我
                     <ul class="dropdown-menu" aria-label="联系我下拉菜单">
                         <li><a href="contact_weixin.html">微信</a></li>
                         <li><a href="contact_qq.html">QQ</a></li>
                         <li><a href="contact_dy.html">抖音</a></li>
                         <li><a href="contact_xhs.html">小红书</a></li>
+                    </ul>
                 </div>
             </nav>
         </div>
