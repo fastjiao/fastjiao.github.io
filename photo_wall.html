@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <!-- 页面元信息 -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>照片墙 | Lovejiao</title>
+    
+    <!-- 引入样式文件 -->
+    <link rel="stylesheet" href="photo_wall.css">
+</head>
+<body>
+    <!-- 页面主容器 -->
+    <div class="container">
+        <!-- 左侧控制面板 -->
+        <aside class="control-panel">
+            <!-- 标题区域 -->
+            <div class="panel-header">
+                <h1 class="panel-title">照片墙</h1>
+                <p class="panel-subtitle">记录生活中的美好瞬间</p>
+            </div>
+            
+            <!-- 上传按钮区域 -->
+            <div class="upload-section">
+                <button id="uploadBtn" class="btn btn-primary">
+                    贴一张照片
+                </button>
+                <input type="file" id="fileInput" accept="image/*" multiple style="display: none;">
+            </div>
+            
+            <!-- 视图切换标签 -->
+            <div class="view-tabs">
+                <span class="tab active" data-mode="photo_wall">照片墙</span>
+                <span class="tab" data-mode="shelf">书架</span>
+            </div>
+            
+            <!-- 背景设置区域 -->
+            <div class="background-section">
+                <button id="changeBgBtn" class="btn btn-secondary">
+                    更换墙面背景
+                </button>
+                <div id="colorPicker" class="color-picker" style="display: none;">
+                    <!-- 颜色选项，由JS动态生成 -->
+                </div>
+                <button id="resetBgBtn" class="btn btn-link">
+                    <!-- 恢复默认墙面 -->
+                </button>
+            </div>
+            
+            <!-- 功能区 - 新增（替代使用提示） -->
+            <div class="function-section">
+                <button id="homeBtn" class="btn btn-home">
+                    返回首页
+                </button>
+            </div>
+            
+            <!-- 底部状态栏 -->
+            <div class="panel-footer">
+                <span id="photoCount" class="photo-count">
+                    <!-- 已贴 0 张照片 -->
+                </span>
+            </div>
+        </aside>
+        
+        <!-- 右侧照片墙主区域 -->
+        <main id="photoWall" class="photo-wall">
+            <!-- 照片卡片，由JS动态生成 -->
+        </main>
+    </div>
+    
+    <!-- 文字编辑弹窗 -->
+    <div id="editModal" class="edit-modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>编辑文字说明</h3>
+                <span id="closeModal" class="close-btn">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="text" id="captionInput" class="caption-input" maxlength="50" placeholder="请输入文字说明（最多50字）">
+                <span id="charCount" class="char-count">0/50</span>
+            </div>
+            <div class="modal-footer">
+                <button id="cancelEdit" class="btn btn-secondary">取消</button>
+                <button id="confirmEdit" class="btn btn-primary">确认</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 右键删除菜单 -->
+    <div id="contextMenu" class="context-menu" style="display: none;">
+        <div class="menu-item" id="deleteOption">
+            删除照片
+        </div>
+    </div>
+    
+    <!-- 提示弹窗（Toast） -->
+    <div id="toast" class="toast" style="display: none;"></div>
+    
+    <!-- 引入JavaScript文件 -->
+    <script src="photo_wall.js" defer></script>
+</body>
+</html>

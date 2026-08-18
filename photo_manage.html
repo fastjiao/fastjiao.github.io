@@ -31,13 +31,27 @@
             min-height: calc(100vh - 160px);
         }
 
-        /* 左侧导航栏 - 颜色 #1B6ACE */
+        /* 左侧导航栏 - 悬浮岛式（四周留白 + 圆角 + 阴影 + 悬浮固定） */
         .sidebar {
             width: 220px;
             background: #1B6ACE;            /* 导航栏背景色 */
             color: #fff;
             padding: 20px 0;
             flex-shrink: 0;
+            /* 悬浮岛式效果 */
+            margin: 20px;                   /* 四周留白 */
+            border-radius: 16px;            /* 圆角 */
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);  /* 悬浮阴影 */
+            align-self: flex-start;         /* 顶部对齐，不拉伸全高，呈岛屿状 */
+            position: sticky;               /* 滚动时悬浮固定 */
+            top: 20px;                      /* 距视口顶部留白 */
+            overflow: hidden;               /* 裁剪菜单悬停背景以贴合圆角 */
+            transition: box-shadow 200ms ease;
+        }
+
+        /* 侧边栏悬停时阴影加深，增强悬浮感 */
+        .sidebar:hover {
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.18), 0 4px 10px rgba(0, 0, 0, 0.10);
         }
 
         .sidebar-menu {
