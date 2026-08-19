@@ -437,19 +437,46 @@ body {
 
 /* ============================================
    Toast提示样式 - 已移至页面上方
+   融合 temp.css 美化样式: 圆角、渐变、柔和阴影、字体优化
    ============================================ */
 .toast {
+    /* 布局定位 - 居中悬浮于页面顶部 */
     position: fixed;
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    padding: 12px 24px;
-    border-radius: 4px;
-    font-size: 14px;
-    color: #FFFFFF;
     z-index: 2000;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+    /* 圆角 - 来源 temp.css */
+    border-radius: 12px;
+
+    /* 内边距 - 来源 temp.css (16px 32px) */
+    padding: 16px 32px;
+
+    /* 文字样式 - 来源 temp.css */
+    color: #FFFFFF;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-align: center;
+    display: inline-block;
+
+    /* 默认背景渐变 (浅橙色 - 与主题色呼应) */
+    background: linear-gradient(135deg, #FFB088 0%, #FF6F3D 100%);
+
+    /* 柔和阴影 - 带颜色倾向 (来源 temp.css) */
+    box-shadow: 0 8px 24px rgba(255, 111, 61, 0.3);
+
+    /* 微交互动画 */
+    transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.3s ease;
     animation: slideDown 0.3s ease-out;
+}
+
+/* 悬停时轻微上浮 - 增强交互感 */
+.toast:hover {
+    transform: translateX(-50%) translateY(-2px);
+    box-shadow: 0 12px 28px rgba(255, 111, 61, 0.35);
 }
 
 @keyframes slideDown {
@@ -463,12 +490,24 @@ body {
     }
 }
 
+/* 成功状态 - 浅绿色渐变 (来源 temp.css 配色) */
 .toast.success {
-    background-color: var(--color-success);
+    background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%);
+    box-shadow: 0 8px 24px rgba(86, 171, 47, 0.3);
 }
 
+.toast.success:hover {
+    box-shadow: 0 12px 28px rgba(86, 171, 47, 0.35);
+}
+
+/* 错误状态 - 浅红色渐变 (与成功状态呼应) */
 .toast.error {
-    background-color: var(--color-error);
+    background: linear-gradient(135deg, #FF8A80 0%, #E53935 100%);
+    box-shadow: 0 8px 24px rgba(229, 57, 53, 0.3);
+}
+
+.toast.error:hover {
+    box-shadow: 0 12px 28px rgba(229, 57, 53, 0.35);
 }
 
 /* ============================================
