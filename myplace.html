@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>我的空间</title>
+    <style>
+
+        /* 全局 CSS 变量，定义字体、毛玻璃背景、边框和文本颜色（复刻自 index.html） */
+        :root{
+            --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --glass-bg: rgba(255,255,255,0.12);
+            --glass-border: rgba(255,255,255,0.18);
+            --glass-text: #fff;
+            --accent: #A1C4F6;
+            --accent-strong: #80a9f0;
+            /* 卡片专用变量 */
+            --card-bg: #fff5c0;       /* 卡片统一背景色 */
+            --card-gap: 20px;         /* 卡片间距 */
+        }
+
+        /* 使用 border-box 盒模型，便于布局计算 */
+        *{box-sizing:border-box}
+        body{
+            margin:0;
+            font-family: var(--font);
+            color:var(--glass-text);
+            -webkit-font-smoothing:antialiased;
+            -moz-osx-font-smoothing:grayscale;
+            min-height:100vh;
+            position:relative;
+            overflow-x:hidden;
+        }
+
+        /* 页面背景 */
+        body{
+            background-image: url('image/myplace.png');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-color: #ffffff; /* 降级纯色，图片加载失败时兜底 */
+        }
+
+        /* 导航栏样式 */
+        .site-header{
+            width:100%;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            position:sticky;
+            top:0;
+            left:0;
+            right:0;
+            z-index:100;
+            margin:0;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius:0;
+            box-shadow: 0 8px 30px rgba(2,6,23,0.45);
+        }
+        .site-header .container{
+            display:flex;
+            align-items:center;
+            justify-content:space-between;
+            gap:1rem;
+            padding:0.75rem 1rem;
+            max-width:1200px;
+            margin:0 auto;
+        }
+
+        .brand{
+            font-weight:700;
+            font-size:1.05rem;
+            color:var(--glass-text);
+            text-decoration:none;
+        }
+
+        .nav-links{
+            display:flex;
+            gap:1rem;
+            align-items:center;
+            flex-wrap:wrap; /* 窄屏时允许换行 */
+        }
+
+        .nav-links .nav-item{
+            position:relative;
+        }
+
+        .nav-links a:not(.nav-link),
+        .nav-links .nav-item > a:not(.nav-link){
+            color: var(--glass-text);
+            text-decoration:none;
+            padding:0.35rem 0.5rem;
+            border-radius:6px;
+            transition: color 150ms ease, background 150ms ease, transform 150ms ease;
+            font-size:0.96rem;
+            display:inline-block;
+        }
+
+        /* 默认半透明白色文字 */
+        .nav-link {
+            position: relative;
+            color: rgba(255, 255, 255, 0.85);
+            text-decoration: none;
+            padding: 8px 16px;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            font-size: 0.96rem;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        /* 鼠标悬停时的文字变化 */
+        .nav-link:hover {
+            color: #ffffff;
+            text-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
+        }
+
+        /* 使用伪元素制作底部渐变下划线 */
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+            transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            border-radius: 2px;
+            box-shadow: 0 0 5px rgba(79, 172, 254, 0.5);
+        }
+
+        /* 悬停时下划线展开 */
+        .nav-link:hover::after {
+            width: 80%;
+        }
+
+        /* 当前激活状态 */
+        .nav-link.active {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 20px;
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+        }
+        .nav-link.active::after {
+            display: none;
+        }
+
+        .nav-links .dropdown-menu{
+            position:absolute;
+            top:calc(100% + 0.35rem);
+            left:0;
+            min-width:110px;
+            margin:0;
+            padding:0.35rem;
+            list-style:none;
+            background: #ffffff;
+            border: 1px solid var(--glass-border);
+            border-radius:8px;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 8px 24px rgba(2,6,23,0.3);
+            opacity:0;
+            visibility:hidden;
+            transform:translateY(-6px);
+            transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease, all 1s ease;
+            pointer-events:none;
+            z-index:20;
+        }
+
+        .nav-links .nav-item:hover .dropdown-menu,
+        .nav-links .nav-item:focus-within .dropdown-menu{
+            opacity:1;
+            visibility:visible;
+            transform:translateY(0);
+            pointer-events:auto;
+        }
+
+        .nav-links .dropdown-menu a{
+            display:block;
+            padding:0.45rem 0.6rem;
+            border-radius:6px;
+            white-space:nowrap;
+            color:#000000;
+        }
+
+        .nav-links .dropdown-menu a:hover,
+        .nav-links .dropdown-menu a:focus{
+            background: rgba(255,255,255,0.85);
+            color:#061126;
+        }
+
+        /* ===== 卡片通用样式 ===== */
+        .myplace-card{
+            position: absolute;
+            width: 250px;
+            height: 150px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 12px 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        .myplace-card-introduce{
+            position: absolute;
+            width: 300px;
+            height: 150px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 12px 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            overflow: hidden;
+            padding: 40px -5px;
+        }
+        .myplace-card-introduce-en{
+            font-size: 20px;
+            text-align: center;
+            color: #000000;
+        }
+        .myplace-card-introduce-cn{
+            font-size: 13px;
+            color: #000000;
+            text-align: center;
+            padding: 20px;
+        }
+        .myplace-card-title{
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+            text-align: center;
+        }
+        .myplace-card-body{
+            font-size: 13px;
+            line-height: 1.5;
+            color: #444;
+        }
+        .info-card{
+            position: absolute;
+            width: 250px;
+            height: auto;
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 12px 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            overflow: hidden;
+        }
+        .info-card-content{
+            text-align: center;
+            font-size: 20px;
+        }
+    </style>
+</head>
+
+
+<body>
+
+    <!-- 页面导航 -->
+    <header class="site-header" role="banner">
+        <div class="container">
+            <a href="https://www.ljiao.me" class="brand" target="_blank" rel="noopener noreferrer">www.ljiao.me</a>
+            <nav class="nav-links" role="navigation" aria-label="主导航">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="about.html" class="nav-link">关于我</a>
+                <a href="project.html" class="nav-link">我的项目</a>
+                <a href="myplace.html" class="nav-link">我的空间</a>
+                <div class="nav-item nav-link">
+                    联系我
+                    <ul class="dropdown-menu" aria-label="联系我下拉菜单">
+                        <li><a href="contact_weixin.html">微信</a></li>
+                        <li><a href="contact_qq.html">QQ</a></li>
+                        <li><a href="contact_xhs.html">小红书</a></li>
+                        <li><a href="contact_dy.html">抖音</a></li>
+                    </ul>
+                </div>
+
+            </nav>
+        </div>
+    </header>
+
+    <!-- 介绍卡片 -->
+    <div class="myplace-card-introduce myplace-card--intro" style="left: 100px; top: 100px;">
+        
+        <div class="myplace-card-introduce-en">
+            We don't know what we've got until we lose it.
+        </div>
+        <div class="myplace-card-introduce-cn">
+            我们直到失去才知道自己拥有什么。
+        </div>
+    </div>
+
+    <!-- 信息卡片--><!-- 左侧第二个-->
+    <div class="info-card" style="left: 120px; top: 270px;">
+        <h3 class="myplace-card-title">信息</h3>
+        <div class="myplace-card-body">
+            <div class="info-card-content">发表一篇说说</div>
+        </div>
+    </div>
+
+    <!-- 添加卡片-->
+    <div class="myplace-card myplace-card--add" style="left: 415px; top: 100px;">
+        <h3 class="myplace-card-title">添加</h3>
+        <div class="myplace-card-body"><!-- 占位：后续开发 --></div>
+    </div>
+
+</body>
+</html>
