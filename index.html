@@ -5,84 +5,78 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Lovejiao</title>
     <style>
-        /* 全局 CSS 变量，定义字体、毛玻璃背景、边框和文本颜色 */
+        /* ===== 全局 CSS 变量（Linear Aesthetic 暗色精密主题） ===== */
         :root{
-            --font: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            --glass-bg: rgba(255,255,255,0.12);
-            --glass-border: rgba(255,255,255,0.18);
-            --glass-text: #fff;
-            --accent: #A1C4F6;
-            --accent-strong: #80a9f0;
+            --font: "Inter", "Geist Sans", "SF Pro Display", system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei UI", sans-serif;
+            --canvas: #050506;
+            --surface: rgba(255,255,255,0.04);
+            --glass-bg: rgba(255,255,255,0.045);
+            --glass-border: rgba(255,255,255,0.08);
+            --text-primary: #EDEDEF;
+            --text-secondary: #8A8F98;
+            --accent: #6366F1;
+            --accent-glow: #A855F7;
+            --accent-weak: rgba(99,102,241,0.18);
         }
 
         /* 使用 border-box 盒模型，便于布局计算 */
         *{box-sizing:border-box}
+
+        /* 页面主体：近黑底色 + Inter/Geist 字体系列 */
         body{
-            /* 页面主体背景与字体样式 */
             margin:0;
             font-family: var(--font);
-            background: transparent;
-            color:var(--glass-text);
-            -webkit-font-smoothing:antialiased;
-            -moz-osx-font-smoothing:grayscale;
-            min-height:100vh;
-            padding-bottom:40px;
-            position:relative;
-            overflow-x:hidden;
+            background: var(--canvas);
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+            padding-bottom: 40px;
+            position: relative;
+            overflow-x: hidden;
         }
+
+        /* ===== 背景视频层 ===== */
         .bg-video{
             position: fixed;
             inset: 0;
             width: 100%;
             height: 100%;
             object-fit: cover;
-            z-index: -2;
+            z-index: -3;
             pointer-events: none;
+            opacity: 0.45;
         }
+
+        /* 暗色叠加层 + 靛蓝/紫色双色环境光晕（Linear 标志性氛围光） */
         body::before{
             content: '';
             position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse 80% 60% at 20% 20%, rgba(99,102,241,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse 60% 80% at 80% 70%, rgba(168,85,247,0.04) 0%, transparent 50%),
+                var(--canvas);
+            pointer-events: none;
+            z-index: -2;
+        }
+
+        /* ===== 顶部导航（Linear 微边框 + 强毛玻璃） ===== */
+        .site-header{
+            width:100%;
+            background: rgba(8,8,8,0.72);
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            position: sticky;
             top: 0;
             left: 0;
             right: 0;
-            bottom: 0;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        /* 顶部导航（毛玻璃效果） */
-        .site-header{
-            width:100%;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            position:sticky;
-            top:0;
-            left:0;
-            right:0;
-            z-index:100;
-            margin:0;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius:0;
-            box-shadow: 0 8px 30px rgba(2,6,23,0.45);
-        }
-        .site-header{
-            width:100%;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            position:sticky;
-            top:0;
-            left:0;
-            right:0;
-            z-index:100;
-            margin:0;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            border-radius:0;
-            box-shadow: 0 8px 30px rgba(2,6,23,0.45);
-            position:relative;
+            z-index: 100;
+            margin: 0;
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-radius: 0;
+            box-shadow: 0 1px 0 rgba(255,255,255,0.04), 0 8px 32px rgba(0,0,0,0.42);
         }
         .site-header .container{
             display:flex;
@@ -95,201 +89,221 @@
         }
 
         .brand{
-            font-weight:700;
-            font-size:1.05rem;
-            color:var(--glass-text);
-            text-decoration:none;
+            font-weight: 700;
+            font-size: 1.05rem;
+            color: var(--text-primary);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+            transition: color 150ms ease;
         }
+        .brand:hover{ color: var(--accent); }
 
         .nav-links{
-            display:flex;
-            gap:1rem;
-            align-items:center;
-            flex-wrap:wrap; /* 窄屏时允许换行 */
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
-        .nav-links .nav-item{
-            position:relative;
-        }
+        .nav-links .nav-item{ position: relative; }
 
         .nav-links a:not(.nav-link),
         .nav-links .nav-item > a:not(.nav-link){
-            color: var(--glass-text);
-            text-decoration:none;
-            padding:0.35rem 0.5rem;
-            border-radius:6px;
-            transition: color 150ms ease, background 150ms ease, transform 150ms ease;
-            font-size:0.96rem;
-            display:inline-block;
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.3rem 0.5rem;
+            border-radius: 6px;
+            transition: color 150ms ease, background 150ms ease;
+            font-size: 0.93rem;
+            display: inline-block;
+            letter-spacing: -0.01em;
+        }
+        .nav-links a:not(.nav-link):hover,
+        .nav-links .nav-item > a:not(.nav-link):hover{
+            color: var(--text-primary);
+            background: rgba(255,255,255,0.06);
         }
 
-        /* ===== 导航链接效果（依据 t.html 意见融合） ===== */
-        /* 默认半透明白色文字 */
+        /* ===== 导航链接（Linear 风格：悬停下划线 + 微弱发光） ===== */
         .nav-link {
             position: relative;
-            color: rgba(255, 255, 255, 0.85);   /* 默认稍微暗一点点的白 */
+            color: var(--text-secondary);
             text-decoration: none;
-            padding: 8px 16px;
-            transition: all 0.3s ease;
+            padding: 6px 14px;
+            transition: color 200ms ease;
             font-weight: 500;
-            font-size: 0.96rem;                 /* 与原导航字号保持一致 */
+            font-size: 0.93rem;
             display: inline-block;
             cursor: pointer;
+            letter-spacing: -0.01em;
         }
-
-        /* 鼠标悬停时的文字变化 */
         .nav-link:hover {
-            color: #ffffff;
-            text-shadow: 0 0 8px rgba(255, 255, 255, 0.6);   /* 轻微的文字发光 */
+            color: var(--text-primary);
         }
 
-        /* 使用伪元素制作底部渐变下划线 */
+        /* 底部渐变下划线：靛蓝到紫色 */
         .nav-link::after {
             content: '';
             position: absolute;
             width: 0;
-            height: 2px;
-            bottom: 0;
+            height: 1.5px;
+            bottom: 2px;
             left: 50%;
             transform: translateX(-50%);
-            /* 使用契合背景的蓝绿渐变色 */
-            background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
-            transition: width 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            border-radius: 2px;
-            box-shadow: 0 0 5px rgba(79, 172, 254, 0.5);     /* 下划线发光 */
+            background: linear-gradient(90deg, #6366F1 0%, #A855F7 100%);
+            border-radius: 1px;
+            transition: width 220ms cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 0 6px rgba(99,102,241,0.45);
         }
+        .nav-link:hover::after { width: 70%; }
 
-        /* 悬停时下划线展开 */
-        .nav-link:hover::after {
-            width: 80%;                           /* 不占满 100%，留点呼吸感 */
-        }
-
-        /* 当前激活状态（如本页对应的导航项） */
+        /* 当前激活状态 */
         .nav-link.active {
-            color: #ffffff;
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 20px;
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
+            color: #FFFFFF;
+            background: rgba(99,102,241,0.14);
+            border-radius: 7px;
+            box-shadow: 0 0 16px rgba(99,102,241,0.12);
         }
-        .nav-link.active::after {
-            display: none;                        /* 激活状态隐藏下划线 */
-        }
+        .nav-link.active::after { display: none; }
 
         .nav-links .dropdown-menu{
-            position:absolute;
-            top:calc(100% + 0.35rem);
-            left:0;
-            min-width:110px;
-            margin:0;
-            padding:0.35rem;
-            list-style:none;
-            background: #ffffff;/* 使用白色背景，确保下拉菜单内容清晰可见 */
-            border: 1px solid var(--glass-border);
-            border-radius:8px;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 8px 24px rgba(2,6,23,0.3);
-            opacity:0;
-            visibility:hidden;
-            transform:translateY(-6px);
-            transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease, all 1s ease;
-            pointer-events:none;
-            z-index:20;
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            left: 0;
+            min-width: 120px;
+            margin: 0;
+            padding: 0.4rem;
+            list-style: none;
+            background: rgba(18,18,20,0.94);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.03);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-4px);
+            transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
+            pointer-events: none;
+            z-index: 20;
         }
-
         .nav-links .nav-item:hover .dropdown-menu,
         .nav-links .nav-item:focus-within .dropdown-menu{
-            opacity:1;
-            visibility:visible;
-            transform:translateY(0);
-            pointer-events:auto;
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            pointer-events: auto;
         }
-
         .nav-links .dropdown-menu a{
-            display:block;
-            padding:0.45rem 0.6rem;
-            border-radius:6px;
-            white-space:nowrap;
-            color:#000000;/* 使用黑色文本，确保下拉菜单内容清晰可见 */
+            display: block;
+            padding: 0.45rem 0.65rem;
+            border-radius: 6px;
+            white-space: nowrap;
+            color: var(--text-secondary);
+            font-size: 0.91rem;
+            transition: background 150ms ease, color 150ms ease;
         }
-
         .nav-links .dropdown-menu a:hover,
         .nav-links .dropdown-menu a:focus{
-            background: rgba(255,255,255,0.85);
-            color:#061126;
+            background: rgba(255,255,255,0.08);
+            color: var(--text-primary);
         }
 
-        /* 页面主体布局：左右固定侧栏和居中内容 */
-        .site-main{ padding:1rem 300px 1rem 440px; max-width:none; width:100%; margin:1rem 0; overflow-x:auto; position:relative; }
+        /* ===== 页面主体布局：左右固定侧栏 + 居中内容 ===== */
+        .site-main{ padding: 1.5rem 300px 1.5rem 440px; max-width: none; width: 100%; margin: 0; overflow-x: auto; position: relative; }
         .site-main .layout{
-            display:flex;
-            justify-content:center;
-            align-items:flex-start;
-            width:100%;
-            position:relative;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            width: 100%;
+            position: relative;
         }
+
         /* 左侧固定栏 */
         .left-column{
-            display:flex;
-            flex-direction:column;
-            gap:1.5rem;
-            position:fixed;
-            left:100px;/*距离左侧像素*/
-            top:80px;/*距离顶部像素*/
-            width:400px;
-            z-index:10;
-        }
-        /* 右侧固定栏 */
-        .right-column{
-            display:flex;
-            flex-direction:column;
-            gap:1.5rem;
-            width:260px;
-            position:fixed;
-            right:100px;/*距离右侧像素*/
-            top:80px;/*距离顶部像素*/
-            z-index:10;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            position: fixed;
+            left: 100px;
+            top: 80px;
+            width: 400px;
+            z-index: 10;
         }
 
-        /* 个人资料卡片 */
-        .profile-card{
-            width:100%;
-            height:auto;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius:12px;
-            padding:20px;
-            display:flex;
-            flex-direction:column;
-            align-items:center;
-            color:var(--glass-text);
-            flex:0 0 400px;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 10px 30px rgba(2,6,23,0.45);
+        /* 右侧固定栏 */
+        .right-column{
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            width: 260px;
+            position: fixed;
+            right: 100px;
+            top: 80px;
+            z-index: 10;
         }
-        .middle-card{
-            /* 个人介绍卡片 */
-            width:550px;
-            height:200px;
-            min-width:320px;
+
+        /* 中间内容栈 */
+        .center-stack{
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            width: 550px;
+            min-width: 320px;
+            position: relative;
+            z-index: 10;
+            margin: 0 auto;
+        }
+
+        /* ===== 个人资料卡片（Linear 微边框 + 微弱环境光） ===== */
+        .profile-card{
+            width: 100%;
+            height: auto;
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            border-radius:24px;
-            padding:24px;
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            color:var(--glass-text);
-            text-align:left;/* 左对齐文本 */
-            font-family: "SimSun", "Songti SC", "NSimSun", serif;
-            font-size:1.1rem;
-            position:relative;
-            margin:0 auto;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 10px 30px rgba(2,6,23,0.35);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: var(--text-primary);
+            flex: 0 0 400px;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 1px 0 rgba(255,255,255,0.03), 0 8px 32px rgba(0,0,0,0.35);
+            position: relative;
+            transition: border-color 220ms ease, box-shadow 220ms ease;
+        }
+        .profile-card:hover{
+            border-color: rgba(255,255,255,0.14);
+            box-shadow: 0 0 48px rgba(99,102,241,0.06), 0 8px 32px rgba(0,0,0,0.35);
+        }
+
+        /* 个人介绍卡片 */
+        .middle-card{
+            width: 550px;
+            height: 200px;
+            min-width: 320px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            text-align: left;
+            font-family: var(--font);
+            font-size: 1.05rem;
+            position: relative;
+            margin: 0 auto;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 1px 0 rgba(255,255,255,0.03), 0 8px 32px rgba(0,0,0,0.35);
+            transition: border-color 220ms ease;
+        }
+        .middle-card:hover{
+            border-color: rgba(255,255,255,0.14);
         }
         .center-stack{
             display:flex;
@@ -301,17 +315,65 @@
             z-index:10;
             margin:0 auto;
         }
-        .photo-wall-card{
-            width:100%;
+.photo-wall-card{
+            width: 100%;
             background: transparent;
-            border: 1px solid transparent;
-            border-radius:24px;
-            padding:24px 24px 28px;
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 24px 24px 28px;
             backdrop-filter: none;
             -webkit-backdrop-filter: none;
-            box-shadow: none;
-            position:relative;
-            overflow:visible;
+            box-shadow: 0 1px 0 rgba(255,255,255,0.03), 0 8px 32px rgba(0,0,0,0.25);
+            position: relative;
+            overflow: visible;
+        }
+        .photo-wall-card::before{
+            content: '';
+            position: absolute;
+            inset: 16px 18px auto;
+            height: 70px;
+            background: transparent;
+            border-radius: 16px;
+            pointer-events: none;
+        }
+        .photo-wall-rope{
+            position: absolute;
+            top: 30px;
+            left: -18px;
+            right: -18px;
+            height: 160px;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .photo-wall-frame{
+            position: relative;
+            z-index: 2;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 44px;
+        }
+        .photo-wall-item{
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid rgba(255,255,255,0.55);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.22);
+            background: #1a1a1e;
+            min-height: 120px;
+            transform: rotate(-2deg);
+            transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+        }
+        .photo-wall-item:nth-child(2n){ transform: rotate(2deg); }
+        .photo-wall-item:hover{
+            transform: rotate(0deg) scale(1.03);
+            border-color: rgba(168,133,247,0.45);
+            box-shadow: 0 6px 24px rgba(99,102,241,0.14);
+        }
+        .photo-wall-item img{
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
         .photo-wall-card::before{
             content:'';
@@ -331,278 +393,250 @@
             pointer-events:none;
             z-index:1;
         }
-        .photo-wall-frame{
-            position:relative;
-            z-index:2;
-            display:grid;
-            grid-template-columns:repeat(2, minmax(0, 1fr));
-            gap:16px;
-            margin-top:44px;
-        }
-        .photo-wall-item{
-            border-radius:16px;
-            overflow:hidden;
-            border:2px solid rgba(255,255,255,0.65);
-            box-shadow:0 10px 20px rgba(0,0,0,0.16);
-            background:#f4eee7;
-            min-height:120px;
-            transform:rotate(-2deg);
-        }
-        .photo-wall-item:nth-child(2n){
-            transform:rotate(2deg);
-        }
-        .photo-wall-item img{
-            display:block;
-            width:100%;
-            height:100%;
-            object-fit:cover;
-        }
+
         .calendar-panel{
-            /* 日历 */
-            width:100%;
-            height:auto;
+            width: 100%;
+            height: auto;
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            border-radius:24px;
-            padding:16px;
-            color:var(--glass-text);
-            flex:0 0 auto;
-            display:flex;
-            flex-direction:column;
-            gap:0.75rem;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 10px 30px rgba(2,6,23,0.35);
-        }
-        /* 日程安排表 */
-        .schedule-card{
-            width:100%;
-            min-height:180px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius:24px;
-            padding:24px;
-            display:flex;
-            flex-direction:column;
-            align-items:center;
-            justify-content:center;
-            text-align:center;
-            color:var(--glass-text);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 10px 30px rgba(2,6,23,0.35);
-        }
-        .schedule-card h3{
-            margin:0 0 0.75rem;
-            font-size:1.35rem;
-        }
-        .schedule-card-body{
-            max-width:420px;
-            display:flex;
-            flex-direction:column;
-            gap:0.5rem;
-            justify-content:center;
-            align-items:center;
-        }
-        .schedule-card-body p{
-            margin:0;
-            color:rgba(255,255,255,0.9);
-            line-height:1.6;
-        }
-        .calendar-panel .schedule-dot{
-            width:8px;
-            height:8px;
-            border-radius:50%;
-            background:#ff6b6b;
-            position:absolute;
-            bottom:8px;
-            left:50%;
-            transform:translateX(-50%);
+            border-radius: 16px;
+            padding: 16px;
+            color: var(--text-primary);
+            flex: 0 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 1px 0 rgba(255,255,255,0.03), 0 8px 32px rgba(0,0,0,0.35);
         }
         .calendar-panel h3{
-            margin:0;
-            font-size:1.75rem;
-            letter-spacing:0.02em;
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
         }
         .calendar-panel .month-year{
-            margin:0.35rem 0 0;
-            color:rgba(255,255,255,0.85);
-            font-size:1rem;
-        }
+            margin: 0.2rem 0 0;            color: var(--text-secondary);            font-size: 0.9rem;        }
         .calendar-panel .calendar-header{
-            display:flex;
-            justify-content:space-between;
-            align-items:flex-start;
-            gap:1rem;
-        }
-        .calendar-panel .calendar-actions{
-            display:flex;
-            gap:0.5rem;
-        }
+            display: flex;            justify-content: space-between;            align-items: flex-start;            gap: 1rem;        }
+        .calendar-panel .calendar-actions{ display: flex; gap: 0.4rem; }
         .calendar-panel .calendar-actions button{
-            width:42px;
-            height:28px;
-            border:none;
-            border-radius:10px;
-            background:rgba(255,255,255,0.1);
-            color:var(--glass-text);
-            cursor:pointer;
-            font-size:0.9rem;
-            transition:background 150ms ease, transform 150ms ease;
+            width: 34px;
+            height: 26px;
+            border: none;
+            border-radius: 7px;
+            background: rgba(255,255,255,0.06);
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 150ms ease, color 150ms ease;
         }
         .calendar-panel .calendar-actions button:hover{
-            background:rgba(255,255,255,0.2);
-            transform:translateY(-1px);
+            background: rgba(255,255,255,0.12);
+            color: var(--text-primary);
         }
         .calendar-panel .calendar-grid{
-            display:grid;
-            grid-template-columns:repeat(7, minmax(0, 1fr));
-            gap:6px;
+            display: grid;
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+            gap: 4px;
         }
         .calendar-panel .calendar-day-name{
-            text-align:center;
-            font-size:0.78rem;
-            color:rgba(255,255,255,0.75);
-            text-transform:uppercase;
-            letter-spacing:0.06em;
-            padding:8px 0 6px;
+            text-align: center;
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 6px 0 4px;
         }
         .calendar-panel .calendar-day{
-            min-height:32px;
-            border-radius:14px;
-            background:rgba(255,255,255,0.08);
-            display:flex;
-            align-items:flex-start;
-            justify-content:flex-end;
-            padding:6px;
-            color:var(--glass-text);
-            position:relative;
-            transition: background 150ms ease, transform 150ms ease;
-            cursor:pointer;
+            min-height: 30px;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.04);
+            display: flex;
+            align-items: flex-start;
+            justify-content: flex-end;
+            padding: 5px;
+            color: var(--text-primary);
+            position: relative;
+            transition: background 150ms ease;
+            cursor: pointer;
         }
         .calendar-panel .calendar-day:hover{
-            background:rgba(255,255,255,0.16);
-            transform:translateY(-1px);
+            background: rgba(255,255,255,0.1);
         }
         .calendar-panel .calendar-day--today{
-            background:rgba(161,196,246,0.25);
-            border:1px solid rgba(161,196,246,0.45);
-            box-shadow:0 0 0 2px rgba(161,196,246,0.15);
+            background: rgba(99,102,241,0.18);
+            border: 1px solid rgba(99,102,241,0.35);
+            box-shadow: 0 0 10px rgba(99,102,241,0.1);
         }
         .calendar-panel .calendar-day--outside{
-            color:rgba(255,255,255,0.55);
+            color: rgba(237,237,239,0.3);
         }
         .calendar-panel .calendar-day span{
-            display:block;
-            font-size:0.78rem;
-            font-weight:700;
-            line-height:1;
+            display: block;
+            font-size: 0.74rem;
+            font-weight: 600;
+            line-height: 1;
         }
         .calendar-panel .calendar-day .schedule-dot{
-            width:8px;
-            height:8px;
-            border-radius:50%;
-            background:#ff6b6b;
-            position:absolute;
-            bottom:8px;
-            left:50%;
-            transform:translateX(-50%);
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .calendar-panel .schedule-dot{
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: var(--accent);
+            position: absolute;
+            bottom: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: 0 0 6px rgba(99,102,241,0.55);
         }
 
-        .nav-links{
-            display:flex;
-            gap:1rem;
-            align-items:center;
-            flex-wrap:wrap; /* 窄屏时允许换行 */
-        }
-
-        /* 响应式：窄屏时堆叠 */
+        /* ===== 响应式布局 ===== */
         @media (max-width:1300px){
-            .site-main{ padding:1rem 1rem 1rem 1rem; }
-            .site-main .layout{ flex-direction:column; align-items:center; }
+            .site-main{ padding: 1.5rem 1rem 1.5rem 1rem; }
+            .site-main .layout{ flex-direction: column; align-items: center; }
             .left-column,
             .right-column,
             .middle-card,
-            .center-stack{ position:static; width:90%; }
-            .calendar-panel{ width:100%; height:auto; min-height:700px; }
-            .profile-card{ width:100%; min-height:280px; }
+            .center-stack{ position: static; width: 90%; }
+            .calendar-panel{ width: 100%; height: auto; min-height: 560px; }
+            .profile-card{ width: 100%; min-height: 280px; }
         }
         @media (max-width:900px){
-            .site-main .layout{ flex-direction:column; align-items:center; }
+            .site-main .layout{ flex-direction: column; align-items: center; }
             .left-column,
             .right-column,
             .middle-card,
-            .center-stack{ position:static; width:90%; }
-            .profile-card{ width:100%; height:auto; min-height:280px; }
+            .center-stack{ position: static; width: 92%; }
+            .profile-card{ width: 100%; height: auto; min-height: 280px; }
         }
-        .profile-card .avatar{
-            width:120px;
-            height:120px;
-            border-radius:50%;
-            object-fit:cover;
-            margin-bottom:1rem;
-            border:3px solid rgba(255,255,255,0.2);
-            background:linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-        }
-        .profile-card h2{ margin:0 0 0.25rem; }
-        .profile-card p{ color:rgba(255,255,255,0.9); line-height:1.5; text-align:center; }
 
+        /* ===== 个人资料卡片细节 ===== */
+        .profile-card .avatar{
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 1rem;
+            border: 2px solid rgba(255,255,255,0.12);
+            background: linear-gradient(135deg, rgba(99,102,241,0.08), rgba(168,85,247,0.04));
+        }
+        .profile-card h2{
+            margin: 0 0 0.25rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        .profile-card p{
+            color: var(--text-secondary);
+            line-height: 1.55;
+            text-align: center;
+            font-size: 0.93rem;
+        }
+
+        /* ===== 项目卡片（Linear 微光扫过效果） ===== */
         .project-card{
-            /* 项目卡片 */
-            width:100%;
-            max-width:400px;
-            height:100px;
+            width: 100%;
+            max-width: 400px;
+            height: 100px;
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
-            border-radius:16px;
-            padding:24px;
-            display:flex;
-            align-items:center;
-            justify-content:space-between;
-            color:var(--glass-text);
-            text-decoration:none;
-            box-shadow: 0 10px 30px rgba(2,6,23,0.35);
-            transition: transform 150ms ease, border-color 150ms ease, background-color 150ms ease;
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            color: var(--text-primary);
+            text-decoration: none;
+            box-shadow: 0 1px 0 rgba(255,255,255,0.03), 0 8px 32px rgba(0,0,0,0.35);
+            transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
         }
+        .project-card::before{
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(120deg, transparent 30%, rgba(255,255,255,0.025) 50%, transparent 70%);
+            transform: translateX(-100%);
+            transition: transform 500ms ease;
+        }
+        .project-card:hover::before{ transform: translateX(100%); }
         .project-card:hover{
-            transform: translateY(-3px);
-            border-color: rgba(255,255,255,0.28);
-            background: rgba(255,255,255,0.16);
+            transform: translateY(-2px);
+            border-color: rgba(99,102,241,0.25);
+            box-shadow: 0 0 32px rgba(99,102,241,0.08), 0 8px 32px rgba(0,0,0,0.35);
         }
         .project-card .project-info{
-            display:flex;
-            flex-direction:column;
-            justify-content:center;
-            gap:0.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 0.5rem;
         }
         .project-card h3{
-            margin:0;
-            font-size:1.35rem;
+            margin: 0;
+            font-size: 1.25rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
         }
         .project-card p{
-            margin:0;
-            color:rgba(255,255,255,0.85);
-            line-height:1.6;
+            margin: 0;
+            color: var(--text-secondary);
+            line-height: 1.55;
+            font-size: 0.91rem;
         }
-        .project-card-icon{
-            /* 箭头大小 */
-            width:20px;
-            height:20px;
-            object-fit:contain;
-            margin-left:24px;
+        .project-jt{
+            margin: 0;
+            font-size: 17px;
         }
 
-        .nav-links{
-            display:flex;
-            gap:1rem;
-            align-items:center;
-            flex-wrap:wrap; /* 窄屏时允许换行 */
+        /* ===== 今日日程卡片 ===== */
+        .schedule-card{
+            width: 100%;
+            min-height: 160px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: var(--text-primary);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 1px 0 rgba(255,255,255,0.03), 0 8px 32px rgba(0,0,0,0.35);
         }
-
-        /* 响应式：窄屏时堆叠 */
-        @media (max-width:900px){
-            .site-main .layout{ flex-direction:column; align-items:center; }
-            .profile-card{ width:90%; height:auto; min-height:280px; }
+        .schedule-card h3{
+            margin: 0 0 0.6rem;
+            font-size: 1.05rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+        }
+        .schedule-card-body{
+            max-width: 420px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.35rem;
+            justify-content: center;
+            align-items: center;
+        }
+        .schedule-card-body p{
+            margin: 0;
+            color: var(--text-secondary);
+            line-height: 1.55;
+            font-size: 0.91rem;
         }
     </style>
     <!-- 引入共享的图片管理模块（IndexedDB 持久化存储），用于同步 admin.html 中替换的照片 -->
@@ -626,7 +660,7 @@
             <nav class="nav-links" role="navigation" aria-label="主导航">
                 <a href="index.html" class="nav-link active">首页</a>
                 <a href="about.html" class="nav-link">关于我</a>
-                <a href="project.html" class="nav-link">我的项目</a>
+                <a href="web_ku.html" class="nav-link">网页库</a>
                 <a href="myplace.html" class="nav-link">我的空间</a>
                 <div class="nav-item nav-link">
                     联系我
@@ -649,14 +683,16 @@
                     <img src="image/touxiang.png" alt="头像占位" class="avatar">
                     <h2>伊教</h2>
                     <p>
-                        你好，我是伊教。这里是我的个人博客，分享开发与生活点滴。
+                        你好👋，我是伊教。这里是我的个人博客，分享开发与生活点滴🫣。
                     </p>
                 </aside>
                 <a href="project.html" class="project-card" aria-label="我的项目卡片">
                     <div class="project-info">
-                        <h3>我的项目</h3>
+                        <h3>我的项目&nbsp;&nbsp;🕭</h3>
                     </div>
-                    <img src="image/jt.png" alt="点击前进" class="project-card-icon" />
+                    <div class="project-jt">
+                        <h3>→</h3>
+                    </div>
                 </a>
             </div>
             <div class="center-stack">

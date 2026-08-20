@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网页库</title>
+    <style>
+        /* ========== 全局重置 ========== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000000;
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* ========== 顶部导航栏 ========== */
+        .navbar {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* 返回按钮 */
+        .nav-back {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            cursor: pointer;
+            color: #A0A0A0;
+            font-size: 18px;
+            text-decoration: none;
+            transition: color 0.2s;
+            user-select: none;
+        }
+
+        .nav-back:hover {
+            color: #ffffff;
+        }
+
+        /* 面包屑导航 */
+        .nav-breadcrumb {
+            font-size: 14px;
+            color: #A0A0A0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .nav-breadcrumb span {
+            color: #ffffff;
+            font-weight: 600;
+        }
+
+        /* 导航右侧按钮组 */
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            font-size: 13px;
+            color: #A0A0A0;
+            background: transparent;
+            border: 1px solid #2D2D2D;
+            border-radius: 6px;
+            padding: 7px 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .nav-btn:hover {
+            color: #ffffff;
+            border-color: #555555;
+        }
+
+        /* 危险按钮（清空计数） */
+        .nav-btn.danger {
+            color: #E57373;
+            border-color: #3D2020;
+        }
+
+        .nav-btn.danger:hover {
+            color: #EF9A9A;
+            border-color: #5D3030;
+        }
+
+        /* ========== 主内容区 ========== */
+        .main-content {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 24px;
+        }
+
+        /* 页面标题区 */
+        .page-header {
+            margin-bottom: 32px;
+        }
+
+        .page-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 8px;
+        }
+
+        .page-desc {
+            font-size: 14px;
+            color: #A0A0A0;
+            line-height: 1.6;
+        }
+
+        /* ========== 链接列表 ========== */
+        /* 列表表头 */
+        .list-header {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            border-bottom: 1px solid #2D2D2D;
+        }
+
+        .list-header-name {
+            flex: 1;
+            font-size: 12px;
+            color: #A0A0A0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .list-header-count {
+            width: 80px;
+            text-align: right;
+            font-size: 12px;
+            color: #A0A0A0;
+        }
+
+        .links-list {
+            list-style: none;
+        }
+
+        /* 单行链接 */
+        .link-row {
+            display: flex;
+            align-items: center;
+            height: 56px;
+            padding: 0 16px;
+            background: #121212;
+            border-bottom: 1px solid #2D2D2D;
+            cursor: default;
+            transition: background 0.15s;
+        }
+
+        .link-row:hover {
+            background: #1A1A1A;
+        }
+
+        /* 圆形图标 */
+        .link-icon {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #ffffff;
+            flex-shrink: 0;
+            margin-right: 12px;
+            user-select: none;
+            line-height: 1;
+        }
+
+        .link-name-wrapper {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .link-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #ffffff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+
+        .link-name:hover {
+            text-decoration: underline;
+        }
+
+        /* 计数列 */
+        .link-count {
+            width: 80px;
+            text-align: right;
+            font-size: 14px;
+            color: #A0A0A0;
+            flex-shrink: 0;
+        }
+
+        /* 计数徽章（纯数字文本样式，无圆圈无背景） */
+        .link-count .badge {
+            display: inline-block;
+            color: #A0A0A0;
+            font-size: 14px;
+            text-align: right;
+        }
+
+        /* 删除按钮（管理模式下显示） */
+        .link-delete {
+            margin-left: 12px;
+            padding: 4px 10px;
+            font-size: 12px;
+            color: #E57373;
+            background: transparent;
+            border: 1px solid #3D2020;
+            border-radius: 6px;
+            cursor: pointer;
+            flex-shrink: 0;
+            transition: all 0.2s;
+        }
+
+        .link-delete:hover {
+            color: #EF9A9A;
+            border-color: #5D3030;
+        }
+
+        /* ========== 添加链接区 ========== */
+        .add-link-area {
+            margin-top: 32px;
+            padding: 24px;
+            background: #121212;
+            border-radius: 12px;
+            border: 1px solid #2D2D2D;
+        }
+
+        .add-link-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #ffffff;
+            margin-bottom: 16px;
+        }
+
+        .add-link-inputs {
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+            flex-wrap: wrap;
+        }
+
+        /* 输入组 */
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .input-group label {
+            font-size: 12px;
+            color: #A0A0A0;
+        }
+
+        .input-group input {
+            height: 40px;
+            border: 1px solid #2D2D2D;
+            border-radius: 8px;
+            background: #0A0A0A;
+            color: #ffffff;
+            font-size: 14px;
+            padding: 0 12px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .input-group input:focus {
+            border-color: #555555;
+        }
+
+        .input-group input::placeholder {
+            color: #555555;
+        }
+
+        /* 添加按钮 */
+        .add-link-btn {
+            height: 40px;
+            padding: 0 24px;
+            border: none;
+            border-radius: 8px;
+            background: #ffffff;
+            color: #000000;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .add-link-btn:hover {
+            opacity: 0.85;
+        }
+    </style>
+</head>
+<body>
+    <!-- ========== 顶部导航栏 ========== -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <a class="nav-back" id="back-btn" href="index.html" title="返回主页">&larr;</a>
+            <div class="nav-breadcrumb">
+                <a class="nav-back" id="breadcrumb-home" href="index.html"
+                   style="width: auto; height: auto; font-size: 14px; color: #A0A0A0;">主页</a>
+                <span>/</span>
+                <span>网页库</span>
+            </div>
+        </div>
+        <div class="navbar-right">
+            <button class="nav-btn" id="btn-show-counts">显示计数</button>
+            <button class="nav-btn" id="btn-manage">管理链接</button>
+
+            <button class="nav-btn danger" id="btn-clear">清空计数</button>
+        </div>
+    </nav>
+
+    <!-- ========== 主内容区 ========== -->
+    <main class="main-content">
+        <!-- 页面标题 -->
+        <div class="page-header">
+            <h1 class="page-title">网页库</h1>
+            <p class="page-desc">保存和管理常用网页链接，点击链接自动计数排序</p>
+        </div>
+
+        <!-- 添加新链接区（移至列表上方，便于先添加再浏览） -->
+        <div class="add-link-area">
+            <h2 class="add-link-title">添加新链接</h2>
+            <div class="add-link-inputs">
+                <div class="input-group">
+                    <label for="new-link-url">网址 URL</label>
+                    <input type="text" id="new-link-url" placeholder="输入网站地址">
+                </div>
+                <div class="input-group">
+                    <label for="new-link-name">名称</label>
+                    <input type="text" id="new-link-name" placeholder="输入网站名称">
+                </div>
+                <button class="add-link-btn" id="add-link-btn">添加链接</button>
+            </div>
+        </div>
+
+        <!-- 列表表头 -->
+        <div class="list-header">
+            <span class="list-header-name">链接名称</span>
+            <span class="list-header-count">点击次数</span>
+        </div>
+
+        <!-- 链接列表（由 JS 动态渲染） -->
+        <ul class="links-list" id="links-list"></ul>
+    </main>
+
+    <script>
+        (function () {
+            /* ========== 存储键与常量配置 ========== */
+            var K = 'linkClicks_v1';            // localStorage 计数键
+            var CK = 'linkClicks_backup_v1';    // cookie 计数备份键
+            var UK = 'customLinks_v1';          // localStorage 自定义链接键
+            var UCK = 'customLinks_backup_v1';  // cookie 自定义链接备份键
+            var BD = 3650;                      // cookie 过期天数（约 10 年）
+
+            /* ========== 图标颜色池 ========== */
+            var IC = [
+                '#FF6F00', '#311B92', '#00C853', '#2196F3',
+                '#FF9900', '#4CAF50', '#3F51B5', '#E91E63',
+                '#009688', '#FF5722', '#795548', '#607D8B'
+            ];
+
+            /* ========== 预置链接列表 ========== */
+            var PRE = [
+                { n: '千问', u: 'https://www.qianwen.com/chat' },
+                { n: 'GitHub', u: 'https://github.com/' },
+                { n: '光鸭云盘', u: 'https://www.guangyapan.com/#/home/all' },
+                { n: '菜鸟工具', u: 'https://www.jyshare.com/' },
+                { n: '中国教育考试网', u: 'https://ncre.neea.edu.cn/' },
+                { n: '中国计算机技术职业资格网（软考）', u: 'https://www.ruankao.org.cn/' },
+                { n: 'W3School', u: 'https://www.w3school.com.cn/' },
+                { n: '光鸭资源设', u: 'https://www.guangya.cc/' },
+                { n: '校园知问', u: 'https://xiaobaocampus.com/' },
+                { n: '赛博丐帮', u: 'https://poorgpt.com/' },
+                { n: '觅知网', u: 'https://www.51miz.com/?utm_term=5495868&utm_source=x360&guanggao&qhclickid=9a41eeb8f87985b7' },
+                { n: '调色板生成器和色轮工具', u: 'https://color.adobe.com/cn/create/color-wheel?tab=primary-color' },
+                { n: 'aboutppt', u: 'https://www.aboutppt.com/#term-2-3' },
+                { n: '即时移除背景', u: 'https://remove-bg.io/zh-CN/' },
+                { n: '佐糖AI', u: 'https://picwish.cn/remove-background?apptype=aps-bing-zh-webpin&msclkid=d8d5f74bd2e1129556ed9d1b29d964e7' },
+                { n: '阿里巴巴矢量图标库', u: 'https://www.iconfont.cn/' },
+                { n: '优设字体', u: 'https://hao.uisdc.com/font/' },
+                { n: '猫啃网', u: 'https://www.maoken.com/' },
+                { n: 'key', u: 'key.html' },
+                { n: '豆包', u: 'https://www.doubao.com/chat/' },
+                { n: '抖音', u: 'https://www.douyin.com/?recommend=1' },
+                { n: 'Outlook', u: 'https://outlook.live.com/calendar/view/month?culture=zh-cn&country=cn' },
+                { n: 'AI去水印', u: 'https://magiceraser.org/zh/object-remover/' },
+                { n: '优智云家', u: 'https://go.kiwik.cn/app/wob/devices/4A3843D34040' },
+                { n: '@@@@', u: '#' }  // 特殊占位项（会被隐藏）
+            ];
+
+            /* ========== 初始化状态 ========== */
+            var list = document.getElementById('links-list');
+            if (!list) return;
+
+            var sc = false;          // 是否显示计数
+            var counts = {};         // 点击计数映射
+            var all = PRE.slice();   // 全部链接（预置 + 自定义）
+
+            /* ========== 管理模式状态 ========== */
+            var manageMode = false;        // 是否处于管理模式
+            var hiddenPresets = [];        // 会话内已隐藏的预置链接集合（不持久化）
+
+            /* ========== 计数加载（localStorage 优先，cookie 兜底） ========== */
+            try {
+                counts = JSON.parse(localStorage.getItem(K) || '{}') || {};
+            } catch (e) {
+                counts = {};
+            }
+
+            // 若 localStorage 无数据，尝试从 cookie 恢复
+            if (Object.keys(counts).length === 0) {
+                try {
+                    var ck = getC(CK);
+                    if (ck) {
+                        counts = JSON.parse(ck) || {};
+                        localStorage.setItem(K, JSON.stringify(counts));
+                    }
+                } catch (e) { }
+            }
+
+            /* ========== Cookie 读写工具函数 ========== */
+            function getC(n) {
+                var m = document.cookie.match(
+                    new RegExp('(?:^|; )' + n.replace(/([.$?*|{}()\[\]\\\/+^])/g, '\\$1') + '=([^;]*)')
+                );
+                return m ? decodeURIComponent(m[1]) : null;
+            }
+
+            function setC(n, v, d) {
+                try {
+                    document.cookie = n + '=' + encodeURIComponent(v) +
+                        ';expires=' + new Date(Date.now() + d * 86400000).toUTCString() +
+                        ';path=/';
+                } catch (e) { }
+            }
+
+            /* ========== 持久化保存 ========== */
+            function save() {
+                try { localStorage.setItem(K, JSON.stringify(counts)); } catch (e) { }
+                try { setC(CK, JSON.stringify(counts), BD); } catch (e) { }
+            }
+
+            function saveUL(arr) {
+                try { localStorage.setItem(UK, JSON.stringify(arr)); } catch (e) { }
+                try { setC(UCK, JSON.stringify(arr), BD); } catch (e) { }
+            }
+
+            function loadUL() {
+                // 优先从 localStorage 读取
+                try {
+                    var r = localStorage.getItem(UK);
+                    if (r) {
+                        var p = JSON.parse(r);
+                        return Array.isArray(p) ? p : [];
+                    }
+                } catch (e) { }
+                // 兜底从 cookie 读取
+                try {
+                    var c = getC(UCK);
+                    if (c) {
+                        var p = JSON.parse(c);
+                        return Array.isArray(p) ? p : [];
+                    }
+                } catch (e) { }
+                return [];
+            }
+
+            /* ========== 图标与名称工具函数 ========== */
+            function iconColor(n) {
+                var fc = (n || '').trim().charAt(0) || '?';
+                return IC[fc.charCodeAt(0) % IC.length];
+            }
+
+            function firstChar(n) {
+                var c = (n || '').trim();
+                return c ? c.charAt(0).toUpperCase() : '?';
+            }
+
+            // 判断是否为特殊占位项
+            function isSp(n) {
+                return n.indexOf('@@@@') !== -1;
+            }
+
+            // 规范化 URL（补全协议）
+            function normUrl(u) {
+                u = (u || '').trim();
+                if (!u) return '';
+                if (/^https?:\/\//i.test(u)) return u;
+                return 'https://' + u;
+            }
+
+            /* ========== 创建单行链接 DOM ========== */
+            function mkRow(item, idx) {
+                var li = document.createElement('li');
+                li.className = 'link-row';
+                if (isSp(item.n)) li.style.display = 'none';
+
+                // 图标
+                var ic = document.createElement('span');
+                ic.className = 'link-icon';
+                ic.style.background = iconColor(item.n);
+                ic.textContent = firstChar(item.n);
+
+                // 名称容器
+                var nw = document.createElement('div');
+                nw.className = 'link-name-wrapper';
+                var ns = document.createElement('span');
+                ns.className = 'link-name';
+                ns.textContent = item.n;
+
+                // 计数徽章
+                var cs = document.createElement('span');
+                cs.className = 'link-count';
+                var bd = document.createElement('span');
+                bd.className = 'badge';
+                cs.appendChild(bd);
+
+                // 删除按钮（管理模式下显示，特殊占位项不渲染）
+                var delBtn = null;
+                if (!isSp(item.n)) {
+                    delBtn = document.createElement('button');
+                    delBtn.className = 'link-delete';
+                    delBtn.textContent = '删除';
+                    delBtn.style.display = manageMode ? 'inline-block' : 'none';
+                }
+
+                // 组装结构
+                li.appendChild(ic);
+                li.appendChild(nw);
+                nw.appendChild(ns);
+                li.appendChild(cs);
+                if (delBtn) li.appendChild(delBtn);
+
+                // 缓存数据到 DOM 节点
+                li._d = item;
+                li._i = idx;
+
+                // 点击名称：计数 +1 并打开链接
+                ns.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    var key = item.u + '||' + item.n + '||' + idx;
+                    counts[key] = (counts[key] || 0) + 1;
+                    save();
+                    render();
+                    if (item.u && item.u !== '#') window.open(item.u, '_blank');
+                });
+
+                // 点击删除按钮：阻止冒泡，弹出确认
+                if (delBtn) {
+                    delBtn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        var isPreset = PRE.some(function (p) {
+                            return p.n === item.n && p.u === item.u;
+                        });
+                        confirmRemove(item, isPreset);
+                    });
+                }
+
+                return li;
+            }
+
+            /* ========== 渲染列表（按计数排序） ========== */
+            function render() {
+                // 过滤会话内已隐藏的预置链接（按 u+n 匹配）
+                var items = all.filter(function (item) {
+                    if (hiddenPresets.length === 0) return true;
+                    return !hiddenPresets.some(function (h) {
+                        return h.u === item.u && h.n === item.n;
+                    });
+                });
+                var sp = [], nm = [];
+
+                // 分离特殊项与普通项
+                items.forEach(function (item, i) {
+                    var key = item.u + '||' + item.n + '||' + i;
+                    if (isSp(item.n)) {
+                        sp.push({ item: item, idx: i, key: key });
+                    } else {
+                        nm.push({ item: item, idx: i, key: key });
+                    }
+                });
+
+                // 判断是否存在计数数据
+                var hasC = nm.some(function (d) {
+                    return (counts[d.key] || 0) > 0;
+                });
+
+                // 排序：有计数按计数降序，否则按名称排序
+                if (hasC) {
+                    nm.sort(function (a, b) {
+                        var ca = counts[a.key] || 0, cb = counts[b.key] || 0;
+                        if (cb !== ca) return cb - ca;
+                        return a.item.n.localeCompare(b.item.n);
+                    });
+                } else {
+                    nm.sort(function (a, b) {
+                        return a.item.n.localeCompare(b.item.n);
+                    });
+                }
+
+                // 特殊项追加到末尾
+                var sorted = nm.concat(sp);
+
+                // 重绘列表
+                list.innerHTML = '';
+                sorted.forEach(function (d) {
+                    list.appendChild(mkRow(d.item, d.idx));
+                });
+                updateBadges();
+            }
+
+            /* ========== 更新计数徽章显示 ========== */
+            function updateBadges() {
+                var rows = list.querySelectorAll('.link-row');
+                rows.forEach(function (row) {
+                    var item = row._d, idx = row._i;
+                    if (!item) return;
+                    var key = item.u + '||' + item.n + '||' + idx;
+                    var badge = row.querySelector('.badge');
+                    if (badge) {
+                        badge.textContent = counts[key] || 0;
+                        badge.style.display = sc ? 'inline-block' : 'none';
+                    }
+                });
+            }
+
+            /* ========== 添加新链接 ========== */
+            function addNewLink() {
+                var ui = document.getElementById('new-link-url'),
+                    ni = document.getElementById('new-link-name');
+                if (!ui || !ni) return;
+
+                var raw = ui.value.trim(),
+                    name = ni.value.trim();
+
+                // 输入校验
+                if (!raw) { alert('请输入URL'); return; }
+                if (!name) { alert('请输入名称'); return; }
+
+                // 重名校验
+                var exist = all.filter(function (l) { return !isSp(l.n); });
+                if (exist.some(function (l) { return l.n.toLowerCase() === name.toLowerCase(); })) {
+                    alert('名称已被添加，换一个名称再试试吧！');
+                    return;
+                }
+
+                // 保存并刷新
+                var url = normUrl(raw);
+                var newItem = { n: name, u: url };
+                all.push(newItem);
+
+                var saved = loadUL();
+                saved.push({ url: url, name: name });
+                saveUL(saved);
+
+                render();
+                ui.value = '';
+                ni.value = '';
+            }
+
+            /* ========== 切换计数显示 ========== */
+            function toggleBadges() {
+                sc = !sc;
+                var btn = document.getElementById('btn-show-counts');
+                if (btn) btn.textContent = sc ? '隐藏计数' : '显示计数';
+                updateBadges();
+            }
+
+            /* ========== 切换管理模式 ========== */
+            function toggleManageMode() {
+                manageMode = !manageMode;
+                var manageBtn = document.getElementById('btn-manage');
+                if (manageBtn) manageBtn.textContent = manageMode ? '退出管理' : '管理链接';
+                render();
+            }
+
+            /* ========== 删除确认 ========== */
+            function confirmRemove(item, isPreset) {
+                var tip = isPreset
+                    ? '确认删除该预置链接？\n（将本会话隐藏，刷新后恢复）'
+                    : '确认删除该自定义链接？\n（将永久删除）';
+                if (!confirm(tip)) return;
+                removeLink(item, isPreset);
+            }
+
+            /* ========== 执行删除 ========== */
+            function removeLink(item, isPreset) {
+                if (isPreset) {
+                    // 预置链接：加入会话内隐藏集合（不写存储）
+                    hiddenPresets.push({ n: item.n, u: item.u });
+                } else {
+                    // 自定义链接：从存储中永久移除
+                    var saved = loadUL();
+                    var remained = saved.filter(function (s) {
+                        return !(s.url === item.u && s.name === item.n);
+                    });
+                    saveUL(remained);
+                    // 清理该链接的所有计数键
+                    Object.keys(counts).forEach(function (k) {
+                        if (k.indexOf(item.u + '||' + item.n + '||') === 0) {
+                            delete counts[k];
+                        }
+                    });
+                    save();
+                }
+                // 从内存列表移除
+                all = all.filter(function (a) {
+                    return !(a.u === item.u && a.n === item.n);
+                });
+                render();
+            }
+
+            /* ========== 事件绑定 ========== */
+            document.getElementById('btn-show-counts').addEventListener('click', toggleBadges);
+            document.getElementById('btn-clear').addEventListener('click', function () {
+                counts = {};
+                save();
+                render();
+            });
+            document.getElementById('btn-manage').addEventListener('click', toggleManageMode);
+
+            document.getElementById('add-link-btn').addEventListener('click', addNewLink);
+            document.getElementById('new-link-name').addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') addNewLink();
+            });
+
+            /* ========== 加载自定义链接并合并 ========== */
+            var savedUL = loadUL();
+            savedUL.forEach(function (item) {
+                if (!item || !item.url || !item.name) return;
+                if (!all.some(function (l) { return l.n === item.name && l.u === item.url; })) {
+                    all.push({ n: item.name, u: item.url });
+                }
+            });
+
+            /* ========== 页面卸载前保存 ========== */
+            window.addEventListener('beforeunload', save);
+
+            /* ========== 首次渲染 ========== */
+            render();
+        })();
+    </script>
+</body>
+</html>
