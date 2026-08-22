@@ -592,6 +592,39 @@
         .folder-modal-input-group input::placeholder {
             color: #555555;
         }
+
+        /* ========== 移动目标列表 ========== */
+        .move-target-list {
+            flex: 1;
+            overflow-y: auto;
+            max-height: 260px;
+            margin: 16px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .move-target-item {
+            padding: 10px 14px;
+            font-size: 14px;
+            color: #A0A0A0;
+            background: #0A0A0A;
+            border: 1px solid #2D2D2D;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .move-target-item:hover {
+            color: #ffffff;
+            border-color: #555555;
+            background: #1A1A1A;
+        }
+
+        .move-target-item.disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 
@@ -605,6 +638,7 @@
                     style="width: auto; height: auto; font-size: 14px; color: #A0A0A0;">主页</a>
                 <span>/</span>
                 <span>网页库</span>
+                <span id="crumb-folder" style="display:none;"></span>
             </div>
         </div>
         <div class="navbar-right">
@@ -676,7 +710,19 @@
         <!-- ========== 悬浮操作菜单（三个点点击） ========== -->
         <div class="action-menu" id="actionMenu">
             <button class="action-menu-item" id="actionRename">重命名</button>
+            <button class="action-menu-item" id="actionMove">移动至...</button>
             <button class="action-menu-item danger" id="actionDelete">删除</button>
+        </div>
+
+        <!-- ========== 移动目标弹窗 ========== -->
+        <div class="modal-overlay" id="moveModal">
+            <div class="modal-box" style="height:auto; min-height:220px;">
+                <h3 class="modal-title" id="moveModalTitle">移动至...</h3>
+                <div class="move-target-list" id="moveTargetList"></div>
+                <div class="modal-actions">
+                    <button class="modal-btn cancel" id="moveCancel">取消</button>
+                </div>
+            </div>
         </div>
 
         <!-- ========== 重命名链接弹窗 ========== -->
@@ -703,7 +749,8 @@
             var FCK = 'folders_backup_v1';      // cookie 文件夹备份键
             var LOK = 'listOrder_v1';           // localStorage 自定义排序键
             var LOBCK = 'listOrder_backup_v1';  // cookie 自定义排序备份键
-            var BD = 3650;                      // cookie 过期天数（约 10 年）
+            var MPK = 'movedPresets_v1';      // localStorage 已移动预置链接键
+            var BD = 3650;                     // cookie 过期天数（约 10 年）
 
             /* ========== 图标颜色池 ========== */
             var IC = [
@@ -749,6 +796,8 @@
             /* ========== 管理模式状态 ========== */
             var manageMode = false;        // 是否处于管理模式
             var hiddenPresets = [];        // 会话内已隐藏的预置链接集合（不持久化）
+            var currentFolder = null;      // 当前所在文件夹 id（null = 根目录）
+            var movedPre = loadMoved();   // 已移动的预置链接：[{n, u, folderId}]
 
             /* ========== 文件夹状态 ========== */
             var folders = loadFolders();   // 文件夹内存数组（数组顺序即展示顺序）
@@ -815,16 +864,37 @@
                         }
                     } catch (e) { }
                 }
-                // 规范化：兼容旧版存的纯名字符串数组
-                return arr.map(function (x) {
-                    if (typeof x === 'string') return { n: x };
-                    return { n: (x && x.n) || '未命名文件夹' };
+                // 规范化：兼容旧版存的纯名字符串数组 / 无 id 的旧对象
+                return arr.map(function (x, i) {
+                    var id = 'f' + Date.now() + '_' + i + '_' + Math.floor(Math.random() * 1000);
+                    if (typeof x === 'string') return { id: id, n: x, parentId: null };
+                    return {
+                        id: (x && x.id) || id,
+                        n: (x && x.n) || '未命名文件夹',
+                        parentId: (x && x.parentId != null) ? x.parentId : null
+                    };
                 });
             }
 
             function saveFolders(arr) {
                 try { localStorage.setItem(FK, JSON.stringify(arr)); } catch (e) { }
                 try { setC(FCK, JSON.stringify(arr), BD); } catch (e) { }
+            }
+
+            /* ========== 已移动预置链接持久化 ========== */
+            function loadMoved() {
+                try {
+                    var r = localStorage.getItem(MPK);
+                    if (r) {
+                        var p = JSON.parse(r);
+                        if (Array.isArray(p)) return p;
+                    }
+                } catch (e) { }
+                return [];
+            }
+
+            function saveMoved(arr) {
+                try { localStorage.setItem(MPK, JSON.stringify(arr)); } catch (e) { }
             }
 
             /* ========== 自定义排序持久化 ========== */
@@ -968,19 +1038,24 @@
                         nm.push(item);
                     }
                 });
-                // 构建统一渲染序列 rows：[{t:'f', f}] 文件夹行 / [{t:'l', item}] 链接行
-                // 不再按名称排序：顺序完全由用户自由拖动决定；
-                // 从未保存过顺序时，按加载顺序渲染（预置在前、自定义链接追加在后）
+                // 构建统一渲染序列 rows：[{t:'folder', f}] 文件夹行 / [{t:'link', item}] 链接行
+                // 仅渲染当前文件夹层级；currentFolder = null 时渲染根目录
+                var rid = currentFolder || null;
+                var cFolders = folders.filter(function (f) {
+                    return (f.parentId || null) === rid;
+                });
+                var cLinks = nm.filter(function (item) {
+                    return folderIdOf(item) === rid;
+                });
                 var rows = [];
                 var saved = loadListOrder();
                 if (saved && saved.length) {
                     var usedF = {}, usedL = {};
                     saved.forEach(function (ent) {
                         if (ent.t === 'folder' && !usedF[ent.n]) {
-                            // 按名称匹配文件夹
-                            for (var i = 0; i < folders.length; i++) {
-                                if (folders[i].n === ent.n) {
-                                    rows.push({ t: 'f', f: folders[i] });
+                            for (var i = 0; i < cFolders.length; i++) {
+                                if (cFolders[i].n === ent.n) {
+                                    rows.push({ t: 'folder', f: cFolders[i] });
                                     usedF[ent.n] = 1;
                                     break;
                                 }
@@ -988,9 +1063,9 @@
                         } else if (ent.t === 'link') {
                             var key = ent.n + '|' + ent.u;
                             if (!usedL[key]) {
-                                for (var j = 0; j < nm.length; j++) {
-                                    if (nm[j].n === ent.n && nm[j].u === ent.u) {
-                                        rows.push({ t: 'l', item: nm[j] });
+                                for (var j = 0; j < cLinks.length; j++) {
+                                    if (cLinks[j].n === ent.n && cLinks[j].u === ent.u) {
+                                        rows.push({ t: 'link', item: cLinks[j] });
                                         usedL[key] = 1;
                                         break;
                                     }
@@ -998,20 +1073,18 @@
                             }
                         }
                     });
-                    // 追加保存顺序之外的新增文件夹 / 新增链接
-                    folders.forEach(function (f) {
-                        if (!usedF[f.n]) rows.push({ t: 'f', f: f });
+                    cFolders.forEach(function (f) {
+                        if (!usedF[f.n]) rows.push({ t: 'folder', f: f });
                     });
-                    nm.forEach(function (item) {
-                        if (!usedL[item.n + '|' + item.u]) rows.push({ t: 'l', item: item });
+                    cLinks.forEach(function (item) {
+                        if (!usedL[item.n + '|' + item.u]) rows.push({ t: 'link', item: item });
                     });
                 } else {
-                    // 首次：文件夹在前（按其内部顺序），链接按加载顺序展示
-                    folders.forEach(function (f) {
-                        rows.push({ t: 'f', f: f });
+                    cFolders.forEach(function (f) {
+                        rows.push({ t: 'folder', f: f });
                     });
-                    nm.forEach(function (item) {
-                        rows.push({ t: 'l', item: item });
+                    cLinks.forEach(function (item) {
+                        rows.push({ t: 'link', item: item });
                     });
                 }
                 // 特殊占位项始终追加到末尾（会被隐藏）
@@ -1022,7 +1095,7 @@
                 // 重绘列表
                 list.innerHTML = '';
                 rows.forEach(function (r) {
-                    if (r.t === 'f') list.appendChild(mkFolderRow(r.f));
+                    if (r.t === 'folder') list.appendChild(mkFolderRow(r.f));
                     else list.appendChild(mkRow(r.item));
                 });
             }
@@ -1049,11 +1122,11 @@
 
                 // 保存并刷新
                 var url = normUrl(raw);
-                var newItem = { n: name, u: url };
+                var newItem = { n: name, u: url, folderId: currentFolder };
                 all.push(newItem);
 
                 var saved = loadUL();
-                saved.push({ url: url, name: name });
+                saved.push({ url: url, name: name, folderId: currentFolder });
                 saveUL(saved);
 
                 render();
@@ -1143,9 +1216,36 @@
                     if (!removeState) return;
                     modal.classList.remove('active');
                     if (removeState.isFolder) {
+                        var delFolder = folders[removeState.folderIdx];
+                        var parentFid = delFolder.parentId || null;
+                        // 将子文件夹移回父级
+                        folders.forEach(function (f) {
+                            if ((f.parentId || null) === delFolder.id) f.parentId = parentFid;
+                        });
+                        // 将文件夹内自定义链接移回父级
+                        var saved = loadUL();
+                        var movedUl = false;
+                        saved.forEach(function (s) {
+                            if ((s.folderId || null) === delFolder.id) {
+                                s.folderId = parentFid;
+                                movedUl = true;
+                            }
+                        });
+                        if (movedUl) saveUL(saved);
+                        // 将文件夹内预置链接（movedPre）移回父级
+                        movedPre.forEach(function (m) {
+                            if ((m.folderId || null) === delFolder.id) m.folderId = parentFid;
+                        });
+                        saveMoved(movedPre);
+                        // 内存中自定义链接同步
+                        all.forEach(function (a) {
+                            if ((a.folderId || null) === delFolder.id) a.folderId = parentFid;
+                        });
                         folders.splice(removeState.folderIdx, 1);
                         saveFolders(folders);
+                        if (currentFolder === delFolder.id) currentFolder = parentFid;
                         render();
+                        updateCrumb();
                     } else {
                         removeLink(removeState.item, removeState.isPreset);
                     }
@@ -1173,13 +1273,18 @@
                 li.className = 'folder-row';
                 li._d = folder;
 
-                // 文件夹名称（不可点击，仅展示）
+                // 文件夹名称：点击进入文件夹
                 var fw = document.createElement('div');
                 fw.className = 'folder-name-wrapper';
+                fw.style.cursor = 'pointer';
                 var fn = document.createElement('span');
                 fn.className = 'folder-name';
-                fn.textContent = folder.n || '未命名文件夹';
+                fn.textContent = '📁 ' + (folder.n || '未命名文件夹');
                 fw.appendChild(fn);
+                fw.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    enterFolder(folder.id);
+                });
 
                 // 三个点操作入口（管理模式内长按拖动可自定义排序）
                 var dots = document.createElement('span');
@@ -1213,18 +1318,91 @@
                     var name = input.value.trim();
                     if (!name) { alert('请输入文件夹名称'); return; }
                     if (editingFolderId >= 0) {
-                        // 重命名
-                        folders[editingFolderId].n = name;
+                        // 重命名（同级重名校验）
+                        var f = folders[editingFolderId];
+                        var dup = folders.some(function (x) {
+                            return x !== f && x.n === name && (x.parentId || null) === (f.parentId || null);
+                        });
+                        if (dup) { alert('当前目录下已存在同名文件夹，换一个名称再试试吧！'); return; }
+                        f.n = name;
                     } else {
-                        // 新建（重名校验）
-                        var dup = folders.some(function (f) { return f.n === name; });
-                        if (dup) { alert('已存在同名文件夹，换一个名称再试试吧！'); return; }
-                        folders.push({ n: name });
+                        // 新建（同级重名校验）
+                        var dup = folders.some(function (f) {
+                            return f.n === name && (f.parentId || null) === (currentFolder || null);
+                        });
+                        if (dup) { alert('当前目录下已存在同名文件夹，换一个名称再试试吧！'); return; }
+                        folders.push({
+                            id: 'f' + Date.now() + '_' + Math.floor(Math.random() * 10000),
+                            n: name,
+                            parentId: currentFolder
+                        });
                     }
                     saveFolders(folders);
                     render();
+                    updateCrumb();
                     closeModal();
                 });
+            }
+
+            /* ========== 文件夹层级辅助函数 ========== */
+            function folderIdOf(item) {
+                if (item.folderId != null) return item.folderId;
+                for (var i = 0; i < movedPre.length; i++) {
+                    if (movedPre[i].n === item.n && movedPre[i].u === item.u) {
+                        return movedPre[i].folderId;
+                    }
+                }
+                return null;
+            }
+
+            function isPreset(item) {
+                return PRE.some(function (p) {
+                    return p.n === item.n && p.u === item.u;
+                });
+            }
+
+            function folderById(id) {
+                for (var i = 0; i < folders.length; i++) {
+                    if (folders[i].id === id) return folders[i];
+                }
+                return null;
+            }
+
+            function enterFolder(id) {
+                currentFolder = id;
+                render();
+                updateCrumb();
+            }
+
+            function exitFolder() {
+                currentFolder = null;
+                render();
+                updateCrumb();
+            }
+
+            function updateCrumb() {
+                var cf = document.getElementById('crumb-folder');
+                var back = document.getElementById('back-btn');
+                if (currentFolder != null) {
+                    var f = folderById(currentFolder);
+                    if (cf) {
+                        cf.style.display = 'inline';
+                        cf.textContent = ' / 📁 ' + (f ? f.n : '');
+                    }
+                    if (back) {
+                        back.setAttribute('href', '#');
+                        back.onclick = function (e) {
+                            e.preventDefault();
+                            exitFolder();
+                        };
+                    }
+                } else {
+                    if (cf) cf.style.display = 'none';
+                    if (back) {
+                        back.setAttribute('href', 'index.html');
+                        back.onclick = null;
+                    }
+                }
             }
 
             /* 打开新建文件夹弹窗 */
@@ -1284,11 +1462,116 @@
                 if (s.isFolder) {
                     confirmRemoveFolder(s.folderIdx);
                 } else {
-                    var isPreset = PRE.some(function (p) {
-                        return p.n === s.item.n && p.u === s.item.u;
-                    });
-                    confirmRemove(s.item, isPreset);
+                    confirmRemove(s.item, isPreset(s.item));
                 }
+            }
+
+            /* ========== 移动至... ========== */
+            var moveState = null;   // { isFolder, folderIdx?, item? }
+            var moveModal = document.getElementById('moveModal');
+
+            function actionMenuMove() {
+                if (!actionMenuState) return;
+                moveState = actionMenuState;
+                closeActionMenu();
+                if (!moveModal) return;
+                document.getElementById('moveModalTitle').textContent =
+                    moveState.isFolder ? '移动文件夹至...' : '移动链接至...';
+                renderMoveTargets();
+                moveModal.classList.add('active');
+            }
+
+            function renderMoveTargets() {
+                var box = document.getElementById('moveTargetList');
+                if (!box) return;
+                box.innerHTML = '';
+
+                var srcFolderId = moveState && moveState.isFolder
+                    ? folders[moveState.folderIdx].id
+                    : null;
+
+                function isSelfOrDescendant(tid) {
+                    if (!srcFolderId) return false;
+                    if (tid === srcFolderId) return true;
+                    var cur = folderById(tid);
+                    while (cur && cur.parentId != null) {
+                        if (cur.parentId === srcFolderId) return true;
+                        cur = folderById(cur.parentId);
+                    }
+                    return false;
+                }
+
+                // 根目录选项
+                var root = document.createElement('div');
+                root.className = 'move-target-item';
+                root.textContent = '（根目录）';
+                root.addEventListener('click', function () { applyMove(null); });
+                box.appendChild(root);
+
+                // 可移动文件夹列表
+                folders.forEach(function (f, i) {
+                    if (moveState && moveState.isFolder && f.id === srcFolderId) return;
+                    if (moveState && moveState.isFolder && isSelfOrDescendant(f.id)) return;
+                    var d = document.createElement('div');
+                    d.className = 'move-target-item';
+                    d.textContent = '📁 ' + f.n;
+                    (function (id) {
+                        d.addEventListener('click', function () { applyMove(id); });
+                    })(f.id);
+                    box.appendChild(d);
+                });
+            }
+
+            function applyMove(targetFolderId) {
+                if (!moveState) return;
+                var s = moveState;
+                if (s.isFolder) {
+                    var f = folders[s.folderIdx];
+                    if (f.id !== targetFolderId) {
+                        f.parentId = targetFolderId;
+                        saveFolders(folders);
+                    }
+                } else {
+                    var item = s.item;
+                    if (isPreset(item)) {
+                        // 预置链接：写入 movedPre 持久化，刷新不丢失
+                        var foundIdx = -1;
+                        for (var i = 0; i < movedPre.length; i++) {
+                            if (movedPre[i].n === item.n && movedPre[i].u === item.u) {
+                                foundIdx = i;
+                                break;
+                            }
+                        }
+                        var rec = { n: item.n, u: item.u, folderId: targetFolderId };
+                        if (foundIdx >= 0) movedPre[foundIdx] = rec;
+                        else movedPre.push(rec);
+                        saveMoved(movedPre);
+                    } else {
+                        // 自定义链接：更新存储
+                        item.folderId = targetFolderId;
+                        var saved = loadUL();
+                        saved.forEach(function (s) {
+                            if (s.url === item.u && s.name === item.n) s.folderId = targetFolderId;
+                        });
+                        saveUL(saved);
+                    }
+                }
+                moveModal.classList.remove('active');
+                moveState = null;
+                render();
+                updateCrumb();
+            }
+
+            function bindMoveModal() {
+                var cancelBtn = document.getElementById('moveCancel');
+                if (cancelBtn) {
+                    cancelBtn.addEventListener('click', function () {
+                        moveModal.classList.remove('active');
+                        moveState = null;
+                    });
+                }
+                var moveBtn = document.getElementById('actionMove');
+                if (moveBtn) moveBtn.addEventListener('click', actionMenuMove);
             }
 
             /* ========== 链接重命名 ========== */
@@ -1344,6 +1627,12 @@
                             if (s.url === item.u && s.name === oldName) s.name = newName;
                         });
                         saveUL(saved);
+                    } else {
+                        // 预置链接：同步更新 movedPre 中的名称
+                        movedPre.forEach(function (m) {
+                            if (m.n === oldName && m.u === item.u) m.n = newName;
+                        });
+                        saveMoved(movedPre);
                     }
                     item.n = newName;
                     render();
@@ -1581,6 +1870,7 @@
             bindFolderModal();   // 绑定新建/重命名文件夹弹窗
             bindRenameLinkModal();
             document.getElementById('actionRename').addEventListener('click', actionMenuRename);
+            bindMoveModal();
             document.getElementById('actionDelete').addEventListener('click', actionMenuDelete);
             document.addEventListener('click', function (e) {
                 if (!actionMenu.contains(e.target) && !e.target.closest('.link-dots, .folder-dots')) {
@@ -1600,12 +1890,20 @@
             savedUL.forEach(function (item) {
                 if (!item || !item.url || !item.name) return;
                 if (!all.some(function (l) { return l.n === item.name && l.u === item.url; })) {
-                    all.push({ n: item.name, u: item.url });
+                    all.push({ n: item.name, u: item.url, folderId: item.folderId != null ? item.folderId : null });
+                } else {
+                    // 已存在（预置链接）：若已有 folderId 记录则同步到内存
+                    for (var i = 0; i < all.length; i++) {
+                        if (all[i].n === item.name && all[i].u === item.url && item.folderId != null) {
+                            all[i].folderId = item.folderId;
+                        }
+                    }
                 }
             });
 
             /* ========== 首次渲染 ========== */
             render();
+            updateCrumb();
             cleanLegacyCounts();   // 顺手清理旧版本残留计数数据
         })();
     </script>
