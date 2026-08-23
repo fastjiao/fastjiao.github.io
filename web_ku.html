@@ -303,13 +303,18 @@
             margin-left: 12px;
         }
 
-        /* ========== 添加链接区 ========== */
-        .add-link-area {
-            margin-top: 32px;
-            padding: 24px;
-            background: #121212;
-            border-radius: 12px;
-            border: 1px solid #2D2D2D;
+/* ========== 添加新链接弹窗 ========== */
+        .add-link-inputs {
+            flex: 1;
+            display: flex;
+            /* flexANI-direction: column; */
+            gap: 12px;
+            justify-content: center;
+            overflow-y: auto;
+        }
+
+        .add-link-inputs .input-group {
+            min-width: 0;
         }
 
         .add-link-title {
@@ -642,6 +647,7 @@
             </div>
         </div>
         <div class="navbar-right">
+            <button class="nav-btn" id="btn-add-link">添加链接</button>
             <button class="nav-btn" id="btn-new-folder">新建文件夹</button>
             <button class="nav-btn" id="btn-manage">管理链接</button>
         </div>
@@ -655,19 +661,24 @@
             <p class="page-desc">保存和管理常用网页链接，支持用文件夹分类整理</p>
         </div>
 
-        <!-- 添加新链接区（移至列表上方，便于先添加再浏览） -->
-        <div class="add-link-area">
-            <h2 class="add-link-title">添加新链接</h2>
-            <div class="add-link-inputs">
-                <div class="input-group">
-                    <label for="new-link-url">网址 URL</label>
-                    <input type="text" id="new-link-url" placeholder="输入网站地址">
+        <!-- ========== 添加新链接弹窗 ========== -->
+        <div class="modal-overlay" id="addModal">
+            <div class="modal-box" style="height:auto; min-height:250px;">
+                <h3 class="modal-title">添加新链接</h3>
+                <div class="add-link-inputs">
+                    <div class="input-group">
+                        <label for="new-link-url">网址 URL</label>
+                        <input type="text" id="new-link-url" placeholder="输入网站地址">
+                    </div>
+                    <div class="input-group">
+                        <label for="new-link-name">名称</label>
+                        <input type="text" id="new-link-name" placeholder="输入网站名称">
+                    </div>
                 </div>
-                <div class="input-group">
-                    <label for="new-link-name">名称</label>
-                    <input type="text" id="new-link-name" placeholder="输入网站名称">
+                <div class="modal-actions">
+                    <button class="modal-btn cancel" id="addLinkCancel">取消</button>
+                    <button class="modal-btn confirm" id="addLinkConfirm">确认</button>
                 </div>
-                <button class="add-link-btn" id="add-link-btn">添加链接</button>
             </div>
         </div>
 
@@ -1120,16 +1131,17 @@
                     return;
                 }
 
-                // 保存并刷新
+                // 保存并刷新：新链接插入首位
                 var url = normUrl(raw);
                 var newItem = { n: name, u: url, folderId: currentFolder };
-                all.push(newItem);
+                all.unshift(newItem);
 
                 var saved = loadUL();
-                saved.push({ url: url, name: name, folderId: currentFolder });
+                saved.unshift({ url: url, name: name, folderId: currentFolder });
                 saveUL(saved);
 
                 render();
+                document.getElementById('addModal').classList.remove('active');
                 ui.value = '';
                 ni.value = '';
             }
@@ -1331,7 +1343,7 @@
                             return f.n === name && (f.parentId || null) === (currentFolder || null);
                         });
                         if (dup) { alert('当前目录下已存在同名文件夹，换一个名称再试试吧！'); return; }
-                        folders.push({
+                        folders.unshift({
                             id: 'f' + Date.now() + '_' + Math.floor(Math.random() * 10000),
                             n: name,
                             parentId: currentFolder
@@ -1880,7 +1892,18 @@
             document.getElementById('btn-new-folder').addEventListener('click', openNewFolder);
             document.getElementById('btn-manage').addEventListener('click', toggleManageMode);
 
-            document.getElementById('add-link-btn').addEventListener('click', addNewLink);
+            document.getElementById('btn-add-link').addEventListener('click', function () {
+                var urlInput = document.getElementById('new-link-url');
+                var nameInput = document.getElementById('new-link-name');
+                if (urlInput) urlInput.value = '';
+                if (nameInput) nameInput.value = '';
+                document.getElementById('addModal').classList.add('active');
+                if (urlInput) urlInput.focus();
+            });
+            document.getElementById('addLinkCancel').addEventListener('click', function () {
+                document.getElementById('addModal').classList.remove('active');
+            });
+            document.getElementById('addLinkConfirm').addEventListener('click', addNewLink);
             document.getElementById('new-link-name').addEventListener('keydown', function (e) {
                 if (e.key === 'Enter') addNewLink();
             });
