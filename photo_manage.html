@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -15,13 +16,18 @@
 
         /* 顶部标题样式 - 100px 优设标题黑，黑色，水平居中 */
         .title {
-            font-size: 100px;              /* 字体大小 100px */
-            font-family: "优设标题黑";      /* 字体样式：优设标题黑 */
-            color: black;                   /* 字体颜色：黑色 */
-            text-align: center;             /* 水平居中 */
+            font-size: 100px;
+            /* 字体大小 100px */
+            font-family: "优设标题黑";
+            /* 字体样式：优设标题黑 */
+            color: black;
+            /* 字体颜色：黑色 */
+            text-align: center;
+            /* 水平居中 */
             margin: 0;
             padding: 20px 0;
-            background: #f5f7fa;            /* 标题背景色 */
+            background: #f5f7fa;
+            /* 标题背景色 */
             border-bottom: 1px solid #e5e5e5;
         }
 
@@ -34,18 +40,26 @@
         /* 左侧导航栏 - 悬浮岛式（四周留白 + 圆角 + 阴影 + 悬浮固定） */
         .sidebar {
             width: 220px;
-            background: #1B6ACE;            /* 导航栏背景色 */
+            background: #1B6ACE;
+            /* 导航栏背景色 */
             color: #fff;
             padding: 20px 0;
             flex-shrink: 0;
             /* 悬浮岛式效果 */
-            margin: 20px;                   /* 四周留白 */
-            border-radius: 16px;            /* 圆角 */
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);  /* 悬浮阴影 */
-            align-self: flex-start;         /* 顶部对齐，不拉伸全高，呈岛屿状 */
-            position: sticky;               /* 滚动时悬浮固定 */
-            top: 20px;                      /* 距视口顶部留白 */
-            overflow: hidden;               /* 裁剪菜单悬停背景以贴合圆角 */
+            margin: 20px;
+            /* 四周留白 */
+            border-radius: 16px;
+            /* 圆角 */
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.08);
+            /* 悬浮阴影 */
+            align-self: flex-start;
+            /* 顶部对齐，不拉伸全高，呈岛屿状 */
+            position: sticky;
+            /* 滚动时悬浮固定 */
+            top: 20px;
+            /* 距视口顶部留白 */
+            overflow: hidden;
+            /* 裁剪菜单悬停背景以贴合圆角 */
             transition: box-shadow 200ms ease;
         }
 
@@ -99,7 +113,8 @@
             display: flex;
             flex-direction: column;
             gap: 16px;
-            width: 1000px;                 /* 大块总宽度 1000px */
+            width: 1000px;
+            /* 大块总宽度 1000px */
         }
 
         /* 大块标题 - "首页图片管理" */
@@ -114,8 +129,10 @@
 
         /* 单个照片项 - 1000px × 100px，左侧预览 + 右侧按钮 */
         .photo-wall-item {
-            width: 1000px;                 /* 块宽度 1000px */
-            height: 100px;                 /* 块高度 100px */
+            width: 1000px;
+            /* 块宽度 1000px */
+            height: 100px;
+            /* 块高度 100px */
             display: flex;
             align-items: center;
             background: #fff;
@@ -141,7 +158,8 @@
 
         /* 左侧图片预览区域 - 高度固定，宽度根据图片宽高比自适应 */
         .photo-preview {
-            height: 100px;                 /* 预览区高度固定 100px */
+            height: 100px;
+            /* 预览区高度固定 100px */
             flex-shrink: 0;
             background: #f4eee7;
             border-right: 1px solid #e0e0e0;
@@ -152,9 +170,12 @@
         /* 图片完整显示 - 高度固定，宽度按比例自适应，不裁剪 */
         .photo-preview img {
             display: block;
-            height: 100px;                 /* 高度固定 100px */
-            width: auto;                   /* 宽度根据高度按比例自适应 */
-            object-fit: contain;           /* 完整显示图片，不裁剪 */
+            height: 100px;
+            /* 高度固定 100px */
+            width: auto;
+            /* 宽度根据高度按比例自适应 */
+            object-fit: contain;
+            /* 完整显示图片，不裁剪 */
         }
 
         /* 中间信息区域 - 显示文件名等信息 */
@@ -203,7 +224,8 @@
 
         /* ===== GitHub 远程上传配置区（融合自 p.html） ===== */
         .github-config {
-            width: 1000px;                 /* 与照片墙大块同宽 */
+            width: 1000px;
+            /* 与照片墙大块同宽 */
             background: #fff;
             border: 1px solid #e0e0e0;
             border-radius: 8px;
@@ -267,6 +289,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- 顶部标题 -->
     <div class="title">lovejiao管理平台</div>
@@ -304,7 +327,8 @@
                     </div>
                     <div class="github-config-row">
                         <label>Token：</label>
-                        <input type="password" id="github-token" class="github-token-input" placeholder="在此粘贴 ghp_ 开头的 Token（留空则仅本地保存，不上传远程）">
+                        <input type="password" id="github-token" class="github-token-input"
+                            placeholder="在此粘贴 ghp_ 开头的 Token（留空则仅本地保存，不上传远程）">
                     </div>
                     <p class="github-warning">⚠️ Token 仅在浏览器内存中使用，不会被保存到服务器或代码中。填写后，每次修改图片会同步上传到 GitHub 仓库对应路径。</p>
                     <div id="upload-status" class="upload-status"></div>
@@ -318,7 +342,7 @@
                     <div class="photo-wall-item" data-index="0">
                         <span class="photo-label">照片1</span>
                         <div class="photo-preview">
-                            <img src="image/photo_a.png" alt="照片1">
+                            <img src="image/photo_a.webp" alt="照片1" loading="lazy">
                         </div>
                         <div class="photo-info">照片1 - 首页照片墙第1张</div>
                         <button class="photo-btn" type="button">修改图片</button>
@@ -327,7 +351,7 @@
                     <div class="photo-wall-item" data-index="1">
                         <span class="photo-label">照片2</span>
                         <div class="photo-preview">
-                            <img src="image/photo_b.png" alt="照片2">
+                            <img src="image/photo_b.webp" alt="照片2" loading="lazy">
                         </div>
                         <div class="photo-info">照片2 - 首页照片墙第2张</div>
                         <button class="photo-btn" type="button">修改图片</button>
@@ -336,7 +360,7 @@
                     <div class="photo-wall-item" data-index="2">
                         <span class="photo-label">照片3</span>
                         <div class="photo-preview">
-                            <img src="image/phtoo_c.png" alt="照片3">
+                            <img src="image/photo_c.webp" alt="照片3" loading="lazy">
                         </div>
                         <div class="photo-info">照片3 - 首页照片墙第3张</div>
                         <button class="photo-btn" type="button">修改图片</button>
@@ -345,7 +369,7 @@
                     <div class="photo-wall-item" data-index="3">
                         <span class="photo-label">照片4</span>
                         <div class="photo-preview">
-                            <img src="image/photo_d.png" alt="照片4">
+                            <img src="image/photo_d.webp" alt="照片4" loading="lazy">
                         </div>
                         <div class="photo-info">照片4 - 首页照片墙第4张</div>
                         <button class="photo-btn" type="button">修改图片</button>
@@ -365,12 +389,12 @@
         const GITHUB_OWNER = "fastjiao";                    // 仓库所有者
         const GITHUB_REPO = "fastjiao.github.io";           // 仓库名
         const GITHUB_BRANCH = "main";                       // 主分支名
-        // 4 张照片对应的远程路径映射（与 index.html 的 image/photo_a~d.png 一致）
+        // 4 张照片对应的远程路径映射（与 index.html 的 image/photo_a~d.webp 一致）
         const GITHUB_PATH_MAP = [
-            "image/photo_a.png",
-            "image/photo_b.png",
-            "image/photo_c.png",
-            "image/photo_d.png"
+            "image/photo_a.webp",
+            "image/photo_b.webp",
+            "image/photo_c.webp",
+            "image/photo_d.webp"
         ];
 
         /**
@@ -563,4 +587,5 @@
         loadSavedPhotos();
     </script>
 </body>
+
 </html>
