@@ -102,10 +102,9 @@
 
         /* ========== 主内容区 ========== */
         .main-content {
-            width: 100%;
-            max-width: 1000px;
-            margin: 0 auto;
-            padding: 40px 24px;
+            flex: 1;
+            min-width: 0;
+            padding: 0 24px;
         }
 
         /* 页面标题区 */
@@ -630,6 +629,126 @@
             opacity: 0.35;
             cursor: not-allowed;
         }
+
+        /* ========== 左侧树状导航栏 ========= */
+        .page-wrap {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 40px 0 60px;
+            display: flex;
+            align-items: flex-start;
+        }
+
+        .sidebar {
+            width: 280px;
+            flex-shrink: 0;
+            background: #1A1A1A;
+            border: 1px solid #2D2D2D;
+            border-radius: 12px;
+            padding: 18px 8px;
+            position: sticky;
+            top: 24px;
+            align-self: flex-start;
+            max-height: calc(100vh - 48px);
+            overflow-y: auto;
+            user-select: none;
+        }
+
+        .sidebar-title {
+            font-size: 13px;
+            color: #777777;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 0 12px 14px;
+            border-bottom: 1px solid #2D2D2D;
+            margin-bottom: 10px;
+        }
+
+        .sidebar-tree {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tree-node {
+            width: 100%;
+        }
+
+        .tree-row {
+            display: flex;
+            align-items: center;
+            height: 32px;
+            padding-right: 8px;
+            border-radius: 6px;
+            cursor: pointer;
+            color: #A0A0A0;
+            font-size: 14px;
+            transition: background 0.15s, color 0.15s;
+            white-space: nowrap;
+        }
+
+        .tree-row:hover {
+            background: #242424;
+            color: #ffffff;
+        }
+
+        .tree-row-active {
+            background: #24548E;
+            color: #ffffff;
+        }
+
+        .tree-row-active:hover {
+            background: #24548E;
+        }
+
+        .tree-caret {
+            width: 18px;
+            flex-shrink: 0;
+            text-align: center;
+            font-size: 10px;
+            color: #707070;
+            transition: color 0.15s;
+        }
+
+        .tree-row:hover .tree-caret {
+            color: #A0A0A0;
+        }
+
+        .tree-icon {
+            margin-right: 8px;
+            font-size: 15px;
+            flex-shrink: 0;
+        }
+
+        .tree-name {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .tree-children {
+            width: 100%;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: #121212;
+            border-radius: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #3A3A3A;
+            border-radius: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover {
+            background: #555555;
+        }
     </style>
 </head>
 
@@ -653,7 +772,15 @@
         </div>
     </nav>
 
-    <!-- ========== 主内容区 ========== -->
+
+    <!-- ========== 布局：左侧树状导航 + 主内容 ========== -->
+    <div class="page-wrap">
+        <!-- ========== 左侧树状导航栏（与文件夹同步） ========== -->
+        <aside class="sidebar">
+            <div class="sidebar-title">网页库</div>
+            <div class="sidebar-tree" id="sidebar-tree"></div>
+        </aside>
+
     <main class="main-content">
         <!-- 页面标题 -->
         <div class="page-header">
@@ -750,6 +877,7 @@
             </div>
         </div>
     </main>
+    </div>
 
     <script>
         (function () {
@@ -812,6 +940,7 @@
 
             /* ========== 文件夹状态 ========== */
             var folders = loadFolders();   // 文件夹内存数组（数组顺序即展示顺序）
+            var expandedSet = loadExpanded(); // 侧栏树展开状态（文件夹 id 集合）
 
             /* ========== 性能缓存 ========== */
             var folderIdCache = null;     // Map: "n|u" -> folderId，避免 render 中每个 item 做 O(m) 扫描
@@ -914,6 +1043,24 @@
             function saveMoved(arr) {
                 try { localStorage.setItem(MPK, JSON.stringify(arr)); } catch (e) { }
                 folderIdCache = null;
+            }
+
+            /* ========== 侧栏树展开状态持久化 ========== */
+            function loadExpanded() {
+                try {
+                    var r = localStorage.getItem('sidebarExpanded_v1');
+                    if (r) {
+                        var p = JSON.parse(r);
+                        if (Array.isArray(p)) return new Set(p);
+                    }
+                } catch (e) { }
+                return new Set();
+            }
+
+            function saveExpanded() {
+                try {
+                    localStorage.setItem('sidebarExpanded_v1', JSON.stringify(Array.from(expandedSet)));
+                } catch (e) { }
             }
 
             /* ========== 自定义排序持久化 ========== */
@@ -1125,6 +1272,96 @@
                     else frag.appendChild(mkRow(r.item));
                 });
                 list.appendChild(frag);
+                renderSidebar();
+            }
+
+            /* ========== 左侧树状导航栏渲染（仅展示文件夹，最深到文件夹，不渲染 URL） ========== */
+            function childrenOf(fid) {
+                var out = [];
+                folders.forEach(function (f) {
+                    if ((f.parentId || null) === (fid || null)) out.push(f);
+                });
+                return out;
+            }
+
+            function mkTreeRow(f, depth) {
+                var node = document.createElement('div');
+                node.className = 'tree-node';
+
+                // 第一行：箭头 + 图标 + 名称（子级作为该行的兄弟节点，避免背景包裹子树）
+                var row = document.createElement('div');
+                row.className = 'tree-row';
+                if (f.id === currentFolder) row.classList.add('tree-row-active');
+                row.style.paddingLeft = (14 + depth * 20) + 'px';
+
+                var kids = childrenOf(f.id);
+                var hasKids = kids.length > 0;
+                var isOpen = expandedSet.has(f.id);
+
+                // 展开/收起箭头（无子文件夹时隐藏占位）
+                var caret = document.createElement('span');
+                caret.className = 'tree-caret';
+                if (hasKids) {
+                    caret.textContent = isOpen ? '\u25BC' : '\u25B6';
+                    caret.addEventListener('click', function (e) {
+                        e.stopPropagation();   // 展开/收起不进入文件夹
+                        if (expandedSet.has(f.id)) expandedSet.delete(f.id);
+                        else expandedSet.add(f.id);
+                        saveExpanded();
+                        renderSidebar();
+                    });
+                } else {
+                    caret.style.visibility = 'hidden';
+                }
+
+                // 文件夹图标
+                var icon = document.createElement('span');
+                icon.className = 'tree-icon';
+                icon.textContent = '\uD83D\uDCC1';
+
+                // 文件夹名称
+                var name = document.createElement('span');
+                name.className = 'tree-name';
+                name.textContent = f.n;
+
+                row.appendChild(caret);
+                row.appendChild(icon);
+                row.appendChild(name);
+
+                // 点击行：进入该文件夹（并自动展开）
+                row.addEventListener('click', function () {
+                    if (hasKids && !expandedSet.has(f.id)) {
+                        expandedSet.add(f.id);
+                        saveExpanded();
+                    }
+                    enterFolder(f.id);
+                });
+
+                node.appendChild(row);
+
+                // 子级容器（展开时递归渲染，随 depth 递增缩进）
+                var subBox = document.createElement('div');
+                subBox.className = 'tree-children';
+                if (isOpen) {
+                    kids.forEach(function (kid) {
+                        subBox.appendChild(mkTreeRow(kid, depth + 1));
+                    });
+                }
+                node.appendChild(subBox);
+                return node;
+            }
+
+            function renderSidebar() {
+                var sb = document.getElementById('sidebar-tree');
+                if (!sb) return;
+                sb.innerHTML = '';
+                var roots = [];
+                folders.forEach(function (f) {
+                    if ((f.parentId || null) === null) roots.push(f);
+                });
+                roots.forEach(function (f) {
+                    sb.appendChild(mkTreeRow(f, 0));
+                });
             }
 
             /* ========== 添加新链接 ========== */
@@ -1401,6 +1638,10 @@
 
             function enterFolder(id) {
                 currentFolder = id;
+                if (id != null) {
+                    expandedSet.add(id);   // 进入时自动展开侧栏对应节点
+                    saveExpanded();
+                }
                 render();
                 updateCrumb();
             }
