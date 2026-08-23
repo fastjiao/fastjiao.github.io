@@ -923,6 +923,8 @@
                 { n: 'Outlook', u: 'https://outlook.live.com/calendar/view/month?culture=zh-cn&country=cn' },
                 { n: 'AI去水印', u: 'https://magiceraser.org/zh/object-remover/' },
                 { n: '优智云家', u: 'https://go.kiwik.cn/app/wob/devices/4A3843D34040' },
+                { n: '百度', u: 'https://www.baddu.com', folderId: 'f_preset_default' },
+                { n: 'ieeee', u: 'https://www.qianwen.com', folderId: 'f_preset_tee' },
                 { n: '@@@@', u: '#' }  // 特殊占位项（会被隐藏）
             ];
 
@@ -941,6 +943,27 @@
             /* ========== 文件夹状态 ========== */
             var folders = loadFolders();   // 文件夹内存数组（数组顺序即展示顺序）
             var expandedSet = loadExpanded(); // 侧栏树展开状态（文件夹 id 集合）
+
+            /* ========== 预置文件夹（首次运行自动创建，删除后不再重建） ========== */
+            (function initPresetFolders() {
+                var PRESETS = [
+                    { id: 'f_preset_default', n: 'default' },
+                    { id: 'f_preset_tee', n: 'tee' }
+                ];
+                var inited = false;
+                try { inited = localStorage.getItem('presetDefaultInited_v2') === '1'; } catch (e) { }
+                PRESETS.forEach(function (p) {
+                    var has = folders.some(function (x) { return x.id === p.id; });
+                    if (!has) {
+                        folders.unshift({ id: p.id, n: p.n, parentId: null });
+                        saveFolders(folders);
+                        expandedSet.add(p.id);
+                    }
+                });
+                if (!inited) {
+                    try { localStorage.setItem('presetDefaultInited_v2', '1'); } catch (e) { }
+                }
+            })();
 
             /* ========== 性能缓存 ========== */
             var folderIdCache = null;     // Map: "n|u" -> folderId，避免 render 中每个 item 做 O(m) 扫描
