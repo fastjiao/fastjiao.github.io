@@ -303,7 +303,7 @@
             margin-left: 12px;
         }
 
-/* ========== 添加新链接弹窗 ========== */
+        /* ========== 添加新链接弹窗 ========== */
         .add-link-inputs {
             flex: 1;
             display: flex;
@@ -813,6 +813,11 @@
             /* ========== 文件夹状态 ========== */
             var folders = loadFolders();   // 文件夹内存数组（数组顺序即展示顺序）
 
+            /* ========== 性能缓存 ========== */
+            var folderIdCache = null;     // Map: "n|u" -> folderId，避免 render 中每个 item 做 O(m) 扫描
+            var folderIdxCache = null;    // Map: folder对象引用 -> index，避免 O(n) 遍历
+            var cachedListOrder = null;   // 缓存 loadListOrder 结果，需要时手动失效
+
             /* ========== Cookie 读写工具函数 ========== */
             function getC(n) {
                 var m = document.cookie.match(
@@ -834,6 +839,7 @@
             function saveUL(arr) {
                 try { localStorage.setItem(UK, JSON.stringify(arr)); } catch (e) { }
                 try { setC(UCK, JSON.stringify(arr), BD); } catch (e) { }
+                folderIdCache = null;
             }
 
             function loadUL() {
@@ -890,6 +896,7 @@
             function saveFolders(arr) {
                 try { localStorage.setItem(FK, JSON.stringify(arr)); } catch (e) { }
                 try { setC(FCK, JSON.stringify(arr), BD); } catch (e) { }
+                folderIdxCache = null;
             }
 
             /* ========== 已移动预置链接持久化 ========== */
@@ -906,6 +913,7 @@
 
             function saveMoved(arr) {
                 try { localStorage.setItem(MPK, JSON.stringify(arr)); } catch (e) { }
+                folderIdCache = null;
             }
 
             /* ========== 自定义排序持久化 ========== */
@@ -913,6 +921,7 @@
             function saveListOrder(arr) {
                 try { localStorage.setItem(LOK, JSON.stringify(arr)); } catch (e) { }
                 try { setC(LOBCK, JSON.stringify(arr), BD); } catch (e) { }
+                cachedListOrder = arr;
             }
 
             function loadListOrder() {
@@ -1059,27 +1068,32 @@
                     return folderIdOf(item) === rid;
                 });
                 var rows = [];
-                var saved = loadListOrder();
+                var saved = getCachedListOrder();
                 if (saved && saved.length) {
+                    // 用 O(1) Map 代替 O(n²) 嵌套查找
+                    var fMap = {};     // folderName → folder对象
+                    for (var fi = 0; fi < cFolders.length; fi++) {
+                        fMap[cFolders[fi].n] = cFolders[fi];
+                    }
+                    var lMap = {};     // "name|url" → link对象
+                    for (var li = 0; li < cLinks.length; li++) {
+                        lMap[cLinks[li].n + '|' + cLinks[li].u] = cLinks[li];
+                    }
                     var usedF = {}, usedL = {};
                     saved.forEach(function (ent) {
                         if (ent.t === 'folder' && !usedF[ent.n]) {
-                            for (var i = 0; i < cFolders.length; i++) {
-                                if (cFolders[i].n === ent.n) {
-                                    rows.push({ t: 'folder', f: cFolders[i] });
-                                    usedF[ent.n] = 1;
-                                    break;
-                                }
+                            var ff = fMap[ent.n];
+                            if (ff !== undefined) {
+                                rows.push({ t: 'folder', f: ff });
+                                usedF[ent.n] = 1;
                             }
                         } else if (ent.t === 'link') {
                             var key = ent.n + '|' + ent.u;
                             if (!usedL[key]) {
-                                for (var j = 0; j < cLinks.length; j++) {
-                                    if (cLinks[j].n === ent.n && cLinks[j].u === ent.u) {
-                                        rows.push({ t: 'link', item: cLinks[j] });
-                                        usedL[key] = 1;
-                                        break;
-                                    }
+                                var ll = lMap[key];
+                                if (ll !== undefined) {
+                                    rows.push({ t: 'link', item: ll });
+                                    usedL[key] = 1;
                                 }
                             }
                         }
@@ -1103,12 +1117,14 @@
                     rows.push({ t: 'l', item: item });
                 });
 
-                // 重绘列表
+                // 使用 DocumentFragment 批量追加，减少多次 reflow
                 list.innerHTML = '';
+                var frag = document.createDocumentFragment();
                 rows.forEach(function (r) {
-                    if (r.t === 'folder') list.appendChild(mkFolderRow(r.f));
-                    else list.appendChild(mkRow(r.item));
+                    if (r.t === 'folder') frag.appendChild(mkFolderRow(r.f));
+                    else frag.appendChild(mkRow(r.item));
                 });
+                list.appendChild(frag);
             }
 
             /* ========== 添加新链接 ========== */
@@ -1147,12 +1163,17 @@
             }
 
 
-            /* ========== 切换管理模式 ========== */
+            /* ========== 切换管理模式（不做全量 DOM 重绘，仅切换按钮显示） ========== */
             function toggleManageMode() {
                 manageMode = !manageMode;
                 var manageBtn = document.getElementById('btn-manage');
                 if (manageBtn) manageBtn.textContent = manageMode ? '退出管理' : '管理链接';
-                render();
+                // 直接切换所有 .link-delete 按钮的可见性，避免整表重渲染卡顿
+                var delBtns = list.getElementsByClassName('link-delete');
+                var display = manageMode ? 'inline-block' : 'none';
+                for (var i = 0; i < delBtns.length; i++) {
+                    delBtns[i].style.display = display;
+                }
             }
 
             /* ========== 删除确认（自定义弹窗） ========== */
@@ -1359,12 +1380,10 @@
             /* ========== 文件夹层级辅助函数 ========== */
             function folderIdOf(item) {
                 if (item.folderId != null) return item.folderId;
-                for (var i = 0; i < movedPre.length; i++) {
-                    if (movedPre[i].n === item.n && movedPre[i].u === item.u) {
-                        return movedPre[i].folderId;
-                    }
-                }
-                return null;
+                if (item.folderId === null) return null;
+                if (!folderIdCache) rebuildFolderIdCache();
+                var v = folderIdCache.get(item.n + '|' + item.u);
+                return v !== undefined ? v : null;
             }
 
             function isPreset(item) {
@@ -1680,18 +1699,55 @@
             var dragTimer = null;      // 长按定时器
             var dragFrom = 0;          // 被拖行在可见行中的原始下标
             var dragTo = 0;            // 被拖行当前目标下标（拖拽终点位置）
+            var dragRafId = 0;         // RAF 节流 ID
+            var dragPendingY = 0;      // 待处理的最新 Y 坐标
+            var cachedRowH = 0;        // 拖拽期间缓存的行高
+            var cachedListTop = 0;     // 拖拽期间缓存的列表顶部
+            var cachedVisRows = null;  // 拖拽期间缓存的可见行集合
+            var cachedFromIdx = -1;    // 拖拽期间缓存的起始下标
+            var cachedLastTo = -1;     // 上次处理的目标下标，避免重复设置相同 transform
 
             // 行类型判断：是否为文件夹行
             function isFolderRow(li) {
                 return li.className && li.className.indexOf('folder-row') !== -1;
             }
 
-            // 通过文件夹对象引用找其在 folders 数组中的下标
+            // 通过文件夹对象引用找其在 folders 数组中的下标（带缓存）
+            function rebuildFolderIdxCache() {
+                folderIdxCache = new Map();
+                for (var i = 0; i < folders.length; i++) folderIdxCache.set(folders[i], i);
+            }
             function folderIndexByRef(f) {
-                for (var i = 0; i < folders.length; i++) {
-                    if (folders[i] === f) return i;
+                if (!folderIdxCache) rebuildFolderIdxCache();
+                var v = folderIdxCache.get(f);
+                return v === undefined ? -1 : v;
+            }
+
+            /* 重建 folderIdOf 缓存：把所有 item 与 folder 的映射一次性建好 */
+            function rebuildFolderIdCache() {
+                folderIdCache = new Map();
+                // 1. 预置链接已移动记录
+                for (var i = 0; i < movedPre.length; i++) {
+                    var m = movedPre[i];
+                    folderIdCache.set(m.n + '|' + m.u, m.folderId != null ? m.folderId : null);
                 }
-                return -1;
+                // 2. all 数组中带 folderId 的自定义项（优先级更高，覆盖 movedPre 同名项）
+                for (var j = 0; j < all.length; j++) {
+                    var a = all[j];
+                    if (a.folderId !== undefined) {
+                        folderIdCache.set(a.n + '|' + a.u, a.folderId != null ? a.folderId : null);
+                    }
+                }
+            }
+
+            function getCachedListOrder() {
+                if (cachedListOrder === null) cachedListOrder = loadListOrder();
+                return cachedListOrder;
+            }
+            function invalidateCaches() {
+                folderIdCache = null;
+                folderIdxCache = null;
+                cachedListOrder = null;
             }
 
             // 获取可见行集合（跳过 display:none 的隐藏占位项）
@@ -1716,18 +1772,19 @@
             function bindGrip(row, grip, isFolder) {
                 grip.addEventListener('pointerdown', function (e) {
                     e.preventDefault();
-                    if (!manageMode) return;  // 非管理模式：跳过拖动逻辑，由 pointerup 处理点击
                     if (row !== dragEl) resetDragState();
                     dragEl = row;
                     dragY = e.clientY;
                     dragLong = false;
                     dragActive = false;
-                    row.classList.add('drag-ready');
-                    clearTimeout(dragTimer);
-                    dragTimer = setTimeout(function () {
-                        // 按下满 300ms 视为长按，之后移动即进入拖动
-                        dragLong = true;
-                    }, 300);
+                    // 非管理模式下不显示 drag-ready 视觉也不启动长按定时器
+                    if (manageMode) {
+                        row.classList.add('drag-ready');
+                        clearTimeout(dragTimer);
+                        dragTimer = setTimeout(function () {
+                            dragLong = true;
+                        }, 300);
+                    }
                 });
 
                 grip.addEventListener('pointermove', function (e) {
@@ -1735,39 +1792,58 @@
                     if (row !== dragEl) return;
                     var dy = e.clientY - dragY;
                     if (!dragLong) {
-                        // 未到长按时间：移动超过阈值也直接进入拖动
                         if (Math.abs(dy) > 6) dragLong = true;
                         else return;
                     }
                     if (!dragActive) {
-                        // 开始拖动：记录起始位置，被拖行跟随指针（轻微抬升交给 transform 偏移），
+                        // 开始拖动：一次性缓存 行高 / 列表顶部 / 可见行集合 / 起始下标，避免每帧 getBoundingClientRect
                         dragActive = true;
                         row.classList.remove('drag-ready');
                         row.classList.add('dragging');
                         row.style.transition = 'transform 0.05s linear, background 0.15s';
                         var vis0 = visibleRows();
-                        dragFrom = -1;
+                        cachedVisRows = vis0;
+                        cachedFromIdx = -1;
                         for (var i = 0; i < vis0.length; i++) {
-                            if (vis0[i] === row) { dragFrom = i; break; }
+                            if (vis0[i] === row) { cachedFromIdx = i; break; }
                         }
-                        dragTo = dragFrom;
+                        dragFrom = cachedFromIdx;
+                        dragTo = cachedFromIdx;
+                        cachedLastTo = -1;
+                        if (vis0.length) {
+                            cachedRowH = vis0[0].getBoundingClientRect().height || 56;
+                            cachedListTop = list.getBoundingClientRect().top;
+                        } else {
+                            cachedRowH = 56;
+                            cachedListTop = 0;
+                        }
+                        // 捕获指针，保证移出元素仍能收到 move/up
+                        try { grip.setPointerCapture(e.pointerId); } catch (ex) { }
                     }
-                    layoutDrag(e.clientY);
+                    // 更新待处理坐标并排队 RAF（不每帧做 DOM 读/写）
+                    dragPendingY = e.clientY;
+                    if (!dragRafId) {
+                        dragRafId = requestAnimationFrame(function () {
+                            dragRafId = 0;
+                            layoutDragCached();
+                        });
+                    }
                 });
 
                 grip.addEventListener('pointerup', function (e) {
                     if (manageMode && row !== dragEl) return;
                     var wasActive = dragActive;
+                    // 取消待执行的 RAF 与长按定时器
+                    if (dragRafId) { cancelAnimationFrame(dragRafId); dragRafId = 0; }
                     clearTimeout(dragTimer);
                     dragEl = null;
                     row.classList.remove('drag-ready');
                     row.classList.remove('dragging');
                     row.style.transition = '';
+                    try { grip.releasePointerCapture(e.pointerId); } catch (ex) { }
                     if (wasActive) {
-                        // 拖动结束：落定到目标位置并保存
                         commitDrag(row);
                     } else {
-                        // 未拖动：视为点击，打开操作菜单（不论文件夹还是链接、不论管理模式）
                         openActionMenu(row, isFolder);
                     }
                     dragActive = false;
@@ -1775,6 +1851,7 @@
 
                 grip.addEventListener('pointercancel', function () {
                     if (row !== dragEl) return;
+                    if (dragRafId) { cancelAnimationFrame(dragRafId); dragRafId = 0; }
                     clearTimeout(dragTimer);
                     dragEl = null;
                     row.classList.remove('drag-ready');
@@ -1782,18 +1859,24 @@
                     row.style.transition = '';
                     clearRowShifts();
                     dragActive = false;
+                    cachedVisRows = null;
                 });
             }
 
             function resetDragState() {
+                if (dragRafId) { cancelAnimationFrame(dragRafId); dragRafId = 0; }
                 clearTimeout(dragTimer);
                 dragEl = null;
                 dragLong = false;
                 dragActive = false;
+                cachedVisRows = null;
+                cachedFromIdx = -1;
+                cachedLastTo = -1;
                 clearRowShifts();
             }
 
             /* 拖动中：其他行自动让位（transform 平移出空位），被拖行跟随并轻微抬高 */
+            // （保留原函数以兼容潜在外部调用，日常拖动流程走 layoutDragCached）
             function layoutDrag(y) {
                 var vis = visibleRows();
                 if (!vis.length) return;
@@ -1804,28 +1887,60 @@
                 }
                 if (from === -1) return;
 
-                // 指针纵向位置 → 目标行下标
                 var listTop = list.getBoundingClientRect().top;
                 var toIdx = Math.floor((y - listTop) / h);
                 var to = toIdx < 0 ? 0 : (toIdx >= vis.length ? vis.length - 1 : toIdx);
                 dragTo = to;
 
-                // 让位：处在 起始位与目标位 之间的行整体平移一个行高
                 for (var k = 0; k < vis.length; k++) {
                     if (vis[k] === dragEl) continue;
                     var shift = 0;
-                    if (from < to && k > from && k <= to) shift = -h;   // 向下拖：中途行上移让位
-                    else if (to < from && k >= to && k < from) shift = h; // 向上拖：中途行下移让位
+                    if (from < to && k > from && k <= to) shift = -h;
+                    else if (to < from && k >= to && k < from) shift = h;
                     vis[k].style.transform = shift ? 'translateY(' + shift + 'px)' : '';
                 }
 
-                // 被拖行跟随目标位置，并额外上移 4px 实现“拖起时轻微抬高”
                 var cursorOffset = y - dragY; dragEl.style.transform = 'translateY(' + (cursorOffset - 4) + 'px)';
+            }
+
+            /* 优化版：使用拖拽开始时缓存的几何信息和可见行，避免每帧 getBoundingClientRect + 重建可见行数组 */
+            function layoutDragCached() {
+                if (!cachedVisRows || !dragEl || cachedFromIdx < 0) return;
+                var vis = cachedVisRows;
+                var visLen = vis.length;
+                if (!visLen) return;
+                var h = cachedRowH;
+                var from = cachedFromIdx;
+
+                // 根据缓存的 listTop 计算目标下标（纯数学运算，无 DOM 读）
+                var toIdx = Math.floor((dragPendingY - cachedListTop) / h);
+                // 加上拖动偏移修正：当从 from 行向下拖超过一半行高时 to 就该进一位（更直觉）
+                var fromTopY = cachedListTop + from * h;
+                var yInFromRow = dragPendingY - fromTopY;
+                if (yInFromRow > h * 0.6) toIdx = from + 1;
+                else if (yInFromRow < h * 0.4) toIdx = from - 1;
+                var to = toIdx < 0 ? 0 : (toIdx >= visLen ? visLen - 1 : toIdx);
+                dragTo = to;
+
+                // 目标下标与上次相同：只更新被拖行跟随指针的位置，跳过所有让位行
+                if (to !== cachedLastTo) {
+                    cachedLastTo = to;
+                    for (var k = 0; k < visLen; k++) {
+                        var li = vis[k];
+                        if (li === dragEl) continue;
+                        var shift = 0;
+                        if (from < to && k > from && k <= to) shift = -h;
+                        else if (to < from && k >= to && k < from) shift = h;
+                        li.style.transform = shift ? 'translateY(' + shift + 'px)' : '';
+                    }
+                }
+                // 被拖行跟随指针：每帧都要更新
+                dragEl.style.transform = 'translateY(' + ((dragPendingY - dragY) - 4) + 'px)';
             }
 
             /* 拖动结束：真正重排 DOM 顺序、释放位移并保存 */
             function commitDrag(row) {
-                var vis = visibleRows();
+                var vis = cachedVisRows && cachedFromIdx >= 0 ? cachedVisRows : visibleRows();
                 var from = -1;
                 for (var i = 0; i < vis.length; i++) {
                     if (vis[i] === row) { from = i; break; }
@@ -1842,37 +1957,46 @@
                 void list.offsetHeight;
                 clearRowShifts();
                 endDragSort();
+                // 清空拖拽缓存，避免下次拖拽用过期引用
+                cachedVisRows = null;
+                cachedFromIdx = -1;
+                cachedLastTo = -1;
             }
 
             /* 保存新顺序持久化，同时同步文件夹数组顺序 */
             function endDragSort() {
                 var rows = list.children;
                 var order = [];
-                for (var i = 0; i < rows.length; i++) {
+                var rowsLen = rows.length;
+                for (var i = 0; i < rowsLen; i++) {
                     var li = rows[i];
                     if (!li._d) continue;
                     if (isFolderRow(li)) {
                         order.push({ t: 'folder', n: li._d.n });
                     } else if (li.style.display !== 'none') {
-                        // 只记录可见的普通链接（特殊占位项 display:none 跳过）
                         order.push({ t: 'link', n: li._d.n, u: li._d.u });
                     }
                 }
                 saveListOrder(order);
 
                 // 根据 DOM 中文件夹出现的先后，同步 folders 数组顺序
+                // 使用 folderIndexByRef 缓存，避免每个 folder 都 O(n) 遍历
                 var newFolders = [];
-                for (var j = 0; j < rows.length; j++) {
+                var usedFolderMap = {};
+                for (var j = 0; j < rowsLen; j++) {
                     var lj = rows[j];
                     if (isFolderRow(lj) && lj._d) {
                         var idx = folderIndexByRef(lj._d);
-                        if (idx !== -1) newFolders.push(folders[idx]);
+                        if (idx !== -1) {
+                            newFolders.push(folders[idx]);
+                            usedFolderMap[idx] = 1;
+                        }
                     }
                 }
                 // 追加未出现在列表中的文件夹（兜底）
-                folders.forEach(function (f) {
-                    if (newFolders.indexOf(f) === -1) newFolders.push(f);
-                });
+                for (var fk = 0; fk < folders.length; fk++) {
+                    if (!usedFolderMap[fk]) newFolders.push(folders[fk]);
+                }
                 folders = newFolders;
                 saveFolders(folders);
             }
