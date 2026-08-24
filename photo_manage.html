@@ -360,7 +360,7 @@
                     <div class="photo-wall-item" data-index="2">
                         <span class="photo-label">照片3</span>
                         <div class="photo-preview">
-                            <img src="image/photo_c.webp" alt="照片3" loading="lazy">
+                            <img src="image/default.webp" alt="照片3" loading="lazy">
                         </div>
                         <div class="photo-info">照片3 - 首页照片墙第3张</div>
                         <button class="photo-btn" type="button">修改图片</button>
@@ -383,7 +383,7 @@
     <input type="file" id="file-input" class="file-input-hidden" accept="image/*">
 
     <!-- 引入共享的图片管理模块（IndexedDB 持久化存储） -->
-    <script src="photo-manager.js"></script>
+    <script src="photo-manager.js" defer></script>
     <script>
         // ===== GitHub 远程上传配置（融合自 p.html） =====
         const GITHUB_OWNER = "fastjiao";                    // 仓库所有者
