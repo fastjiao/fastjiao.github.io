@@ -2,18 +2,43 @@
 <html lang="zh-CN">
 
 <head>
-    <!-- 图片加水印工具（watermark_tool）
-         - 纯前端单文件应用，所有处理在浏览器本地完成，无任何后端
-         - 功能：上传图片 → 配置水印 → 实时预览 → 下载导出
-         - 说明：如需调整参数区间（字号/透明度/大小上限等），只需修改下方 JS 中 CONFIG 常量区，无需改动业务逻辑 -->
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>图片加水印工具</title>
     <style>
         /* ============================================================
-           【全局基础样式】
-           主色 #1B6ACE，页面背景浅灰 #F5F7FA，卡片白底 + 双层阴影
+           Apple 极简主义设计系统
+           配色：白底 #FFFFFF / 浅灰 #F5F5F7 / 强调色 #0071E3 / 主文字 #1D1D1F / 副文字 #86868B
+           质感：毛玻璃 blur(20px)、超柔阴影、大圆角 16-24px、连续曲率 Squircle
+           字体：SF Pro / Inter → system-ui 回退，大标题粗体 + 小标签轻体
            ============================================================ */
+
+        :root {
+            --bg-primary: #F5F5F7;
+            --bg-surface: #FFFFFF;
+            --bg-sidebar: rgba(245, 245, 247, 0.82);
+            --accent: #0071E3;
+            --accent-soft: rgba(0, 113, 227, 0.08);
+            --accent-glow: rgba(0, 113, 227, 0.18);
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --text-tertiary: #AEAEB2;
+            --border: rgba(0, 0, 0, 0.06);
+            --border-strong: rgba(0, 0, 0, 0.10);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(0, 0, 0, 0.06);
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 22px;
+            --radius-xl: 28px;
+            --sidebar-w: 288px;
+            --header-h: 52px;
+            --transition: 220ms cubic-bezier(0.25, 0.1, 0.25, 1);
+            --transition-spring: 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
         * {
             box-sizing: border-box;
             margin: 0;
@@ -21,107 +46,97 @@
         }
 
         body {
-            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Microsoft YaHei", "PingFang SC", sans-serif;
-            background: #F5F7FA;
-            color: #222;
-            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            letter-spacing: -0.01em;
         }
 
         /* ============================================================
-           【顶部导航栏】与站点共享导航栏 shared_nav_light.css 保持一致
+           顶部导航栏 - 毛玻璃效果
            ============================================================ */
         .site-header {
             width: 100%;
-            background: rgba(255, 255, 255, 0.8);
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            position: sticky;
-            top: 0;
-            left: 0;
-            right: 0;
+            height: var(--header-h);
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
             z-index: 100;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            box-shadow: 0 8px 30px rgba(2, 6, 23, 0.12);
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
         }
 
         .site-header .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 16px;
-            padding: 12px 16px;
-            max-width: 1200px;
-            margin: 0 auto;
         }
 
         .brand {
             font-weight: 700;
             font-size: 17px;
-            color: #111;
+            color: var(--text-primary);
             text-decoration: none;
+            letter-spacing: -0.02em;
         }
 
         .nav-links {
             display: flex;
-            gap: 16px;
+            gap: 8px;
             align-items: center;
-            flex-wrap: wrap;
         }
 
         .nav-links .nav-item {
             position: relative;
         }
 
-        .nav-links a.nav-link {
-            color: rgba(0, 0, 0, 0.75);
+        .nav-links a.nav-link,
+        .nav-links .nav-item>span.nav-link {
+            color: var(--text-secondary);
             text-decoration: none;
-            padding: 8px 16px;
-            transition: all 0.3s ease;
+            padding: 7px 14px;
             font-weight: 500;
-            font-size: 15px;
+            font-size: 14px;
+            border-radius: 20px;
             display: inline-block;
             cursor: pointer;
-            border-radius: 20px;
+            transition: all 180ms ease;
         }
 
-        .nav-links a.nav-link:hover {
-            color: #000000;
-            text-shadow: 0 0 8px rgba(79, 172, 254, 0.6);
+        .nav-links a.nav-link:hover,
+        .nav-links .nav-item>span.nav-link:hover {
+            color: var(--text-primary);
+            background: rgba(0, 0, 0, 0.04);
         }
 
         .nav-links a.nav-link.active {
-            color: #061126;
-            background: rgba(0, 0, 0, 0.06);
-            backdrop-filter: blur(4px);
-            -webkit-backdrop-filter: blur(4px);
-        }
-
-        .nav-links .nav-item > span.nav-link {
-            color: rgba(0, 0, 0, 0.75);
-            padding: 8px 16px;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            font-size: 15px;
-            display: inline-block;
-            cursor: pointer;
-        }
-
-        .nav-links .nav-item > span.nav-link:hover {
-            color: #000000;
-            text-shadow: 0 0 8px rgba(79, 172, 254, 0.6);
+            color: var(--accent);
+            background: var(--accent-soft);
         }
 
         .nav-links .dropdown-menu {
             position: absolute;
             top: calc(100% + 6px);
             left: 0;
-            min-width: 110px;
+            min-width: 120px;
             padding: 6px;
             list-style: none;
-            background: #ffffff;
-            border: 1px solid rgba(0, 0, 0, 0.08);
-            border-radius: 8px;
-            box-shadow: 0 8px 24px rgba(2, 6, 23, 0.12);
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
             opacity: 0;
             visibility: hidden;
             transform: translateY(-6px);
@@ -140,188 +155,452 @@
 
         .nav-links .dropdown-menu a {
             display: block;
-            padding: 7px 10px;
-            border-radius: 6px;
-            white-space: nowrap;
-            color: #000000;
-            text-decoration: none;
-            font-size: 14px;
-        }
-
-        .nav-links .dropdown-menu a:hover,
-        .nav-links .dropdown-menu a:focus {
-            background: rgba(0, 0, 0, 0.06);
-            color: #061126;
-        }
-
-        /* ============================================================
-           【页面主体布局】桌面端左右双栏，移动端（<900px）单列堆叠
-           ============================================================ */
-        .tool-wrap {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 24px 16px 56px;
-        }
-
-        /* 页面大标题 */
-        .page-title {
-            text-align: center;
-            margin-bottom: 24px;
-        }
-
-        .page-title h1 {
-            font-size: 34px;
-            color: #1B6ACE;
-            letter-spacing: 1px;
-        }
-
-        .page-title p {
-            margin-top: 8px;
-            font-size: 14px;
-            color: #666;
-        }
-
-        /* 浏览器能力降级提示条（仅在环境不支持时显示） */
-        .degrade-banner {
-            display: none;
-            background: #FFF7E6;
-            border: 1px solid #FFD591;
-            color: #AD4E00;
+            padding: 7px 12px;
             border-radius: 8px;
-            padding: 12px 16px;
-            margin-bottom: 20px;
-            font-size: 14px;
-            text-align: center;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 13px;
+            transition: background 120ms ease;
         }
 
-        .degrade-banner.show {
-            display: block;
-        }
-
-        .workspace {
-            display: flex;
-            gap: 20px;
-            align-items: flex-start;
+        .nav-links .dropdown-menu a:hover {
+            background: var(--accent-soft);
+            color: var(--accent);
         }
 
         /* ============================================================
-           【上传区】虚线边框卡片，拖拽悬停高亮
+           主容器 - Flexbox 左右分栏
+           ============================================================ */
+        .main-container {
+            display: flex;
+            height: calc(100vh - var(--header-h));
+            overflow: hidden;
+        }
+
+        /* ============================================================
+           左侧侧边栏 - 毛玻璃质感 + 粉彩图标菜单
+           ============================================================ */
+        .sidebar {
+            width: var(--sidebar-w);
+            flex-shrink: 0;
+            background: var(--bg-sidebar);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px 16px 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.12);
+            border-radius: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        /* 侧边栏菜单项 - 粉彩圆形图标 + 中文标签 */
+        .sidebar-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition);
+            position: relative;
+            user-select: none;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .sidebar-menu-item:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        /* 选中态：背景高亮 + 左侧蓝色指示条 */
+        .sidebar-menu-item.active {
+            background: var(--accent-soft);
+            color: var(--accent);
+        }
+
+        .sidebar-menu-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 3px;
+        }
+
+        /* 粉彩圆形图标容器 */
+        .sidebar-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: transform var(--transition-spring);
+        }
+
+        .sidebar-menu-item.active .sidebar-icon {
+            transform: scale(1.08);
+        }
+
+        .sidebar-menu-item:hover .sidebar-icon {
+            transform: scale(1.05);
+        }
+
+        /* 图标内 SVG 样式 */
+        .sidebar-icon svg {
+            width: 18px;
+            height: 18px;
+            stroke-width: 1.8;
+        }
+
+        /* 各功能模块的粉彩色 */
+        .icon-type {
+            background: #EBF5FF;
+            color: #0071E3;
+        }
+
+        /* 蓝 - 水印类型 */
+        .icon-text {
+            background: #F3E8FF;
+            color: #8B5CF6;
+        }
+
+        /* 紫 - 文字内容 */
+        .icon-font {
+            background: #FFF1F2;
+            color: #E11D48;
+        }
+
+        /* 粉 - 字体 */
+        .icon-size {
+            background: #ECFDF5;
+            color: #10B981;
+        }
+
+        /* 绿 - 字号 */
+        .icon-color {
+            background: #FFFBEB;
+            color: #F59E0B;
+        }
+
+        /* 琥珀 - 颜色 */
+        .icon-opacity {
+            background: #F0F9FF;
+            color: #0EA5E9;
+        }
+
+        /* 天蓝 - 透明度 */
+        .icon-rotate {
+            background: #FFF7ED;
+            color: #F97316;
+        }
+
+        /* 橙 - 旋转 */
+        .icon-position {
+            background: #F5F3FF;
+            color: #6366F1;
+        }
+
+        /* 靛蓝 - 位置 */
+        .icon-tile {
+            background: #ECFEFF;
+            color: #14B8A6;
+        }
+
+        /* 青绿 - 平铺 */
+        .icon-image-wm {
+            background: #FEF2F2;
+            color: #DC2626;
+        }
+
+        /* 红 - 图片水印 */
+        .icon-upload {
+            background: #F0FDF4;
+            color: #16A34A;
+        }
+
+        /* 绿 - 上传 */
+
+
+        /* 侧边栏分组标题 */
+        .sidebar-group-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-tertiary);
+            padding: 16px 14px 8px;
+            margin-top: 4px;
+        }
+
+        .sidebar-group-title:first-child {
+            padding-top: 0;
+            margin-top: 0;
+        }
+
+        /* ============================================================
+           上传区 - 大圆角虚线卡片（Apple 风格）
            ============================================================ */
         .upload-zone {
-            border: 2px dashed #D9DEE8;
-            border-radius: 16px;
-            background: #FFFFFF;
-            padding: 34px 20px;
+            border: 1.5px dashed var(--border-strong);
+            border-radius: var(--radius-lg);
+            background: var(--bg-surface);
+            padding: 20px 16px 18px;
             text-align: center;
             cursor: pointer;
-            transition: border-color 150ms ease, background 150ms ease, box-shadow 150ms ease;
-            margin-bottom: 20px;
+            transition: all var(--transition);
+            margin-bottom: 8px;
+            box-shadow: var(--shadow-sm);
         }
 
         .upload-zone:hover {
-            border-color: #1B6ACE;
-            background: #EBF3FD;
+            border-color: var(--accent);
+            background: rgba(0, 113, 227, 0.03);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
         }
 
-        /* 拖拽悬停高亮状态 */
         .upload-zone.active {
-            border-color: #1B6ACE;
-            background: #EBF3FD;
-            box-shadow: 0 0 0 4px rgba(27, 106, 206, 0.12);
+            border-color: var(--accent);
+            background: rgba(0, 113, 227, 0.03);
+            box-shadow: 0 0 0 6px var(--accent-glow);
         }
 
         .upload-zone .upload-icon {
-            width: 48px;
-            height: 48px;
-            margin: 0 auto 12px;
-            color: #1B6ACE;
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 10px;
+            background: linear-gradient(135deg, #0071E3 0%, #42A5F5 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFFFFF;
         }
 
         .upload-zone .upload-icon svg {
-            width: 100%;
-            height: 100%;
+            width: 20px;
+            height: 20px;
         }
 
         .upload-zone .upload-text {
-            font-size: 16px;
-            color: #333;
+            font-size: 14px;
             font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
         }
 
         .upload-zone .upload-hint {
-            margin-top: 6px;
-            font-size: 13px;
-            color: #999;
+            margin-top: 4px;
+            font-size: 12px;
+            color: var(--text-tertiary);
         }
 
-        /* 已上传文件名展示 */
         .upload-zone .file-name {
             display: none;
             margin-top: 10px;
-            font-size: 13px;
-            color: #1B6ACE;
+            padding: 6px 12px;
+            background: var(--accent-soft);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--accent);
             word-break: break-all;
+            font-weight: 500;
         }
 
         .upload-zone.has-file .file-name {
-            display: block;
+            display: inline-block;
         }
 
         /* ============================================================
-           【左侧参数面板】固定 300px，卡片范式
+           手风琴折叠面板 - 独立展开/收起 + 平滑高度过渡
            ============================================================ */
-        .panel {
-            width: 300px;
-            flex-shrink: 0;
-            background: #FFFFFF;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10), 0 2px 6px rgba(0, 0, 0, 0.06);
-            padding: 20px;
+
+        /* 手风琴单元容器：边距由内部 padding 控制 */
+        .accordion-item {
+            margin-bottom: 4px;
         }
 
-        .panel-section {
-            margin-bottom: 20px;
-        }
-
-        .panel-section:last-child {
-            margin-bottom: 0;
-        }
-
-        .panel-section-title {
+        /* 
+           标题栏 - 点击可折叠/展开
+           复用粉彩图标 + 右侧箭头，左侧无选中指示条（手风琴不需要互斥选中态）
+        */
+        .accordion-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background-color var(--transition);
+            user-select: none;
             font-size: 14px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 10px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #1B6ACE;
+            font-weight: 500;
+            color: var(--text-primary);
         }
 
-        /* 控件公共样式：高度 / 圆角 / 边框统一 */
+        .accordion-header:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        /* 手风琴标题文字，弹性填充剩余空间 */
+        .accordion-label {
+            flex: 1;
+        }
+
+        /* 
+           箭头图标容器
+           展开时旋转 90°（朝下），收起时朝右
+        */
+        .accordion-arrow {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 280ms cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text-tertiary);
+        }
+
+        /* 收起状态：箭头朝右（默认 0°） */
+        .accordion-item.collapsed .accordion-arrow {
+            transform: rotate(0deg);
+        }
+
+        /* 展开状态：箭头朝下（顺时针 90°） */
+        .accordion-item:not(.collapsed) .accordion-arrow {
+            transform: rotate(90deg);
+        }
+
+        .accordion-arrow svg {
+            width: 16px;
+            height: 16px;
+            stroke-width: 2;
+        }
+
+        /* 
+           【平滑高度过渡】
+           利用 CSS Grid 的 grid-template-rows: 0fr → 1fr 实现不定高内容展开/收起动画
+           grid-template-rows 可过渡，避免了 max-height 需要预估固定值的缺陷
+        */
+        .accordion-body {
+            display: grid;
+            grid-template-rows: 1fr;
+            transition: grid-template-rows 320ms cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity 280ms ease 40ms;
+            opacity: 1;
+        }
+
+        /* 收起状态：grid-template-rows 为 0fr，内容不可见但 DOM 保留 */
+        .accordion-item.collapsed .accordion-body {
+            grid-template-rows: 0fr;
+            opacity: 0;
+            transition: grid-template-rows 320ms cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity 200ms ease;
+        }
+
+        /* 内层包裹器：overflow:hidden 隐藏超出的内容，padding 在此实现视觉间距 */
+        .accordion-body-inner {
+            overflow: hidden;
+            background: var(--bg-surface);
+            border-radius: var(--radius-md);
+            padding: 0 16px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* 展开时内层有 padding（顶部底部分别控制，视觉与标题栏衔接） */
+        .accordion-item:not(.collapsed) .accordion-body-inner {
+            padding: 12px 16px;
+            margin-bottom: 2px;
+        }
+
+        /* 标签/控件的通用包装（原 settings-panel 语义迁移） */
+        /* .settings-panel { */
+            /* 不再负责显隐，显隐由 accordion-body 控制 */
+        /* } */
+
+        /* 控件标签 */
         .control-label {
             display: block;
-            font-size: 13px;
-            color: #555;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
             margin-bottom: 6px;
+            letter-spacing: 0.01em;
         }
 
+        /* 文字输入 */
         .text-input {
             width: 100%;
-            height: 38px;
-            padding: 0 12px;
-            border: 1px solid #D9DEE8;
-            border-radius: 6px;
+            height: 40px;
+            padding: 0 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
             font-size: 14px;
-            color: #333;
+            font-family: inherit;
+            color: var(--text-primary);
+            background: var(--bg-surface);
             outline: none;
-            transition: border-color 150ms ease, box-shadow 150ms ease;
+            transition: all 180ms ease;
+        }
+
+        .text-input::placeholder {
+            color: var(--text-tertiary);
         }
 
         .text-input:focus {
-            border-color: #1B6ACE;
-            box-shadow: 0 0 0 3px rgba(27, 106, 206, 0.12);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-soft);
         }
 
-        /* 滑块 + 数字输入框的横向组合行 */
+        /* 下拉选择 */
+        .select-input {
+            width: 100%;
+            height: 40px;
+            padding: 0 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text-primary);
+            background: var(--bg-surface);
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%2386868B' d='M7 9.5L2.5 5h9z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            transition: all 180ms ease;
+        }
+
+        .select-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-soft);
+        }
+
+        /* 滑块 + 数字输入 */
         .range-row {
             display: flex;
             align-items: center;
@@ -330,33 +609,40 @@
 
         .range-row input[type="range"] {
             flex: 1;
-            height: 4px;
-            accent-color: #1B6ACE;
+            height: 6px;
+            accent-color: var(--accent);
             cursor: pointer;
+            border-radius: 3px;
         }
 
         .range-row .num-input {
-            width: 64px;
+            width: 56px;
             height: 34px;
             padding: 0 6px;
-            border: 1px solid #D9DEE8;
-            border-radius: 6px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
             font-size: 13px;
+            font-family: inherit;
             text-align: center;
-            color: #333;
+            color: var(--text-primary);
             outline: none;
+            background: var(--bg-surface);
+            transition: all 180ms ease;
         }
 
         .range-row .num-input:focus {
-            border-color: #1B6ACE;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
         }
 
         .range-row .unit {
             font-size: 12px;
-            color: #999;
+            color: var(--text-tertiary);
+            flex-shrink: 0;
+            font-weight: 500;
         }
 
-        /* 颜色选择行：拾色器 + 十六进制输入框 */
+        /* 颜色选择 */
         .color-row {
             display: flex;
             align-items: center;
@@ -364,31 +650,79 @@
         }
 
         .color-row input[type="color"] {
-            width: 46px;
-            height: 38px;
-            border: 1px solid #D9DEE8;
-            border-radius: 6px;
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
             padding: 2px;
-            background: #fff;
+            background: var(--bg-surface);
             cursor: pointer;
+            transition: all 180ms ease;
+        }
+
+        .color-row input[type="color"]:hover {
+            border-color: var(--accent);
         }
 
         .color-row .hex-input {
             flex: 1;
-            height: 38px;
-            padding: 0 12px;
-            border: 1px solid #D9DEE8;
-            border-radius: 6px;
+            height: 40px;
+            padding: 0 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
             font-size: 14px;
-            color: #333;
+            font-family: "SF Mono", "Menlo", "Consolas", monospace;
+            color: var(--text-primary);
             outline: none;
+            background: var(--bg-surface);
+            transition: all 180ms ease;
         }
 
         .color-row .hex-input:focus {
-            border-color: #1B6ACE;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-soft);
         }
 
-        /* 九宫格位置单选组：3×3 网格 */
+        /* 水印类型切换组 */
+        .type-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .type-group input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .type-group label {
+            flex: 1;
+            text-align: center;
+            padding: 10px 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition);
+            user-select: none;
+        }
+
+        .type-group label:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .type-group input[type="radio"]:checked+label {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #FFFFFF;
+            box-shadow: 0 2px 8px rgba(0, 113, 227, 0.3);
+        }
+
+        /* 九宫格位置 */
         .position-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -404,216 +738,527 @@
         .position-grid label {
             display: block;
             text-align: center;
-            padding: 10px 2px;
-            font-size: 13px;
-            color: #333;
-            background: #FFFFFF;
-            border: 1px solid #D9DEE8;
-            border-radius: 6px;
+            padding: 10px 4px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
             cursor: pointer;
-            transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+            transition: all var(--transition);
             user-select: none;
         }
 
         .position-grid label:hover {
-            border-color: #1B6ACE;
+            border-color: var(--accent);
+            color: var(--text-primary);
         }
 
         .position-grid input[type="radio"]:checked+label {
-            background: #1B6ACE;
-            border-color: #1B6ACE;
+            background: var(--accent);
+            border-color: var(--accent);
             color: #FFFFFF;
+            box-shadow: 0 2px 8px rgba(0, 113, 227, 0.3);
         }
 
-        /* 平铺开启时整组置灰 */
         .position-grid.disabled {
-            opacity: 0.45;
+            opacity: 0.4;
             pointer-events: none;
         }
 
-        /* 平铺开关（开关样式的 checkbox） */
+        /* 开关（Toggle Switch）- 修复版 */
         .switch-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: 12px;
         }
 
         .switch-row .control-label {
             margin-bottom: 0;
+            flex: 1;
         }
 
         .switch {
             position: relative;
-            width: 46px;
-            height: 26px;
+            width: 48px;
+            height: 28px;
             flex-shrink: 0;
+            cursor: pointer;
         }
 
         .switch input[type="checkbox"] {
-            opacity: 0;
-            width: 0;
-            height: 0;
             position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 2;
+            margin: 0;
         }
 
         .switch .slider {
             position: absolute;
             inset: 0;
-            background: #D9DEE8;
-            border-radius: 26px;
-            cursor: pointer;
-            transition: background 150ms ease;
+            background: #D1D1D6;
+            border-radius: 28px;
+            transition: background 220ms cubic-bezier(0.25, 0.1, 0.25, 1);
         }
 
         .switch .slider::before {
             content: "";
             position: absolute;
-            width: 20px;
-            height: 20px;
-            left: 3px;
-            top: 3px;
+            width: 24px;
+            height: 24px;
+            left: 2px;
+            top: 2px;
             background: #FFFFFF;
             border-radius: 50%;
-            transition: transform 150ms ease;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15), 0 1px 1px rgba(0, 0, 0, 0.06);
         }
 
         .switch input[type="checkbox"]:checked+.slider {
-            background: #1B6ACE;
+            background: var(--accent);
         }
 
         .switch input[type="checkbox"]:checked+.slider::before {
             transform: translateX(20px);
         }
 
-        /* ============================================================
-           【右侧预览区 + 底部导出区】
-           ============================================================ */
-        .preview-area {
-            flex: 1;
-            min-width: 0;
-            background: #FFFFFF;
-            border-radius: 16px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.10), 0 2px 6px rgba(0, 0, 0, 0.06);
-            padding: 20px;
+        /* 图片水印子区域 */
+        .wm-image-zone {
+            border: 1.5px dashed var(--border-strong);
+            border-radius: var(--radius-sm);
+            padding: 18px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition);
+            background: var(--bg-surface);
         }
 
-        .preview-title {
-            font-size: 14px;
+        .wm-image-zone:hover {
+            border-color: var(--accent);
+            background: var(--accent-soft);
+        }
+
+        .wm-image-zone .wm-image-text {
+            font-size: 13px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .wm-image-zone .wm-image-hint {
+            margin-top: 4px;
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
+
+        .wm-image-preview {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            background: var(--bg-surface);
+        }
+
+        .wm-image-preview img {
+            width: 44px;
+            height: 44px;
+            object-fit: contain;
+            border-radius: 8px;
+            background: #F5F5F7;
+        }
+
+        .wm-image-preview.hidden {
+            display: none;
+        }
+
+        .remove-btn {
+            margin-left: auto;
+            border: none;
+            background: #FF3B30;
+            color: #FFFFFF;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 180ms ease;
+        }
+
+        .remove-btn:hover {
+            background: #E0352B;
+            box-shadow: 0 2px 8px rgba(255, 59, 48, 0.3);
+        }
+
+        /* 位置模式标签 */
+        .pos-mode-tag {
+            margin-left: 8px;
+            font-size: 10px;
             font-weight: 600;
-            color: #333;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #1B6ACE;
+            color: var(--accent);
+            background: var(--accent-soft);
+            border-radius: 10px;
+            padding: 2px 8px;
+            vertical-align: middle;
+        }
+
+        .pos-mode-tag.hidden {
+            display: none;
+        }
+
+        /* 隐藏类 */
+        .type-hidden {
+            display: none !important;
+        }
+
+        /* ============================================================
+           右侧内容区 - 大面积留白 + 预览卡片
+           ============================================================ */
+        .content-area {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+            overflow: hidden;
+            padding: 24px 28px;
+            gap: 16px;
+        }
+
+        /* 顶部工具栏 */
+        .preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-shrink: 0;
+        }
+
+        .preview-title-group h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .export-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 格式选择器 */
+        .format-group {
+            display: inline-flex;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .format-btn {
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px 18px;
+            cursor: pointer;
+            transition: all 180ms ease;
+            letter-spacing: -0.01em;
+        }
+
+        .format-btn+.format-btn {
+            border-left: 1px solid var(--border);
+        }
+
+        .format-btn.active {
+            background: var(--accent);
+            color: #FFFFFF;
+        }
+
+        /* 导出按钮 */
+        .export-btn {
+            border: none;
+            background: var(--accent);
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 9px 22px;
+            border-radius: 22px;
+            cursor: pointer;
+            transition: all var(--transition);
+            box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
+            white-space: nowrap;
+            letter-spacing: -0.01em;
+        }
+
+        .export-btn:hover:not(:disabled) {
+            background: #0062CC;
+            box-shadow: 0 4px 16px rgba(0, 113, 227, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .export-btn:active:not(:disabled) {
+            transform: scale(0.97);
+        }
+
+        .export-btn:disabled {
+            background: #D1D1D6;
+            color: #AEAEB2;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .zip-btn {
+            background: #34C759;
+            box-shadow: 0 2px 8px rgba(52, 199, 89, 0.25);
+        }
+
+        .zip-btn:hover:not(:disabled) {
+            background: #2DB14D;
+            box-shadow: 0 4px 16px rgba(52, 199, 89, 0.35);
+        }
+
+        /* ============================================================
+           预览区域 - 大圆角白色卡片
+           ============================================================ */
+        .preview-stage-wrap {
+            flex: 1;
+            min-height: 0;
+            display: flex;
         }
 
         .preview-stage {
-            position: relative;
+            width: 100%;
+            background: var(--bg-surface);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-card);
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #FBFCFE;
-            border: 1px solid #E5E8EF;
-            border-radius: 8px;
-            min-height: 320px;
             overflow: hidden;
+            position: relative;
+            border: 1px solid var(--border);
         }
 
         .preview-stage canvas {
             display: block;
             max-width: 100%;
-            height: auto;
+            max-height: 100%;
+            object-fit: contain;
         }
 
-        /* 预览区覆盖提示（未上传 / 水印文字为空） */
         .preview-tip {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(27, 106, 206, 0.08);
-            border: 1px dashed #1B6ACE;
-            color: #1B6ACE;
-            font-size: 14px;
-            padding: 12px 20px;
-            border-radius: 8px;
-            text-align: center;
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-tertiary);
+            letter-spacing: -0.01em;
             pointer-events: none;
-            white-space: nowrap;
         }
 
         .preview-tip.hidden {
             display: none;
         }
 
-        /* 导出操作区：格式按钮组 + 下载按钮 */
-        .export-bar {
-            margin-top: 20px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .format-group {
-            display: inline-flex;
-            border: 1px solid #D9DEE8;
-            border-radius: 6px;
-            overflow: hidden;
-            background: #FFFFFF;
-        }
-
-        .format-btn {
-            border: none;
-            background: #FFFFFF;
-            color: #333;
-            font-size: 14px;
+        /* 降级提示 */
+        .degrade-banner {
+            display: none;
+            background: #FFF3CD;
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #856404;
+            text-align: center;
+            flex-shrink: 0;
             font-weight: 500;
-            padding: 10px 22px;
-            cursor: pointer;
-            transition: background 120ms ease, color 120ms ease;
         }
 
-        .format-btn + .format-btn {
-            border-left: 1px solid #D9DEE8;
+        .degrade-banner.show {
+            display: block;
         }
 
-        .format-btn.active {
-            background: #1B6ACE;
-            color: #FFFFFF;
-        }
-
-        .export-btn {
-            border: none;
-            background: #1B6ACE;
-            color: #FFFFFF;
-            font-size: 15px;
-            font-weight: 600;
-            padding: 10px 34px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
-            box-shadow: 0 4px 12px rgba(27, 106, 206, 0.3);
-        }
-
-        .export-btn:hover:not(:disabled) {
-            background: #1558AB;
-            box-shadow: 0 6px 16px rgba(27, 106, 206, 0.4);
-        }
-
-        /* 禁用态：灰底 */
-        .export-btn:disabled {
-            background: #BFC6D1;
-            box-shadow: none;
-            cursor: not-allowed;
+        .hidden {
+            display: none !important;
         }
 
         /* ============================================================
-           【Toast 轻提示】固定底部居中，堆叠最多 3 条
+           批量任务列表
+           ============================================================ */
+        .batch-panel {
+            flex-shrink: 0;
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 16px;
+            border: 1px solid var(--border);
+            max-height: 180px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .batch-panel.hidden {
+            display: none;
+        }
+
+        .batch-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .batch-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .link-btn {
+            border: none;
+            background: none;
+            color: #FF3B30;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 120ms ease;
+        }
+
+        .link-btn:hover {
+            opacity: 0.8;
+        }
+
+        .batch-list {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .batch-empty {
+            width: 100%;
+            text-align: center;
+            color: var(--text-tertiary);
+            font-size: 13px;
+            padding: 20px 0;
+        }
+
+        .batch-item {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: var(--bg-surface);
+            position: relative;
+            flex-shrink: 0;
+            width: 132px;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition);
+        }
+
+        .batch-item:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .batch-item canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            background: #FAFAFA;
+        }
+
+        .batch-item-info {
+            padding: 8px 10px;
+        }
+
+        .batch-item-name {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .batch-item-status {
+            display: inline-block;
+            margin-top: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .status-pending {
+            background: #F0F0F5;
+            color: #8E8E93;
+        }
+
+        .status-processing {
+            background: var(--accent-soft);
+            color: var(--accent);
+        }
+
+        .status-success {
+            background: #E8F8ED;
+            color: #34C759;
+        }
+
+        .status-failed {
+            background: #FFF0EF;
+            color: #FF3B30;
+        }
+
+        .batch-item.failed {
+            border-color: #FF3B30;
+        }
+
+        .batch-item-remove {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            border: none;
+            background: rgba(0, 0, 0, 0.55);
+            color: #FFFFFF;
+            font-size: 10px;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            z-index: 2;
+            backdrop-filter: blur(4px);
+            transition: background 120ms ease;
+        }
+
+        .batch-item:hover .batch-item-remove {
+            display: block;
+        }
+
+        .batch-item-remove:hover {
+            background: #FF3B30;
+        }
+
+        /* ============================================================
+           Toast 轻提示 - 圆角胶囊
            ============================================================ */
         .toast-container {
             position: fixed;
-            bottom: 24px;
+            bottom: 28px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -626,14 +1271,17 @@
         }
 
         .toast {
-            padding: 10px 20px;
-            border-radius: 6px;
+            padding: 12px 24px;
+            border-radius: 24px;
             color: #FFFFFF;
             font-size: 14px;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
             opacity: 1;
             transition: opacity 300ms ease, transform 300ms ease;
-            white-space: nowrap;
+            letter-spacing: -0.01em;
         }
 
         .toast.fade-out {
@@ -642,345 +1290,54 @@
         }
 
         .toast.toast-success {
-            background: #52C41A;
+            background: rgba(52, 199, 89, 0.92);
         }
 
         .toast.toast-error {
-            background: #FF4D4F;
+            background: rgba(255, 59, 48, 0.92);
         }
 
         .toast.toast-info {
-            background: #1B6ACE;
+            background: rgba(0, 113, 227, 0.92);
         }
 
-        /* ============================================================
-           【新增控件样式】模式切换 / 水印类型 / 图片水印 / 旋转 / 批量
-            本区为增量扩展（水印类型、图片水印、旋转、批量打包所需样式）
-           ============================================================ */
-
-        /* 模式切换分段控件：单张处理 / 批量处理 */
-        .mode-switch {
-            display: flex;
-            gap: 0;
-            margin-bottom: 20px;
-            background: #FFFFFF;
-            border: 1px solid #D9DEE8;
-            border-radius: 6px;
-            overflow: hidden;
-            width: 100%;
-        }
-
-        .mode-btn {
-            flex: 1;
-            border: none;
-            background: #FFFFFF;
-            color: #333;
-            font-size: 14px;
-            font-weight: 500;
-            padding: 10px 0;
-            cursor: pointer;
-            transition: background 120ms ease, color 120ms ease;
-        }
-
-        .mode-btn + .mode-btn {
-            border-left: 1px solid #D9DEE8;
-        }
-
-        .mode-btn.active {
-            background: #1B6ACE;
-            color: #FFFFFF;
-        }
-
-        /* 水印类型单选组：文字水印 / 图片水印（互斥） */
-        .type-group {
-            display: flex;
-            gap: 10px;
-        }
-
-        .type-group input[type="radio"] {
-            position: absolute;
-            opacity: 0;
-            pointer-events: none;
-        }
-
-        .type-group label {
-            flex: 1;
-            text-align: center;
-            padding: 10px 4px;
-            font-size: 13px;
-            color: #333;
-            background: #FFFFFF;
-            border: 1px solid #D9DEE8;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
-            user-select: none;
-        }
-
-        .type-group label:hover {
-            border-color: #1B6ACE;
-        }
-
-        .type-group input[type="radio"]:checked + label {
-            background: #1B6ACE;
-            border-color: #1B6ACE;
-            color: #FFFFFF;
-        }
-
-        /* 与类型相关的控件显隐：图片水印模式下隐藏文字类控件 */
-        .type-hidden {
-            display: none !important;
-        }
-
-        /* 图片水印上传小卡片 */
-        .wm-image-zone {
-            border: 2px dashed #D9DEE8;
-            border-radius: 8px;
-            padding: 18px 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: border-color 150ms ease, background 150ms ease;
-        }
-
-        .wm-image-zone:hover {
-            border-color: #1B6ACE;
-            background: #EBF3FD;
-        }
-
-        .wm-image-zone.active {
-            border-color: #1B6ACE;
-            background: #EBF3FD;
-        }
-
-        .wm-image-text {
-            font-size: 14px;
-            color: #333;
-        }
-
-        .wm-image-hint {
-            margin-top: 4px;
-            font-size: 12px;
-            color: #999;
-        }
-
-        /* 已上传水印图片预览条 */
-        .wm-image-preview {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border: 1px solid #D9DEE8;
-            border-radius: 8px;
-            padding: 8px;
-            background: #FFFFFF;
-        }
-
-        .wm-image-preview img {
-            width: 48px;
-            height: 48px;
-            object-fit: contain;
-            border-radius: 4px;
-            background: #F5F7FA;
-        }
-
-        .wm-image-preview.hidden {
-            display: none;
-        }
-
-        .remove-btn {
-            margin-left: auto;
-            border: none;
-            background: #FF4D4F;
-            color: #FFFFFF;
-            font-size: 12px;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-        }
-
-        .remove-btn:hover {
-            background: #E04345;
-        }
-
-        /* 位置模式标签：九宫格标题旁的"自由定位"状态提示 */
-        .pos-mode-tag {
-            margin-left: 8px;
-            font-size: 11px;
-            color: #1B6ACE;
-            border: 1px solid #1B6ACE;
-            border-radius: 10px;
-            padding: 1px 8px;
-            vertical-align: middle;
-        }
-
-        .pos-mode-tag.hidden {
-            display: none;
-        }
-
-        /* 批量任务列表 */
-        .batch-panel {
-            margin-top: 20px;
-        }
-
-        .batch-panel.hidden {
-            display: none;
-        }
-
-        .batch-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
-            border-bottom: 2px solid #1B6ACE;
-        }
-
-        .batch-title {
-            font-size: 14px;
-            font-weight: 600;
-            color: #333;
-        }
-
-        .link-btn {
-            border: none;
-            background: none;
-            color: #FF4D4F;
-            font-size: 13px;
-            cursor: pointer;
-        }
-
-        .link-btn:hover {
-            text-decoration: underline;
-        }
-
-        .batch-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 10px;
-        }
-
-        .batch-empty {
-            grid-column: 1 / -1;
-            text-align: center;
-            color: #999;
-            font-size: 13px;
-            padding: 24px 0;
-        }
-
-        .batch-item {
-            border: 1px solid #E5E8EF;
-            border-radius: 8px;
-            overflow: hidden;
-            background: #FFFFFF;
-            position: relative;
-        }
-
-        .batch-item canvas {
-            display: block;
-            width: 100%;
-            height: auto;
-            background: #FBFCFE;
-        }
-
-        .batch-item-info {
-            padding: 8px;
-        }
-
-        .batch-item-name {
-            font-size: 12px;
-            color: #333;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .batch-item-status {
+        /* 模式标签 */
+        .mode-tag {
             display: inline-block;
-            margin-top: 6px;
             font-size: 11px;
-            padding: 2px 8px;
-            border-radius: 4px;
-        }
-
-        /* 状态角标四态配色：pending 灰 / processing 蓝 / success 绿 / failed 红 */
-        .status-pending {
-            background: #F0F1F3;
-            color: #666;
-        }
-
-        .status-processing {
-            background: #EBF3FD;
-            color: #1B6ACE;
-        }
-
-        .status-success {
-            background: #F0F9E8;
-            color: #52C41A;
-        }
-
-        .status-failed {
-            background: #FFF1F0;
-            color: #FF4D4F;
-        }
-
-        .batch-item.failed {
-            border-color: #FF4D4F;
-        }
-
-        .batch-item-remove {
-            position: absolute;
-            top: 4px;
-            right: 4px;
-            border: none;
-            background: rgba(255, 77, 79, 0.9);
-            color: #FFFFFF;
-            font-size: 11px;
-            width: 20px;
-            height: 20px;
-            line-height: 20px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: none;
-            z-index: 2;
-        }
-
-        .batch-item:hover .batch-item-remove {
-            display: block;
-        }
-
-        /* 打包按钮：与下载图片同款主按钮风格 */
-        .zip-btn {
-            background: #2F9E44;
-            box-shadow: 0 4px 12px rgba(47, 158, 68, 0.3);
-        }
-
-        .zip-btn:hover:not(:disabled) {
-            background: #27863A;
-        }
-
-        .toolbar {
-            display: flex;
-            align-items: center;
-            gap: 16px;
+            font-weight: 600;
+            background: var(--accent-soft);
+            color: var(--accent);
+            padding: 4px 12px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            letter-spacing: 0.01em;
         }
 
         /* ============================================================
-           【响应式】<900px 单列堆叠，参数面板位于预览上方
+           响应式：<860px 手机竖屏
            ============================================================ */
-        @media (max-width: 899px) {
-            .workspace {
+        @media (max-width: 859px) {
+            .main-container {
                 flex-direction: column;
             }
 
-            .panel {
+            .sidebar {
                 width: 100%;
+                max-height: 40vh;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding: 14px;
             }
 
-            .preview-stage {
-                min-height: 240px;
+            .content-area {
+                padding: 16px;
             }
 
-            .page-title h1 {
-                font-size: 26px;
+            .preview-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
             }
 
             .export-bar {
@@ -989,41 +1346,29 @@
             }
 
             .format-group {
-                justify-content: stretch;
+                align-self: stretch;
             }
 
             .format-btn {
                 flex: 1;
+                text-align: center;
             }
 
-            .export-btn {
+            .export-btn,
+            .zip-btn {
                 width: 100%;
+                text-align: center;
+            }
+
+            .preview-stage {
+                border-radius: var(--radius-lg);
             }
         }
-    
-        .main-container {
-            display: flex; /* 新增：使用 Flexbox 布局 */
-            height: calc(100vh - 64px); /* 减去顶部导航栏的高度 */
-        }
-
-        .sidebar {
-            width: 300px; /* 固定宽度 */
-            background: #fff;
-            padding: 20px;
-            overflow-y: auto; /* 内容过长时可滚动 */
-        }
-
-        .content-area {
-            flex: 1; /* 占据剩余空间 */
-            padding: 20px;
-            background: #f9f9f9;
-        }
-
     </style>
 </head>
 
 <body>
-    <!-- ==================== 顶部导航栏（与全站共享导航一致） ==================== -->
+    <!-- ==================== 顶部导航栏 ==================== -->
     <header class="site-header" role="banner">
         <div class="container">
             <a href="https://www.ljiao.me" class="brand" target="_blank" rel="noopener noreferrer">www.ljiao.me</a>
@@ -1045,371 +1390,477 @@
         </div>
     </header>
 
-    <!-- ==================== 页面主体 ==================== -->
-    <main class="tool-wrap">
-        <div class="page-title">
-            <h1>图片加水印工具</h1>
-            <p>全程本地处理，图片不会上传到任何服务器</p>
-        </div>
+    <!-- ==================== 主容器：毛玻璃侧边栏 + 内容区 ==================== -->
+    <main class="main-container">
 
-        <!-- 浏览器能力降级提示条（环境不支持 Canvas / 下载时显示） -->
-        <div id="degrade-banner" class="degrade-banner" role="alert">
-            当前浏览器不支持水印处理所需能力，请更换 Chrome / Edge / Firefox / Safari 最新版本后重试
-        </div>
+        <!-- ========== 左侧侧边栏 - 粉彩图标菜单 + 折叠设置面板 ========== -->
+        <aside class="sidebar" aria-label="水印工具设置">
 
-        <!-- 处理模式切换：单张处理 / 批量处理 -->
-        <div class="mode-switch" role="group" aria-label="处理模式">
-            <button type="button" class="mode-btn active" data-mode="single">单张处理</button>
-            <button type="button" class="mode-btn" data-mode="batch">批量处理</button>
-        </div>
+            <!-- 模式标签 -->
+            <span id="mode-tag" class="mode-tag">单张模式</span>
 
-        <!-- 上传区：点击选择 或 拖拽文件 -->
-        <div id="upload-zone" class="upload-zone" role="button" tabindex="0" aria-label="上传图片">
-            <div class="upload-icon">
-                <!-- 内联 SVG 上传图标 -->
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
-                </svg>
+            <!-- 上传区域 -->
+            <div id="upload-zone" class="upload-zone" role="button" tabindex="0" aria-label="上传图片">
+                <div class="upload-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                </div>
+                <p id="upload-text" class="upload-text">点击或拖拽图片到此处</p>
+                <p class="upload-hint">JPG / PNG / WebP，最大 20MB</p>
+                <p id="file-name" class="file-name"></p>
+                <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" hidden>
             </div>
-            <p id="upload-text" class="upload-text">点击或拖拽图片到此处</p>
-            <p class="upload-hint">支持 JPG / PNG / WebP，大小不超过 20MB</p>
-            <p id="file-name" class="file-name"></p>
-            <!-- 隐藏的文件选择框：accept 限定三种格式；批量模式下由 JS 动态开启 multiple -->
-            <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" hidden>
-        </div>
 
-        <!-- 主体双栏：左侧参数面板 + 右侧预览区 -->
-        <div class="workspace">
-            <!-- ==================== 左侧：参数配置面板 ==================== -->
-            <aside class="panel" aria-label="水印参数设置">
-                <!-- 0. 水印类型：文字 / 图片（互斥，默认文字） -->
-                <div class="panel-section">
-                    <div class="panel-section-title">水印类型</div>
-                    <div class="type-group" role="radiogroup" aria-label="水印类型">
-                        <input type="radio" name="wmtype" id="type-text" value="text" checked>
-                        <label for="type-text">文字水印</label>
-                        <input type="radio" name="wmtype" id="type-image" value="image">
-                        <label for="type-image">图片水印</label>
-                    </div>
+<!-- ===== 手风琴 1：水印类型 ===== -->
+            <div class="accordion-item">
+                <div class="accordion-header" data-panel="panel-type">
+                    <span class="sidebar-icon icon-type">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="3" />
+                            <line x1="8" y1="8" x2="16" y2="8" />
+                            <line x1="8" y1="12" x2="16" y2="12" />
+                            <line x1="8" y1="16" x2="12" y2="16" />
+                        </svg>
+                    </span>
+                    <span class="accordion-label">水印类型</span>
+                    <span class="accordion-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </span>
                 </div>
-
-                <!-- 1. 水印文字（文字水印专用，图片水印模式下隐藏） -->
-                <div class="panel-section" id="sec-type-text">
-                    <div class="panel-section-title">水印文字</div>
-                    <label class="control-label" for="text-input">文字内容</label>
-                    <input type="text" id="text-input" class="text-input" placeholder="请输入水印文字"
-                        autocomplete="off">
-                </div>
-
-                <!-- 2. 字体大小（pt，文字水印专用） -->
-                <div class="panel-section" id="sec-type-font">
-                    <div class="panel-section-title">字体大小</div>
-                    <label class="control-label" for="font-range">字号（8 - 200 pt）</label>
-                    <div class="range-row">
-                        <input type="range" id="font-range" min="8" max="200" step="1" value="48">
-                        <input type="number" id="font-num" class="num-input" min="8" max="200" value="48">
-                        <span class="unit">pt</span>
-                    </div>
-                </div>
-
-                <!-- 3. 颜色（文字水印专用） -->
-                <div class="panel-section" id="sec-type-color">
-                    <div class="panel-section-title">颜色</div>
-                    <label class="control-label" for="color-picker">文字颜色</label>
-                    <div class="color-row">
-                        <input type="color" id="color-picker" value="#FFFFFF">
-                        <input type="text" id="color-text" class="hex-input" value="#FFFFFF"
-                            placeholder="#RRGGBB" maxlength="9" autocomplete="off">
-                    </div>
-                </div>
-
-                <!-- 4. 透明度 -->
-                <div class="panel-section">
-                    <div class="panel-section-title">透明度</div>
-                    <label class="control-label" for="opacity-range">不透明度（0 - 100%）</label>
-                    <div class="range-row">
-                        <input type="range" id="opacity-range" min="0" max="100" step="1" value="80">
-                        <input type="number" id="opacity-num" class="num-input" min="0" max="100" value="80">
-                        <span class="unit">%</span>
-                    </div>
-                </div>
-
-                <!-- 5. 图片水印（图片水印专用，文字水印模式下隐藏） -->
-                <div class="panel-section" id="sec-image-wm">
-                    <div class="panel-section-title">图片水印</div>
-                    <!-- 上传小卡片（未上传水印图时显示） -->
-                    <div id="wm-image-zone" class="wm-image-zone" role="button" tabindex="0">
-                        <p class="wm-image-text">点击上传水印图片</p>
-                        <p class="wm-image-hint">推荐透明底 PNG / JPG / WebP</p>
-                    </div>
-                    <!-- 已上传水印图预览条 -->
-                    <div id="wm-image-preview" class="wm-image-preview hidden">
-                        <img id="wm-image-thumb" alt="水印图片预览">
-                        <button type="button" id="btn-remove-wm-image" class="remove-btn">移除</button>
-                    </div>
-                    <input type="file" id="wm-image-input" accept="image/jpeg,image/png,image/webp" hidden>
-                    <!-- 图片水印尺寸：原图宽度的百分比（5%-50%，默认 20%） -->
-                    <div style="margin-top:10px">
-                        <label class="control-label" for="wm-scale-range">尺寸（占原图宽 5 - 50%）</label>
-                        <div class="range-row">
-                            <input type="range" id="wm-scale-range" min="5" max="50" step="1" value="20">
-                            <input type="number" id="wm-scale-num" class="num-input" min="5" max="50" value="20">
-                            <span class="unit">%</span>
+                <div class="accordion-body">
+                    <div class="accordion-body-inner">
+                        <div class="settings-panel" id="panel-type">
+                            <div class="type-group" role="radiogroup" aria-label="水印类型">
+                                <input type="radio" name="wmtype" id="type-text" value="text" checked>
+                                <label for="type-text">文字</label>
+                                <input type="radio" name="wmtype" id="type-image" value="image">
+                                <label for="type-image">图片</label>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- 6. 旋转角度（文字与图片水印均适用，默认 -30°） -->
-                <div class="panel-section">
-                    <div class="panel-section-title">旋转角度</div>
-                    <label class="control-label" for="rotation-range">角度（-180° ~ 180°，默认 -30°）</label>
-                    <div class="range-row">
-                        <input type="range" id="rotation-range" min="-180" max="180" step="1" value="-30">
-                        <input type="number" id="rotation-num" class="num-input" min="-180" max="180" value="-30">
-                        <span class="unit">°</span>
+            <!-- ===== 手风琴 2：文字内容 ===== -->
+            <div class="accordion-item">
+                <div class="accordion-header" data-panel="sec-type-text" id="menu-text">
+                    <span class="sidebar-icon icon-text">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="4 7 4 4 20 4 20 7" />
+                            <line x1="9" y1="20" x2="15" y2="20" />
+                            <line x1="12" y1="4" x2="12" y2="20" />
+                        </svg>
+                    </span>
+                    <span class="accordion-label">文字内容</span>
+                    <span class="accordion-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-body-inner">
+                        <div class="settings-panel" id="sec-type-text">
+                            <label class="control-label" for="text-input">水印文字</label>
+                            <input type="text" id="text-input" class="text-input" placeholder="请输入水印文字" autocomplete="off">
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- 7. 九宫格位置 -->
-                <div class="panel-section">
-                    <div class="panel-section-title">水印位置
-                        <span id="pos-mode-tag" class="pos-mode-tag hidden">自由定位</span>
+            <!-- ===== 手风琴 3：字体设置 ===== -->
+            <div class="accordion-item">
+                <div class="accordion-header" data-panel="sec-type-font-family" id="menu-font">
+                    <span class="sidebar-icon icon-font">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="4 7 4 4 20 4 20 7" />
+                            <line x1="9" y1="20" x2="15" y2="20" />
+                            <line x1="12" y1="4" x2="12" y2="20" />
+                        </svg>
+                    </span>
+                    <span class="accordion-label">字体设置</span>
+                    <span class="accordion-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-body-inner">
+                        <div class="settings-panel" id="sec-type-font-family">
+                            <label class="control-label" for="font-select">字体样式</label>
+                            <select id="font-select" class="select-input">
+                                <option value="Microsoft YaHei, PingFang SC, sans-serif">微软雅黑</option>
+                                <option value="SimSun, STSong, serif">宋体</option>
+                                <option value="SimHei, STHeiti, sans-serif">黑体</option>
+                                <option value="KaiTi, STKaiti, serif">楷体</option>
+                                <option value="FangSong, STFangsong, serif">仿宋</option>
+                                <option value="Arial, Helvetica, sans-serif">Arial</option>
+                                <option value="Georgia, Times New Roman, serif">Georgia</option>
+                                <option value="Courier New, monospace">Courier New</option>
+                                <option value="Verdana, Geneva, sans-serif">Verdana</option>
+                            </select>
+                        </div>
+                        <div class="settings-panel" id="sec-type-font-size" style="margin-top:12px">
+                            <label class="control-label" for="font-range">字号（8 - 200 pt）</label>
+                            <div class="range-row">
+                                <input type="range" id="font-range" min="8" max="200" step="1" value="48">
+                                <input type="number" id="font-num" class="num-input" min="8" max="200" value="48">
+                                <span class="unit">pt</span>
+                            </div>
+                        </div>
                     </div>
-                    <fieldset id="position-group" class="position-grid" disabled="disabled">
-                        <legend class="control-label" style="display:none">水印位置</legend>
-                        <input type="radio" name="position" id="pos-lt" value="left-top">
-                        <label for="pos-lt">左上</label>
-                        <input type="radio" name="position" id="pos-tc" value="top-center">
-                        <label for="pos-tc">中上</label>
-                        <input type="radio" name="position" id="pos-rt" value="right-top">
-                        <label for="pos-rt">右上</label>
-                        <input type="radio" name="position" id="pos-lc" value="left-center">
-                        <label for="pos-lc">左中</label>
-                        <input type="radio" name="position" id="pos-cc" value="center">
-                        <label for="pos-cc">正中</label>
-                        <input type="radio" name="position" id="pos-rc" value="right-center">
-                        <label for="pos-rc">右中</label>
-                        <input type="radio" name="position" id="pos-lb" value="left-bottom">
-                        <label for="pos-lb">左下</label>
-                        <input type="radio" name="position" id="pos-bc" value="bottom-center">
-                        <label for="pos-bc">中下</label>
-                        <input type="radio" name="position" id="pos-rb" value="right-bottom" checked>
-                        <label for="pos-rb">右下</label>
-                    </fieldset>
                 </div>
+            </div>
 
-                <!-- 8. 平铺模式 -->
-                <div class="panel-section">
-                    <div class="panel-section-title">平铺模式</div>
-                    <div class="switch-row">
-                        <label class="control-label" for="tile-toggle">水印铺满整张图片（与位置/拖拽互斥）</label>
-                        <span class="switch">
-                            <input type="checkbox" id="tile-toggle">
-                            <span class="slider"></span>
-                        </span>
+            <!-- ===== 手风琴 4：颜色调整 ===== -->
+            <div class="accordion-item">
+                <div class="accordion-header" data-panel="sec-type-color" id="menu-color">
+                    <span class="sidebar-icon icon-color">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 2a10 10 0 0 1 0 20" />
+                            <path d="M12 2a10 10 0 0 0 0 20" />
+                        </svg>
+                    </span>
+                    <span class="accordion-label">颜色调整</span>
+                    <span class="accordion-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-body-inner">
+                        <div class="settings-panel" id="sec-type-color">
+                            <label class="control-label" for="color-picker">文字颜色</label>
+                            <div class="color-row">
+                                <input type="color" id="color-picker" value="#FFFFFF">
+                                <input type="text" id="color-text" class="hex-input" value="#FFFFFF" placeholder="#RRGGBB" maxlength="9" autocomplete="off">
+                            </div>
+                        </div>
                     </div>
                 </div>
-            </aside>
+            </div>
 
-            <!-- ==================== 右侧：预览 + 导出 ==================== -->
-            <section class="preview-area" aria-label="预览与导出">
-                <div class="preview-title">实时预览</div>
-                <div class="preview-stage" id="preview-stage">
-                    <canvas id="preview-canvas"></canvas>
-                    <div id="preview-tip" class="preview-tip">请先上传图片</div>
+            <!-- ===== 手风琴 5：透明度 ===== -->
+            <div class="accordion-item">
+                <div class="accordion-header" data-panel="panel-opacity" id="menu-opacity">
+                    <span class="sidebar-icon icon-opacity">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" opacity="0.4" />
+                            <circle cx="12" cy="12" r="6" />
+                        </svg>
+                    </span>
+                    <span class="accordion-label">透明度</span>
+                    <span class="accordion-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </span>
                 </div>
+                <div class="accordion-body">
+                    <div class="accordion-body-inner">
+                        <div class="settings-panel" id="panel-opacity">
+                            <label class="control-label" for="opacity-range">不透明度（0 - 100%）</label>
+                            <div class="range-row">
+                                <input type="range" id="opacity-range" min="0" max="100" step="1" value="80">
+                                <input type="number" id="opacity-num" class="num-input" min="0" max="100" value="80">
+                                <span class="unit">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-                <!-- 导出操作区：格式选择 + 下载图片（单张）/ 打包下载（批量） -->
+            <!-- ===== 手风琴 6：图片水印 ===== -->
+            <div class="accordion-item type-hidden" id="menu-imagewm">
+                <div class="accordion-header" data-panel="sec-image-wm">
+                    <span class="sidebar-icon icon-image-wm">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="3" />
+                            <circle cx="8.5" cy="8.5" r="1.5" />
+                            <polyline points="21 15 16 10 5 21" />
+                        </svg>
+                    </span>
+                    <span class="accordion-label">图片水印</span>
+                    <span class="accordion-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-body-inner">
+                        <div class="settings-panel" id="sec-image-wm">
+                            <div id="wm-image-zone" class="wm-image-zone" role="button" tabindex="0">
+                                <p class="wm-image-text">点击上传水印图片</p>
+                                <p class="wm-image-hint">推荐透明底 PNG / JPG / WebP</p>
+                            </div>
+                            <div id="wm-image-preview" class="wm-image-preview hidden">
+                                <img id="wm-image-thumb" alt="水印图片预览">
+                                <button type="button" id="btn-remove-wm-image" class="remove-btn">移除</button>
+                            </div>
+                            <input type="file" id="wm-image-input" accept="image/jpeg,image/png,image/webp" hidden>
+                            <div style="margin-top:12px">
+                                <label class="control-label" for="wm-scale-range">尺寸（占原图宽 5 - 50%）</label>
+                                <div class="range-row">
+                                    <input type="range" id="wm-scale-range" min="5" max="50" step="1" value="20">
+                                    <input type="number" id="wm-scale-num" class="num-input" min="5" max="50" value="20">
+                                    <span class="unit">%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== 手风琴 7：旋转角度 ===== -->
+            <div class="accordion-item">
+                <div class="accordion-header" data-panel="panel-rotate" id="menu-rotate">
+                    <span class="sidebar-icon icon-rotate">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="1 4 1 10 7 10" />
+                            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                        </svg>
+                    </span>
+                    <span class="accordion-label">旋转角度</span>
+                    <span class="accordion-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-body-inner">
+                        <div class="settings-panel" id="panel-rotate">
+                            <label class="control-label" for="rotation-range">角度（-180° ~ 180°）</label>
+                            <div class="range-row">
+                                <input type="range" id="rotation-range" min="-180" max="180" step="1" value="-30">
+                                <input type="number" id="rotation-num" class="num-input" min="-180" max="180" value="-30">
+                                <span class="unit">°</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== 手风琴 8：水印位置 ===== -->
+            <div class="accordion-item">
+                <div class="accordion-header" data-panel="panel-position" id="menu-position">
+                    <span class="sidebar-icon icon-position">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="3" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                    </span>
+                    <span class="accordion-label">水印位置</span>
+                    <span id="pos-mode-tag" class="pos-mode-tag hidden">自由定位</span>
+                    <span class="accordion-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-body-inner">
+                        <div class="settings-panel" id="panel-position">
+                            <fieldset id="position-group" class="position-grid" disabled="disabled">
+                                <legend style="display:none">水印位置</legend>
+                                <input type="radio" name="position" id="pos-lt" value="left-top"><label for="pos-lt">左上</label>
+                                <input type="radio" name="position" id="pos-tc" value="top-center"><label for="pos-tc">中上</label>
+                                <input type="radio" name="position" id="pos-rt" value="right-top"><label for="pos-rt">右上</label>
+                                <input type="radio" name="position" id="pos-lc" value="left-center"><label for="pos-lc">左中</label>
+                                <input type="radio" name="position" id="pos-cc" value="center"><label for="pos-cc">正中</label>
+                                <input type="radio" name="position" id="pos-rc" value="right-center"><label for="pos-rc">右中</label>
+                                <input type="radio" name="position" id="pos-lb" value="left-bottom"><label for="pos-lb">左下</label>
+                                <input type="radio" name="position" id="pos-bc" value="bottom-center"><label for="pos-bc">中下</label>
+                                <input type="radio" name="position" id="pos-rb" value="right-bottom" checked><label for="pos-rb">右下</label>
+                            </fieldset>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== 手风琴 9：平铺模式 ===== -->
+            <div class="accordion-item">
+                <div class="accordion-header" data-panel="panel-tile" id="menu-tile">
+                    <span class="sidebar-icon icon-tile">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7" />
+                            <rect x="14" y="3" width="7" height="7" />
+                            <rect x="3" y="14" width="7" height="7" />
+                            <rect x="14" y="14" width="7" height="7" />
+                        </svg>
+                    </span>
+                    <span class="accordion-label">平铺模式</span>
+                    <span class="accordion-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-body-inner">
+                        <div class="settings-panel" id="panel-tile">
+                            <div class="switch-row">
+                                <label class="control-label" for="tile-toggle">水印铺满整张图片</label>
+                                <span class="switch">
+                                    <input type="checkbox" id="tile-toggle">
+                                    <span class="slider"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- ========== 右侧内容区 ========== -->
+        <div class="content-area">
+
+            <!-- 降级提示 -->
+            <div id="degrade-banner" class="degrade-banner" role="alert">
+                当前浏览器不支持水印处理，请更换 Chrome / Edge / Firefox / Safari 最新版本
+            </div>
+
+            <!-- 顶部工具栏 -->
+            <div class="preview-header">
+                <div class="preview-title-group">
+                    <h2>实时预览</h2>
+                </div>
                 <div class="export-bar">
                     <div class="format-group" role="group" aria-label="导出格式">
                         <button type="button" class="format-btn active" data-format="png">PNG</button>
                         <button type="button" class="format-btn" data-format="jpg">JPG</button>
                     </div>
-                    <div class="toolbar">
-                        <button id="btn-export" class="export-btn" disabled>下载图片</button>
-                        <button id="btn-zip" class="export-btn zip-btn hidden" disabled>打包下载（ZIP）</button>
-                    </div>
+                    <button id="btn-export" class="export-btn" disabled>下载图片</button>
+                    <button id="btn-zip" class="export-btn zip-btn hidden" disabled>打包下载 ZIP</button>
                 </div>
+            </div>
 
-                <!-- 批量任务列表：批量模式下展示各图片缩略图与状态 -->
-                <div id="batch-panel" class="batch-panel hidden">
-                    <div class="batch-head">
-                        <span class="batch-title">批量任务列表</span>
-                        <button type="button" id="btn-clear-batch" class="link-btn">清空</button>
-                    </div>
-                    <div id="batch-list" class="batch-list">
-                        <div class="batch-empty">批量模式下上传的图片将显示在这里</div>
-                    </div>
+            <!-- 预览区域 -->
+            <div class="preview-stage-wrap">
+                <div class="preview-stage" id="preview-stage">
+                    <canvas id="preview-canvas"></canvas>
+                    <div id="preview-tip" class="preview-tip">请先上传图片</div>
                 </div>
-            </section>
+            </div>
+
+            <!-- 批量任务列表 -->
+            <div id="batch-panel" class="batch-panel hidden">
+                <div class="batch-head">
+                    <span class="batch-title">批量任务列表</span>
+                    <button type="button" id="btn-clear-batch" class="link-btn">清空</button>
+                </div>
+                <div id="batch-list" class="batch-list">
+                    <div class="batch-empty">上传多张图片后显示批量任务</div>
+                </div>
+            </div>
         </div>
     </main>
 
-    <!-- Toast 提示容器 -->
+    <!-- Toast 容器 -->
     <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
     <script>
         /* ============================================================
            =====================  配置常量区  =========================
            【用途】所有参数取值区间唯一来源；后续调参只需修改本区
-           ============================================================ */
+           ============================================================= */
         var CONFIG = {
-            FONT_SIZE_MIN: 8,          // 字号下限（pt，预览按画布宽等比换算）
-            FONT_SIZE_MAX: 200,        // 字号上限（pt）
-            OPACITY_MIN: 0,            // 透明度下限（%）
-            OPACITY_MAX: 100,          // 透明度上限（%）
-            MAX_FILE_SIZE: 20 * 1024 * 1024, // 上传大小上限 20MB（字节）
-            ALLOWED_MIME: ['image/jpeg', 'image/png', 'image/webp'], // 允许的 MIME 白名单
-            PREVIEW_MAX_WIDTH: 1200,   // 预览画布最大宽度（px），控制高频重绘成本
-            TILE_GAP_RATIO: 2.0,       // 平铺单元格 = 水印测量尺寸 × 该系数（行距=列距）
-            TICK_DELAY: 80,            // 参数变更防抖窗口（ms），保障预览响应 ≤ 500ms
-            JPG_QUALITY: 0.92,         // JPG 导出质量参数
-            TOAST_DURATION: 2400,      // Toast 默认展示时长（ms）
-            /* ---- 增量扩展参数区间（本轮新增） ---- */
-            ROTATION_MIN: -180,        // 旋转角度下限（度，负值逆时针）
-            ROTATION_MAX: 180,         // 旋转角度上限（度）
-            ROTATION_DEFAULT: -30,     // 旋转角度默认值（度）
-            IMAGE_SCALE_MIN: 5,        // 图片水印尺寸下限（占原图宽 %）
-            IMAGE_SCALE_MAX: 50,       // 图片水印尺寸上限（占原图宽 %）
-            IMAGE_SCALE_DEFAULT: 20,   // 图片水印默认尺寸（占原图宽 %）
-            BATCH_MAX: 30,             // 单次批量上传数量上限（张）
-            DRAG_THRESHOLD: 3,         // 拖拽启动位移阈值（px，防误触）
-            ZIP_LIB_PATH: 'jszip.min.js', // JSZip 本地化库文件路径（与 HTML 同目录，禁 CDN）
-            ZIP_NAME_PREFIX: 'watermark_batch' // ZIP 压缩包文件名前缀
+            FONT_SIZE_MIN: 8,
+            FONT_SIZE_MAX: 200,
+            OPACITY_MIN: 0,
+            OPACITY_MAX: 100,
+            MAX_FILE_SIZE: 20 * 1024 * 1024,
+            ALLOWED_MIME: ['image/jpeg', 'image/png', 'image/webp'],
+            PREVIEW_MAX_WIDTH: 1200,
+            TILE_GAP_RATIO: 2.0,
+            TICK_DELAY: 80,
+            JPG_QUALITY: 0.92,
+            TOAST_DURATION: 2400,
+            ROTATION_MIN: -180,
+            ROTATION_MAX: 180,
+            ROTATION_DEFAULT: -30,
+            IMAGE_SCALE_MIN: 5,
+            IMAGE_SCALE_MAX: 50,
+            IMAGE_SCALE_DEFAULT: 20,
+            BATCH_MAX: 30,
+            DRAG_THRESHOLD: 3,
+            ZIP_LIB_PATH: 'jszip.min.js',
+            ZIP_NAME_PREFIX: 'watermark_batch',
+            DEFAULT_FONT: 'Microsoft YaHei, PingFang SC, sans-serif'
         };
 
-        /* =====================  枚举常量  ========================= */
-        /* 九宫格位置枚举（冻结，防止运行时误改） */
         var POSITION = Object.freeze({
-            'left-top': true,
-            'top-center': true,
-            'right-top': true,
-            'left-center': true,
-            'center': true,
-            'right-center': true,
-            'left-bottom': true,
-            'bottom-center': true,
-            'right-bottom': true
+            'left-top': true, 'top-center': true, 'right-top': true,
+            'left-center': true, 'center': true, 'right-center': true,
+            'left-bottom': true, 'bottom-center': true, 'right-bottom': true
         });
+        var EXPORT_FORMAT = Object.freeze({ PNG: 'png', JPG: 'jpg' });
+        var TYPE = Object.freeze({ TEXT: 'text', IMAGE: 'image' });
+        var STATUS = Object.freeze({ PENDING: 'pending', PROCESSING: 'processing', SUCCESS: 'success', FAILED: 'failed' });
+        var POSITION_MODE = Object.freeze({ GRID: 'grid', FREE: 'free' });
 
-        /* 导出格式枚举 */
-        var EXPORT_FORMAT = Object.freeze({
-            PNG: 'png',
-            JPG: 'jpg'
-        });
-
-        /* 水印类型枚举：文字 / 图片（互斥） */
-        var TYPE = Object.freeze({
-            TEXT: 'text',
-            IMAGE: 'image'
-        });
-
-        /* 批量条目状态机枚举 */
-        var STATUS = Object.freeze({
-            PENDING: 'pending',
-            PROCESSING: 'processing',
-            SUCCESS: 'success',
-            FAILED: 'failed'
-        });
-
-        /* 位置模式枚举：九宫格网格吸附 / 自由拖拽 */
-        var POSITION_MODE = Object.freeze({
-            GRID: 'grid',
-            FREE: 'free'
-        });
-
-        /* 默认水印配置：文字 / 空文字 / 48pt / 白色 / 80% 不透明 / 右下 / 不平铺 / -30° 旋转 */
         var DEFAULT_CONFIG = {
-            type: TYPE.TEXT,             // 水印类型：text / image，互斥
-            text: '',                    // 文字水印内容（type=text 时为空则导出禁用）
-            fontSizePt: 48,              // 文字字号 8-200（pt），仅文字水印适用
-            colorHex: '#FFFFFF',         // 文字颜色 #RRGGBB / #RRGGBBAA，仅文字水印适用
-            opacityPct: 80,              // 透明度 0-100（%），文字与图片水印均适用
-            position: 'right-bottom',    // 九宫格位置枚举（默认右下）
-            tileEnabled: false,          // 平铺开关（开启时位置与拖拽均不参与布局）
-            rotationDeg: CONFIG.ROTATION_DEFAULT, // 旋转角度 -180~180（度，默认 -30）
-            imageScalePct: CONFIG.IMAGE_SCALE_DEFAULT, // 图片水印占原图宽 5-50%（默认 20）
-            positionMode: POSITION_MODE.GRID, // 位置模式：grid 九宫格 / free 自由坐标
-            freeX: 0,                    // 自由定位中心 x（相对原图像素，原点=原图左上角）
-            freeY: 0,                    // 自由定位中心 y（相对原图像素）
-            watermarkImage: null         // 图片水印 Image 对象（含 name/width/height），null=未上传
+            type: TYPE.TEXT,
+            text: '',
+            fontFamily: CONFIG.DEFAULT_FONT,
+            fontSizePt: 48,
+            colorHex: '#FFFFFF',
+            opacityPct: 80,
+            position: 'right-bottom',
+            tileEnabled: false,
+            rotationDeg: CONFIG.ROTATION_DEFAULT,
+            imageScalePct: CONFIG.IMAGE_SCALE_DEFAULT,
+            positionMode: POSITION_MODE.GRID,
+            freeX: 0,
+            freeY: 0,
+            watermarkImage: null
         };
 
-        /* 图片水印元数据（WmImage：image 可绘制对象 + 名称 + 像素尺寸 + Blob URL） */
         var wmImageMeta = null;
 
-        /* =====================  状态对象（唯一数据源）  ========================= */
         var state = {
-            sourceImage: null,   // 原图信息 { name, image, width, height }，null=未上传
-            config: Object.assign({}, DEFAULT_CONFIG), // 当前水印配置
-            lastValidColor: '#FFFFFF', // 最近一次合法颜色（非法输入时回退目标）
-            objectUrl: null,     // 待手动 revoke 的原图 Blob URL
-            mode: 'single',      // 处理模式：single 单张 / batch 批量
-            batchTask: {         // 批量任务：条目数组 + 命名时间
-                items: [],       // BatchItem[]：{ id, file, name, status, error, source, objectUrl }
-                zipName: null    // 已生成 ZIP 文件名（冗余保留）
-            },
-            zipEnabled: false    // JSZip 是否已加载成功（批量打包可用性标志）
+            sourceImage: null,
+            config: Object.assign({}, DEFAULT_CONFIG),
+            lastValidColor: '#FFFFFF',
+            objectUrl: null,
+            mode: 'single',
+            batchTask: { items: [], zipName: null },
+            zipEnabled: false
         };
 
-        /* 当前导出格式（默认 PNG） */
         var currentFormat = EXPORT_FORMAT.PNG;
-
-        /* 单次渲染周期内的文字测量缓存（平铺循环复用，降低 measureText 开销） */
         var _measureCache = null;
 
-        /* ============================================================
-           =====================  工具层（纯函数）  =====================
-           ============================================================ */
-
-        /**
-         * 数值钳制：把 value 限制在 [min, max] 区间内
-         * @param {number} value 待钳制数值
-         * @param {number} min 下界
-         * @param {number} max 上界
-         * @returns {number} 钳制后的数值
-         */
         function clampValue(value, min, max) {
             if (typeof value !== 'number' || isNaN(value)) return min;
             return Math.min(Math.max(value, min), max);
         }
 
-        /**
-         * 防抖包装：delay 毫秒内连续调用只执行最后一次
-         * @param {Function} fn 目标函数
-         * @param {number} delay 等待窗口（ms）
-         * @returns {Function} 防抖后的函数
-         */
         function debounce(fn, delay) {
             var timer = null;
             return function () {
                 var that = this;
                 var args = arguments;
                 if (timer) clearTimeout(timer);
-                timer = setTimeout(function () {
-                    timer = null;
-                    fn.apply(that, args);
-                }, delay);
+                timer = setTimeout(function () { timer = null; fn.apply(that, args); }, delay);
             };
         }
 
-        /**
-         * 十六进制颜色校验：#RRGGBB 或 #RRGGBBAA
-         * @param {string} value 待校验字符串
-         * @returns {boolean} 是否合法
-         */
         function isValidColor(value) {
             return /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(value);
         }
 
-        /**
-         * 文件格式校验：MIME 白名单 + 大小 ≤ 20MB
-         * @param {File} file 待校验文件
-         * @returns {{ok: boolean, message?: string}} ok=false 时 message 用于 Toast 展示
-         */
         function validateFile(file) {
             if (CONFIG.ALLOWED_MIME.indexOf(file.type) === -1) {
                 return { ok: false, message: '仅支持 JPG、PNG、WebP 格式' };
@@ -1420,67 +1871,35 @@
             return { ok: true };
         }
 
-        /**
-         * 导出文件名生成规则：原文件名_水印.新扩展名
-         * 原文件名无法获取时使用 "watermark_图片" 兜底
-         * @param {string} originalName 源文件名（含扩展名，可为空串）
-         * @param {string} ext 导出扩展名 png / jpg
-         * @returns {string} 如 photo_水印.png / watermark_图片.jpg
-         */
         function buildFileName(originalName, ext) {
-            /* 有原文件名：剥离扩展名后拼接 "_水印.新扩展名"（如 photo.png → photo_水印.png） */
             if (originalName && originalName.trim()) {
                 var stem = originalName.replace(/\.[^.]+$/, '');
                 return stem + '_水印.' + ext;
             }
-            /* 无原文件名（极少数浏览器环境）：使用 "watermark_图片" 兜底命名 */
             return 'watermark_图片.' + ext;
         }
 
-        /**
-         * 将 Canvas 转为目标格式 Blob（Promise 包装）
-         * @param {HTMLCanvasElement} canvas 导出画布
-         * @param {string} format png / jpg
-         * @returns {Promise<Blob>} JPG 使用质量参数 0.92
-         */
         function canvasToBlob(canvas, format) {
             return new Promise(function (resolve, reject) {
                 var mime = format === EXPORT_FORMAT.JPG ? 'image/jpeg' : 'image/png';
                 var quality = format === EXPORT_FORMAT.JPG ? CONFIG.JPG_QUALITY : undefined;
                 canvas.toBlob(function (blob) {
-                    if (!blob) {
-                        reject(new Error('toBlob 返回空'));
-                        return;
-                    }
+                    if (!blob) { reject(new Error('toBlob 返回空')); return; }
                     resolve(blob);
                 }, mime, quality);
             });
         }
 
-        /* ============================================================
-           =====================  Toast 轻提示组件  =====================
-           ============================================================ */
         var toastContainer = document.getElementById('toast-container');
 
-        /**
-         * 轻提示气泡：success / error / info 三态，默认 2400ms 后淡出
-         * 最多同时堆叠 3 条，超出则移除最旧的
-         * @param {string} text 提示内容
-         * @param {string} type success | error | info
-         * @param {number} [duration] 展示时长（ms），默认 CONFIG.TOAST_DURATION
-         */
         function showToast(text, type, duration) {
             var el = document.createElement('div');
             el.className = 'toast toast-' + (type || 'info');
             el.textContent = text;
-
-            /* 堆叠上限 3 条：先移除最旧 */
             while (toastContainer.children.length >= 3) {
                 toastContainer.removeChild(toastContainer.firstChild);
             }
             toastContainer.appendChild(el);
-
-            /* 到期淡出并移除 */
             var lifetime = duration || CONFIG.TOAST_DURATION;
             setTimeout(function () {
                 el.classList.add('fade-out');
@@ -1490,57 +1909,26 @@
             }, lifetime);
         }
 
-        /* ============================================================
-           =====================  渲染层：画布 / 渲染管线  =====================
-           ============================================================ */
-
-        /**
-         * 准备（创建/复用）指定尺寸的 2D 画布
-         * 尺寸不一致时重置画布 width/height 并返回新 context
-         * @param {HTMLCanvasElement} canvas 目标画布
-         * @param {number} width 目标宽
-         * @param {number} height 目标高
-         * @returns {CanvasRenderingContext2D} 2d context
-         */
         function prepareCanvas(canvas, width, height) {
             if (canvas.width !== width || canvas.height !== height) {
-                /* 重置尺寸会同时清空画布内容 */
                 canvas.width = width;
                 canvas.height = height;
             }
             return canvas.getContext('2d');
         }
 
-        /**
-         * 文字测量（带单次渲染周期缓存）
-         * 同一 (文字, 像素字号) 组合只真正测量一次，平铺循环复用
-         * @param {CanvasRenderingContext2D} ctx
-         * @param {string} text 文字内容
-         * @param {number} fontPx 像素字号
-         * @returns {{width: number, height: number}} 文字宽高（高由字号推导）
-         */
-        function measureWatermark(ctx, text, fontPx) {
-            var key = text + '|' + fontPx;
-            if (_measureCache && _measureCache.has(key)) {
-                return _measureCache.get(key);
-            }
-            ctx.font = fontPx + 'px "Microsoft YaHei", "PingFang SC", sans-serif';
+        function measureWatermark(ctx, text, fontPx, fontFamily) {
+            var key = text + '|' + fontPx + '|' + fontFamily;
+            if (_measureCache && _measureCache.has(key)) return _measureCache.get(key);
+            ctx.font = fontPx + 'px ' + fontFamily;
             var width = ctx.measureText(text).width;
-            /* 行高按 1.2 倍字号近似，保证足够容纳文字 */
             var result = { width: width, height: fontPx * 1.2 };
             if (_measureCache) _measureCache.set(key, result);
             return result;
         }
 
-        /**
-         * 九宫格位置 → Canvas 锚点参数映射
-         * 边距取字号的一定比例，保证水印整体不超出图片边界
-         * @param {string} position 九宫格枚举值
-         * @param {number} fontPx 像素字号（用于计算边距）
-         * @returns {{textAlign: string, textBaseline: string, marginX: number, marginY: number}}
-         */
         function getAnchorMap(position, fontPx) {
-            var margin = fontPx * 0.5; // 边距 = 半字号，视觉上与文字大小呼应
+            var margin = fontPx * 0.5;
             var anchor = {
                 'left-top': { textAlign: 'left', textBaseline: 'top', marginX: margin, marginY: margin },
                 'top-center': { textAlign: 'center', textBaseline: 'top', marginX: 0, marginY: margin },
@@ -1555,57 +1943,29 @@
             return anchor[position] || anchor['right-bottom'];
         }
 
-        /**
-         * 九宫格单点坐标计算
-         * @param {string} position 九宫格枚举值
-         * @param {number} fontPx 像素字号
-         * @param {number} canvasW 画布宽
-         * @param {number} canvasH 画布高
-         * @returns {{x: number, y: number, textAlign: string, textBaseline: string}}
-         */
         function computeSingleAnchor(position, fontPx, canvasW, canvasH) {
             var a = getAnchorMap(position, fontPx);
             var x, y;
             if (a.textAlign === 'left') x = a.marginX;
             else if (a.textAlign === 'right') x = canvasW - a.marginX;
             else x = canvasW / 2;
-
             if (a.textBaseline === 'top') y = a.marginY;
             else if (a.textBaseline === 'bottom') y = canvasH - a.marginY;
             else y = canvasH / 2;
-
             return { x: x, y: y, textAlign: a.textAlign, textBaseline: a.textBaseline };
         }
 
-        /**
-         * 计算水印在「目标画布」下的本地绘制尺寸（文字/图片统一入口）
-         * 文字：测量文字宽 + fontSizePt×1.2 高（均已含 scale 缩放）
-         * 图片：水印原宽 × imageScalePct/100 × scale，高按原始宽高比等比缩放
-         * @param {CanvasRenderingContext2D} ctx
-         * @param {object} config 水印配置
-         * @param {number} scale 画布宽 / 原图宽（几何量统一换算比例）
-         * @returns {{width: number, height: number}} 本地绘制尺寸
-         */
         function computeWatermarkSize(ctx, config, scale) {
             if (config.type === TYPE.IMAGE && config.watermarkImage) {
-                /* 图片水印：宽度 = 源图宽 × 占比%，高度等比 */
                 var w = config.watermarkImage.width * (config.imageScalePct / 100) * scale;
                 var h = w * (config.watermarkImage.height / config.watermarkImage.width);
                 return { width: w, height: h };
             }
-            /* 文字水印：测量宽 + 1.2 倍像素字号高（含 scale 缩放） */
             var fontPx = config.fontSizePt * scale;
-            return measureWatermark(ctx, (config.text || '').trim(), fontPx);
+            var fontFamily = config.fontFamily || CONFIG.DEFAULT_FONT;
+            return measureWatermark(ctx, (config.text || '').trim(), fontPx, fontFamily);
         }
 
-        /**
-         * 旋转后轴对齐包围盒（AABB）的半宽/半高
-         * 用于拖拽边界钳制与九宫格锚点→中心点偏移
-         * @param {number} width 未旋转本地宽
-         * @param {number} height 未旋转本地高
-         * @param {number} rotationDeg 旋转角度（度）
-         * @returns {{halfW: number, halfH: number}}
-         */
         function getRotatedBoxHalf(width, height, rotationDeg) {
             var rad = rotationDeg * Math.PI / 180;
             return {
@@ -1614,58 +1974,27 @@
             };
         }
 
-        /**
-         * 平铺网格坐标计算：从 (0,0) 起按等间距铺满整图（类型感知单元尺寸）
-         * 单元格尺寸 = 水印本地尺寸 × TILE_GAP_RATIO，行距与列距相等
-         * 末行末列即使不足一个完整间距单元也完整绘制（起点在边界内即画）
-         * @param {CanvasRenderingContext2D} ctx
-         * @param {object} config 水印配置（含 type）
-         * @param {number} scale 画布宽 / 原图宽
-         * @param {number} canvasW 画布宽
-         * @param {number} canvasH 画布高
-         * @param {number} gapRatio 间距系数
-         * @returns {{x: number, y: number}[]} 全部绘制坐标（格子左上角起点）
-         */
         function computeTileCells(ctx, config, scale, canvasW, canvasH, gapRatio) {
             var size = computeWatermarkSize(ctx, config, scale);
             var cellW = size.width * gapRatio;
             var cellH = size.height * gapRatio;
             var cells = [];
-            var y, x;
-            for (y = 0; y < canvasH; y += cellH) {
-                for (x = 0; x < canvasW; x += cellW) {
+            for (var y = 0; y < canvasH; y += cellH) {
+                for (var x = 0; x < canvasW; x += cellW) {
                     cells.push({ x: x, y: y });
                 }
             }
             return cells;
         }
 
-        /**
-         * 当前单点定位中心点（九宫格 / 自由坐标 统一换算）
-         * 自由模式：直接取 (freeX×scale, freeY×scale)
-         * 九宫格模式：由 computeSingleAnchor 取锚点后偏移未旋转半尺寸得中心
-         *   （文字按 textAlign/textBaseline 语义偏移；图片视为同框架对齐块）
-         * @param {CanvasRenderingContext2D} ctx
-         * @param {object} config 水印配置
-         * @param {number} scale 画布宽 / 原图宽
-         * @param {number} canvasW 画布宽
-         * @param {number} canvasH 画布高
-         * @returns {{cx: number, cy: number}} 水印中心点（预览/导出同一坐标系语义）
-         */
         function computeCenter(ctx, config, scale, canvasW, canvasH) {
-            /* === 自由拖拽坐标：以原图像素存储，×scale 换算到画布坐标系 === */
             if (config.positionMode === POSITION_MODE.FREE) {
                 return { cx: config.freeX * scale, cy: config.freeY * scale };
             }
-
-            /* === 九宫格：锚点 + 未旋转半尺寸 → 中心点 === */
             var size = computeWatermarkSize(ctx, config, scale);
             var halfW = size.width / 2;
             var halfH = size.height / 2;
-
             if (config.type === TYPE.IMAGE) {
-                /* 图片水印：以图片高度作为"锚点字号"推导边距，保证贴边留白量与文字一致；
-                   锚点为图片边框对齐点，按 textAlign/textBaseline 语义偏移未旋转半尺寸得中心 */
                 var anchorI = getAnchorMap(config.position, size.height);
                 var ax = anchorI.textAlign === 'left' ? anchorI.marginX
                     : (anchorI.textAlign === 'right' ? canvasW - anchorI.marginX : canvasW / 2);
@@ -1676,7 +2005,6 @@
                     cy: ay + (anchorI.textBaseline === 'bottom' ? -halfH : (anchorI.textBaseline === 'top' ? halfH : 0))
                 };
             }
-
             var fontPx = config.fontSizePt * scale;
             var a = computeSingleAnchor(config.position, fontPx, canvasW, canvasH);
             var cx = a.x + (a.textAlign === 'right' ? -halfW : (a.textAlign === 'left' ? halfW : 0));
@@ -1684,19 +2012,14 @@
             return { cx: cx, cy: cy };
         }
 
-        /**
-         * 绘制水印内容（文字 fillText / 图片 drawImage 分派）
-         * 约定调用方已将原点 translate 至水印中心，故文字以 center/middle 对齐原点、
-         * 图片以中心原点本地坐标绘制（透明通道天然保留）
-         * @param {CanvasRenderingContext2D} ctx
-         * @param {object} config 水印配置
-         * @param {{width: number, height: number}} size 本地绘制尺寸
-         */
+        var _lastScale = 1;
+
         function drawWatermarkContent(ctx, config, size) {
             if (config.type === TYPE.IMAGE && config.watermarkImage) {
                 ctx.drawImage(config.watermarkImage, -size.width / 2, -size.height / 2, size.width, size.height);
             } else {
-                ctx.font = (config.fontSizePt * _lastScale) + 'px "Microsoft YaHei", "PingFang SC", sans-serif';
+                var fontFamily = config.fontFamily || CONFIG.DEFAULT_FONT;
+                ctx.font = (config.fontSizePt * _lastScale) + 'px ' + fontFamily;
                 ctx.fillStyle = config.colorHex;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
@@ -1704,55 +2027,26 @@
             }
         }
 
-        /* drawWatermarkContent 使用的最近一次画布缩放比（由 applyWatermark 维护，供换算文字像素字号） */
-        var _lastScale = 1;
-
-        /**
-         * 【统一水印渲染管线】预览/缩略图/导出/打包逐张唯一入口，保证四处效果一致
-         * @param {CanvasRenderingContext2D} ctx 目标 2d context
-         * @param {object} source 原图信息 { image, width, height }
-         * @param {object} config 水印配置（WatermarkConfig，含 type/rotationDeg/freeX/freeY 等）
-         * @param {boolean} jpgFillWhite JPG 导出/打包时以白色铺底（透明区填白）
-         */
         function applyWatermark(ctx, source, config, jpgFillWhite) {
             var img = source.image;
             var canvasW = ctx.canvas.width;
             var canvasH = ctx.canvas.height;
-            var scale = canvasW / source.width; // 画布缩放比：全部几何量（字号/坐标/图片尺寸）统一换算
-
-            /* 开启单次渲染测量缓存（渲染结束即清空） */
+            var scale = canvasW / source.width;
             _measureCache = new Map();
             _lastScale = scale;
-
-            ctx.save(); // 保存初始状态，结束后一律还原，避免污染复用 context
-
-            /* JPG 导出：先用白色铺满整张画布，透明通道变白而非黑（预览与缩略图不铺底） */
+            ctx.save();
             if (jpgFillWhite) {
                 ctx.fillStyle = '#FFFFFF';
                 ctx.fillRect(0, 0, canvasW, canvasH);
             }
-
-            /* 绘制原图（像素对齐，不缩放） */
             ctx.drawImage(img, 0, 0, canvasW, canvasH);
-
-            /* 水印内容就绪判定（按类型分派）：图片模式需已上传水印图；文字模式需文字非空 */
             var contentReady = (config.type === TYPE.IMAGE)
                 ? !!(config.watermarkImage)
                 : !!((config.text || '').trim());
-
-            if (!contentReady) {
-                _measureCache = null;
-                ctx.restore();
-                return;
-            }
-
-            /* 全局透明度（文字与图片水印均适用） */
+            if (!contentReady) { _measureCache = null; ctx.restore(); return; }
             ctx.globalAlpha = clampValue(config.opacityPct, CONFIG.OPACITY_MIN, CONFIG.OPACITY_MAX) / 100;
-
             var rotationRad = config.rotationDeg * Math.PI / 180;
-
             if (config.tileEnabled) {
-                /* === 平铺模式：逐格绕各自内容中心旋转后绘制（旋转与透明度仍生效） === */
                 var size = computeWatermarkSize(ctx, config, scale);
                 var cells = computeTileCells(ctx, config, scale, canvasW, canvasH, CONFIG.TILE_GAP_RATIO);
                 for (var i = 0; i < cells.length; i++) {
@@ -1763,7 +2057,6 @@
                     ctx.restore();
                 }
             } else {
-                /* === 单点模式：统一中心点 + 整体旋转 === */
                 var c = computeCenter(ctx, config, scale, canvasW, canvasH);
                 var s = computeWatermarkSize(ctx, config, scale);
                 ctx.save();
@@ -1772,14 +2065,11 @@
                 drawWatermarkContent(ctx, config, s);
                 ctx.restore();
             }
-
-            _measureCache = null; // 清空缓存
-            ctx.restore();        // 还原 font / globalAlpha / fillStyle / textAlign / textBaseline / 变换
+            _measureCache = null;
+            ctx.restore();
         }
 
-        /* ============================================================
-           =====================  交互层：UI 元素引用  =====================
-           ============================================================ */
+        /* 交互层：UI 元素引用 */
         var uploadZone = document.getElementById('upload-zone');
         var fileInput = document.getElementById('file-input');
         var fileNameEl = document.getElementById('file-name');
@@ -1788,6 +2078,7 @@
         var previewCanvas = document.getElementById('preview-canvas');
         var previewTip = document.getElementById('preview-tip');
         var textInput = document.getElementById('text-input');
+        var fontSelect = document.getElementById('font-select');
         var fontRange = document.getElementById('font-range');
         var fontNum = document.getElementById('font-num');
         var colorPicker = document.getElementById('color-picker');
@@ -1799,29 +2090,28 @@
         var btnExport = document.getElementById('btn-export');
         var btnZip = document.getElementById('btn-zip');
         var formatBtns = document.querySelectorAll('.format-btn');
-        /* ---- 增量新增控件引用 ---- */
-        var modeBtns = document.querySelectorAll('.mode-btn');          // 单张/批量模式切换按钮
-        var typeTextRadio = document.getElementById('type-text');       // 文字水印类型单选
-        var typeImageRadio = document.getElementById('type-image');     // 图片水印类型单选
-        var secTypeText = document.getElementById('sec-type-text');     // 文字内容控件组
-        var secTypeFont = document.getElementById('sec-type-font');     // 字号控件组
-        var secTypeColor = document.getElementById('sec-type-color');   // 颜色控件组
-        var secImageWm = document.getElementById('sec-image-wm');       // 图片水印控件组
-        var wmImageZone = document.getElementById('wm-image-zone');     // 水印图上传小卡片
-        var wmImageInput = document.getElementById('wm-image-input');   // 水印图文件选择框
-        var wmImagePreview = document.getElementById('wm-image-preview'); // 水印图预览条
-        var wmImageThumb = document.getElementById('wm-image-thumb');   // 水印图缩略图 img
-        var btnRemoveWmImage = document.getElementById('btn-remove-wm-image'); // 移除水印图按钮
-        var wmScaleRange = document.getElementById('wm-scale-range');   // 图片水印尺寸滑块
-        var wmScaleNum = document.getElementById('wm-scale-num');       // 图片水印尺寸数字框
-        var rotationRange = document.getElementById('rotation-range');  // 旋转角度滑块
-        var rotationNum = document.getElementById('rotation-num');      // 旋转角度数字框
-        var posModeTag = document.getElementById('pos-mode-tag');       // 位置模式标签（自由定位）
-        var batchPanel = document.getElementById('batch-panel');        // 批量任务列表容器
-        var batchList = document.getElementById('batch-list');          // 批量条目网格
-        var btnClearBatch = document.getElementById('btn-clear-batch'); // 清空批量列表按钮
+        var typeTextRadio = document.getElementById('type-text');
+        var typeImageRadio = document.getElementById('type-image');
+        var secTypeText = document.getElementById('sec-type-text');
+        var secTypeFontFamily = document.getElementById('sec-type-font-family');
+        var secTypeFontSize = document.getElementById('sec-type-font-size');
+        var secTypeColor = document.getElementById('sec-type-color');
+        var secImageWm = document.getElementById('sec-image-wm');
+        var wmImageZone = document.getElementById('wm-image-zone');
+        var wmImageInput = document.getElementById('wm-image-input');
+        var wmImagePreview = document.getElementById('wm-image-preview');
+        var wmImageThumb = document.getElementById('wm-image-thumb');
+        var btnRemoveWmImage = document.getElementById('btn-remove-wm-image');
+        var wmScaleRange = document.getElementById('wm-scale-range');
+        var wmScaleNum = document.getElementById('wm-scale-num');
+        var rotationRange = document.getElementById('rotation-range');
+        var rotationNum = document.getElementById('rotation-num');
+        var posModeTag = document.getElementById('pos-mode-tag');
+        var batchPanel = document.getElementById('batch-panel');
+        var batchList = document.getElementById('batch-list');
+        var btnClearBatch = document.getElementById('btn-clear-batch');
+        var modeTag = document.getElementById('mode-tag');
 
-        /* ============ 运行环境能力检测：缺失时降级提示并禁用入口 ============ */
         function detectCapabilities() {
             var canvasSupport = typeof HTMLCanvasElement !== 'undefined';
             var ctxSupport = false;
@@ -1829,14 +2119,10 @@
                 try {
                     var probe = document.createElement('canvas');
                     ctxSupport = !!(probe.getContext && probe.getContext('2d'));
-                } catch (e) {
-                    ctxSupport = false;
-                }
+                } catch (e) { ctxSupport = false; }
             }
             var urlSupport = typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function';
-            var blobSupport = typeof HTMLCanvasElement !== 'undefined' &&
-                typeof HTMLCanvasElement.prototype.toBlob === 'function';
-
+            var blobSupport = typeof HTMLCanvasElement !== 'undefined' && typeof HTMLCanvasElement.prototype.toBlob === 'function';
             if (!(canvasSupport && ctxSupport && urlSupport && blobSupport)) {
                 degradeBanner.classList.add('show');
                 uploadZone.style.pointerEvents = 'none';
@@ -1847,186 +2133,131 @@
             return true;
         }
 
-        /* 初始化时先做能力检测 */
         var supportOK = detectCapabilities();
 
-        /* ============================================================
-           =====================  交互层：图片上传  =====================
-           ============================================================ */
-
-        /**
-         * 将 File 解码为可绘制的 Image 对象
-         * @param {File} file 校验通过的图片文件
-         * @returns {Promise<{source: object, url: string}>}
-         *    source = { name, image, width, height }；url 为需在替换时 revoke 的 Blob URL
-         * @throws {Error} 解码失败或伪装文件时抛出
-         */
         function loadImageFromFile(file) {
             return new Promise(function (resolve, reject) {
                 var url = URL.createObjectURL(file);
                 var img = new Image();
                 img.onload = function () {
                     resolve({
-                        source: {
-                            name: file.name,
-                            image: img,
-                            width: img.naturalWidth,
-                            height: img.naturalHeight
-                        },
+                        source: { name: file.name, image: img, width: img.naturalWidth, height: img.naturalHeight },
                         url: url
                     });
                 };
-                img.onerror = function () {
-                    /* 解码失败：主动释放刚刚创建的 Blob URL，避免内存泄漏 */
-                    URL.revokeObjectURL(url);
-                    reject(new Error('解码失败'));
-                };
+                img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('解码失败')); };
                 img.src = url;
             });
         }
 
-        /**
-         * 拖拽时切换上传区高亮样式
-         * @param {boolean} active 是否处于拖拽悬停状态
-         */
         function setDropZoneActive(active) {
-            if (active) {
-                uploadZone.classList.add('active');
-            } else {
-                uploadZone.classList.remove('active');
-            }
+            if (active) uploadZone.classList.add('active');
+            else uploadZone.classList.remove('active');
         }
 
-        /**
-         * 图片接入统一入口：校验 → 解码 → 写入 state → 渲染
-         * @param {File} file 用户选择的文件
-         */
         function handleFileAccept(file) {
             if (!file) return;
-
-            /* 1. 格式与大小校验：不通过则 Toast 提示并中断，保留当前画布状态 */
             var check = validateFile(file);
-            if (!check.ok) {
-                showToast(check.message, 'error');
-                return;
-            }
-
-            /* 2. 解码；失败时 Toast 提示，state 保持原值（天然回滚） */
+            if (!check.ok) { showToast(check.message, 'error'); return; }
             loadImageFromFile(file).then(function (result) {
-                /* 3. 释放上一张旧图的 Blob URL，防止内存泄漏 */
-                if (state.objectUrl) {
-                    URL.revokeObjectURL(state.objectUrl);
-                    state.objectUrl = null;
-                }
-                /* 4. 写入新图信息 */
+                if (state.objectUrl) { URL.revokeObjectURL(state.objectUrl); state.objectUrl = null; }
                 state.sourceImage = result.source;
                 state.objectUrl = result.url;
-
-                /* 5. 更新上传区文件名展示 */
-                fileNameEl.textContent = '已加载：' + result.source.name +
-                    '（' + result.source.width + ' × ' + result.source.height + '）';
+                fileNameEl.textContent = '已加载：' + result.source.name + '（' + result.source.width + ' × ' + result.source.height + '）';
                 uploadZone.classList.add('has-file');
-
-                /* 6. 立即渲染预览并刷新按钮状态 */
                 renderPreview();
                 updateControlState();
-            }).catch(function () {
-                showToast('图片加载失败，请更换文件', 'error');
-            });
+            }).catch(function () { showToast('图片加载失败，请更换文件', 'error'); });
         }
 
-        /* 点击上传区 → 触发文件选择框 */
-        uploadZone.addEventListener('click', function () {
-            if (supportOK) fileInput.click();
-        });
+        uploadZone.addEventListener('click', function () { if (supportOK) fileInput.click(); });
         uploadZone.addEventListener('keydown', function (e) {
-            if (supportOK && (e.key === 'Enter' || e.key === ' ')) {
-                e.preventDefault();
-                fileInput.click();
-            }
+            if (supportOK && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); fileInput.click(); }
         });
-
-        /* 文件选择框 change：整套文件传入统一入口，随后置空 value 支持重复选择同一文件 */
         fileInput.addEventListener('change', function (e) {
             var files = e.target.files;
-            handleFilesAccept(files, state.mode);
+            handleFilesAccept(files);
             fileInput.value = '';
         });
-
-        /* 拖拽上传：防止浏览器默认打开文件，并做高亮反馈（批量模式下一次拖入多文件全部识别） */
-        uploadZone.addEventListener('dragover', function (e) {
-            e.preventDefault(); // 阻止默认行为，否则拖入时浏览器直接打开文件
-            setDropZoneActive(true);
-        });
-        uploadZone.addEventListener('dragenter', function (e) {
-            e.preventDefault();
-            setDropZoneActive(true);
-        });
-        uploadZone.addEventListener('dragleave', function () {
-            setDropZoneActive(false);
-        });
+        uploadZone.addEventListener('dragover', function (e) { e.preventDefault(); setDropZoneActive(true); });
+        uploadZone.addEventListener('dragenter', function (e) { e.preventDefault(); setDropZoneActive(true); });
+        uploadZone.addEventListener('dragleave', function () { setDropZoneActive(false); });
         uploadZone.addEventListener('drop', function (e) {
             e.preventDefault();
             setDropZoneActive(false);
             var files = e.dataTransfer && e.dataTransfer.files;
-            handleFilesAccept(files, state.mode);
+            handleFilesAccept(files);
         });
 
-        /**
-         * 文件接入统一入口（多文件遍历）：逐文件校验后按当前模式分派
-         * 单张模式：取首个合规文件走 handleFileAccept 写入 sourceImage
-         * 批量模式：合规文件逐个入列 addBatchItem（超 BATCH_MAX 上限时保留前 30 张）
-         * 不合规文件：独立 Toast 点名提示，不影响其余文件入列
-         * @param {FileList|File[]} files 用户选择的文件列表
-         * @param {string} mode 当前模式 single / batch
-         */
-        function handleFilesAccept(files, mode) {
+        function handleFilesAccept(files) {
             if (!files || files.length === 0) return;
-
-            var acceptedCount = 0; // 已合规（待处理）文件计数
-            var i;
-            for (i = 0; i < files.length; i++) {
+            var validFiles = [];
+            for (var i = 0; i < files.length; i++) {
                 var file = files[i];
                 if (!file) continue;
-
-                /* 逐文件格式与大小校验 */
                 var check = validateFile(file);
                 if (!check.ok) {
-                    /* 点名提示：列出文件名，且不影响其它文件 */
                     showToast((file.name || '文件') + ' 加载失败：' + check.message, 'error');
                     continue;
                 }
-
-                if (mode === 'batch') {
-                    /* ---- 批量模式：入队，超上限保留前 30 张 ---- */
-                    if (acceptedCount >= CONFIG.BATCH_MAX) {
-                        showToast('单次最多上传 ' + CONFIG.BATCH_MAX + ' 张图片', 'error');
-                        break;
-                    }
-                    acceptedCount++;
-                    addBatchItem(file);
-                } else {
-                    /* ---- 单张模式：取首个合规文件进入单图流程 ---- */
-                    if (acceptedCount === 0) {
-                        acceptedCount++;
-                        handleFileAccept(file);
-                    }
-                }
+                validFiles.push(file);
+            }
+            if (validFiles.length === 0) return;
+            if (validFiles.length === 1) {
+                switchToSingleMode();
+                handleFileAccept(validFiles[0]);
+            } else {
+                switchToBatchMode(validFiles);
             }
         }
 
-        /* ============================================================
-           =====================  交互层：参数面板联动  =====================
-           ============================================================ */
+        function switchToSingleMode() {
+            if (state.mode === 'single') return;
+            state.mode = 'single';
+            modeTag.textContent = '单张模式';
+            batchPanel.classList.add('hidden');
+            btnExport.classList.remove('hidden');
+            btnZip.classList.add('hidden');
+            uploadText.textContent = '点击或拖拽图片到此处';
+            fileInput.multiple = false;
+            updateControlState();
+        }
 
-        /* --- 水印文字：实时写入 state 并触发重绘 --- */
+        function switchToBatchMode(validFiles) {
+            if (state.objectUrl) { URL.revokeObjectURL(state.objectUrl); state.objectUrl = null; }
+            state.sourceImage = null;
+            fileNameEl.textContent = '';
+            uploadZone.classList.remove('has-file');
+            state.mode = 'batch';
+            modeTag.textContent = '批量模式（' + validFiles.length + ' 张）';
+            batchPanel.classList.remove('hidden');
+            btnExport.classList.add('hidden');
+            btnZip.classList.remove('hidden');
+            uploadText.textContent = '点击或拖拽多张图片到此处（最多 ' + CONFIG.BATCH_MAX + ' 张）';
+            fileInput.multiple = true;
+            var acceptedCount = 0;
+            for (var i = 0; i < validFiles.length; i++) {
+                if (acceptedCount >= CONFIG.BATCH_MAX) {
+                    showToast('单次最多上传 ' + CONFIG.BATCH_MAX + ' 张图片', 'error');
+                    break;
+                }
+                acceptedCount++;
+                addBatchItem(validFiles[i]);
+            }
+            modeTag.textContent = '批量模式（' + state.batchTask.items.length + ' 张）';
+            renderPreview();
+            updateControlState();
+        }
+
         textInput.addEventListener('input', function () {
             state.config = Object.assign({}, state.config, { text: textInput.value });
             updateControlState();
             schedulePreviewRender();
         });
-
-        /* --- 字号：滑块 ↔ 数字框双向同步，越界钳制到 8-200 --- */
+        fontSelect.addEventListener('change', function () {
+            state.config = Object.assign({}, state.config, { fontFamily: fontSelect.value });
+            schedulePreviewRender();
+        });
         fontRange.addEventListener('input', function () {
             var v = parseInt(fontRange.value, 10);
             fontNum.value = v;
@@ -2040,10 +2271,8 @@
             state.config = Object.assign({}, state.config, { fontSizePt: v });
             schedulePreviewRender();
         });
-
-        /* --- 颜色：拾色器与十六进制输入框联动 --- */
         colorPicker.addEventListener('input', function () {
-            var v = colorPicker.value; // 拾色器恒为合法 #RRGGBB
+            var v = colorPicker.value;
             state.lastValidColor = v;
             colorText.value = v;
             state.config = Object.assign({}, state.config, { colorHex: v });
@@ -2052,18 +2281,14 @@
         colorText.addEventListener('change', function () {
             var v = (colorText.value || '').trim();
             if (isValidColor(v)) {
-                /* 合法：更新配置并同步拾色器（仅 6 位可回写） */
                 state.lastValidColor = v;
                 state.config = Object.assign({}, state.config, { colorHex: v });
                 if (v.length === 7) colorPicker.value = v;
             } else {
-                /* 非法（如 #GGG）：忽略并用上一次合法值回写输入框 */
                 colorText.value = state.lastValidColor;
             }
             schedulePreviewRender();
         });
-
-        /* --- 透明度：滑块 ↔ 数字框双向同步，越界钳制到 0-100 --- */
         opacityRange.addEventListener('input', function () {
             var v = parseInt(opacityRange.value, 10);
             opacityNum.value = v;
@@ -2077,33 +2302,20 @@
             state.config = Object.assign({}, state.config, { opacityPct: v });
             schedulePreviewRender();
         });
-
-        /* --- 九宫格位置：单选互斥，选中即重绘；同时吸附水印中心到对应格子 --- */
         positionGroup.addEventListener('change', function (e) {
             if (e.target.name === 'position' && e.target.checked) {
-                state.config = Object.assign({}, state.config, {
-                    position: e.target.value,
-                    positionMode: POSITION_MODE.GRID // 选中九宫格 = 网格吸附模式
-                });
-                /* 吸附：将九宫格位置转为中心点原图像素坐标，供后续自由拖拽作为基准 */
+                state.config = Object.assign({}, state.config, { position: e.target.value, positionMode: POSITION_MODE.GRID });
                 var snapped = snapPositionToGrid(e.target.value, state.config.fontSizePt);
-                state.config = Object.assign({}, state.config, {
-                    freeX: snapped.x,
-                    freeY: snapped.y
-                });
+                state.config = Object.assign({}, state.config, { freeX: snapped.x, freeY: snapped.y });
                 updatePositionModeTag();
                 schedulePreviewRender();
             }
         });
-
-        /* --- 平铺开关：开启时禁用位置组与拖拽（互斥），关闭时恢复 --- */
         tileToggle.addEventListener('change', function () {
             state.config = Object.assign({}, state.config, { tileEnabled: tileToggle.checked });
             updateControlState();
             schedulePreviewRender();
         });
-
-        /* --- 水印类型切换（文字/图片互斥）：切换控件显隐与预览重绘 --- */
         typeTextRadio.addEventListener('change', function () {
             if (typeTextRadio.checked) {
                 state.config = Object.assign({}, state.config, { type: TYPE.TEXT });
@@ -2120,31 +2332,21 @@
                 schedulePreviewRender();
             }
         });
-
-        /* --- 图片水印上传：点击小卡片触发文件选择 --- */
-        wmImageZone.addEventListener('click', function () {
-            wmImageInput.click();
-        });
+        wmImageZone.addEventListener('click', function () { wmImageInput.click(); });
         wmImageZone.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' || e.key === ' ') {
-                e.preventDefault();
-                wmImageInput.click();
-            }
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); wmImageInput.click(); }
         });
         wmImageInput.addEventListener('change', function () {
             var file = wmImageInput.files && wmImageInput.files[0];
             if (file) handleWmImageAccept(file);
             wmImageInput.value = '';
         });
-        /* 移除已上传的水印图片 */
         btnRemoveWmImage.addEventListener('click', function () {
             releaseWmImage();
             showToast('已移除水印图片', 'info');
             updateControlState();
             schedulePreviewRender();
         });
-
-        /* --- 图片水印尺寸：5%-50% 双向同步与钳制 --- */
         wmScaleRange.addEventListener('input', function () {
             var v = parseInt(wmScaleRange.value, 10);
             wmScaleNum.value = v;
@@ -2158,8 +2360,6 @@
             state.config = Object.assign({}, state.config, { imageScalePct: v });
             schedulePreviewRender();
         });
-
-        /* --- 旋转角度：-180°~180° 双向同步与钳制（默认 -30°） --- */
         rotationRange.addEventListener('input', function () {
             var v = parseInt(rotationRange.value, 10);
             rotationNum.value = v;
@@ -2173,27 +2373,9 @@
             state.config = Object.assign({}, state.config, { rotationDeg: v });
             schedulePreviewRender();
         });
+        btnClearBatch.addEventListener('click', function () { clearBatchTask(); });
 
-        /* --- 模式切换（单张/批量）：联动上传区与导出区显隐 --- */
-        var mi;
-        for (mi = 0; mi < modeBtns.length; mi++) {
-            (function (btn) {
-                btn.addEventListener('click', function () {
-                    var mode = btn.getAttribute('data-mode');
-                    if (mode === state.mode) return;
-                    switchMode(mode);
-                });
-            })(modeBtns[mi]);
-        }
-
-        /* --- 清空批量任务列表 --- */
-        btnClearBatch.addEventListener('click', function () {
-            clearBatchTask();
-        });
-
-        /* --- 导出格式按钮组：切换高亮与当前格式 --- */
-        var i;
-        for (i = 0; i < formatBtns.length; i++) {
+        for (var i = 0; i < formatBtns.length; i++) {
             (function (btn) {
                 btn.addEventListener('click', function () {
                     for (var j = 0; j < formatBtns.length; j++) {
@@ -2205,163 +2387,111 @@
             })(formatBtns[i]);
         }
 
-        /* ============================================================
-           ===================== 交互层：禁用态 / 预览 / 导出  =====================
-           ============================================================ */
-
-        /**
-         * 水印内容就绪判定（类型感知）
-         * 图片模式：已上传水印图；文字模式：文字 trim 后非空
-         * @returns {boolean}
-         */
         function getWatermarkReady() {
             if (!state.config) return false;
             if (state.config.type === TYPE.IMAGE) return !!state.config.watermarkImage;
             return !!(state.config.text && state.config.text.trim());
         }
 
-        /**
-         * 水印类型控件显隐：图片水印模式下隐藏文字类控件，反之隐藏图片水印控件
-         */
         function updateTypeVisibility() {
             var isImage = state.config.type === TYPE.IMAGE;
-            secTypeText.classList.toggle('type-hidden', isImage);
-            secTypeFont.classList.toggle('type-hidden', isImage);
-            secTypeColor.classList.toggle('type-hidden', isImage);
+            // 文字水印专属面板区域的 accordion-item 显隐
+            var menuTextItem = document.getElementById('menu-text');
+            var menuFontItem = document.getElementById('menu-font');
+            var menuColorItem = document.getElementById('menu-color');
+            var menuImageWmItem = document.getElementById('menu-imagewm');
+            // 文字模式下隐藏图片水印，图片模式下隐藏文字相关项
+            if (menuTextItem) {
+                var textAccordion = menuTextItem.closest('.accordion-item');
+                if (textAccordion) textAccordion.classList.toggle('type-hidden', isImage);
+            }
+            if (menuFontItem) {
+                var fontAccordion = menuFontItem.closest('.accordion-item');
+                if (fontAccordion) fontAccordion.classList.toggle('type-hidden', isImage);
+            }
+            if (menuColorItem) {
+                var colorAccordion = menuColorItem.closest('.accordion-item');
+                if (colorAccordion) colorAccordion.classList.toggle('type-hidden', isImage);
+            }
+            if (menuImageWmItem) {
+                menuImageWmItem.classList.toggle('type-hidden', !isImage);
+            }
+            // 保留对旧 panel div 的 type-hidden 兼容（图片水印面板）
             secImageWm.classList.toggle('type-hidden', !isImage);
         }
 
-        /**
-         * 位置模式标签刷新：自由拖拽模式且非平铺时显示"自由定位"角标
-         */
         function updatePositionModeTag() {
             var free = state.config.positionMode === POSITION_MODE.FREE &&
                 !state.config.tileEnabled && !!state.sourceImage;
-            if (free) {
-                posModeTag.classList.remove('hidden');
-            } else {
-                posModeTag.classList.add('hidden');
-            }
+            if (free) posModeTag.classList.remove('hidden');
+            else posModeTag.classList.add('hidden');
         }
 
-        /**
-         * 刷新控件禁用态（类型感知 + 模式感知）
-         * - 单张"下载图片" = 图片就绪 && 水印就绪（文字 trim 非空 / 图片水印已上传）
-         * - 批量"打包下载" = canZip()（全部任务 success && 水印就绪 && JSZip 可用）
-         * - 平铺开启时九宫格位置组与拖拽一并置灰
-         */
         function updateControlState() {
             var imageReady = !!state.sourceImage;
             var ready = imageReady && getWatermarkReady();
             var singleMode = state.mode === 'single';
-
-            /* 单张导出按钮：仅单张模式且就绪时可用 */
             btnExport.disabled = !(singleMode && ready);
-            /* 打包按钮：canZip()（内部含批量模式与 JSZip 可用性判断） */
             btnZip.disabled = !canZip();
-
-            /* 平铺与位置/拖拽互斥 */
             var tile = state.config.tileEnabled;
             positionGroup.disabled = tile;
-            if (tile) {
-                positionGroup.classList.add('disabled');
-            } else {
-                positionGroup.classList.remove('disabled');
-            }
+            if (tile) positionGroup.classList.add('disabled');
+            else positionGroup.classList.remove('disabled');
             setDragEnabled(!tile && imageReady && getWatermarkReady());
             updatePositionModeTag();
         }
 
-        /**
-         * 预览重绘核心：读取当前 state 快照 → 准备画布 → 调用统一渲染管线
-         * 图片未加载仅展示占位提示；水印未就绪（按类型）预览为纯原图并给出相应提示
-         */
         function renderPreview() {
             var source = state.sourceImage;
-
             if (!source) {
-                /* 未上传图片：清空画布，显示占位提示 */
                 previewCanvas.width = 0;
                 previewCanvas.height = 0;
                 previewTip.textContent = '请先上传图片';
                 previewTip.classList.remove('hidden');
                 return;
             }
-
-            /* 预览画布受限宽度：不超 PREVIEW_MAX_WIDTH，高度按原图比例换算 */
             var previewW = Math.min(source.width, CONFIG.PREVIEW_MAX_WIDTH);
             var previewH = Math.round(source.height * previewW / source.width);
-
             var ctx = prepareCanvas(previewCanvas, previewW, previewH);
             try {
                 applyWatermark(ctx, source, state.config, false);
             } catch (e) {
-                /* 图片水印绘制异常：恢复无水印画面并提示（spec 5.3.3-2） */
                 drawPlainImage(ctx, source);
-                showToast('水印渲染失败，请重新上传水印图片', 'error');
+                showToast('水印渲染失败', 'error');
             }
-
-            /* 水印未就绪提示（按类型分派文案） */
             if (getWatermarkReady()) {
                 previewTip.classList.add('hidden');
             } else {
-                previewTip.textContent = state.config.type === TYPE.IMAGE ?
-                    '请先上传水印图片' : '请输入水印文字';
+                previewTip.textContent = state.config.type === TYPE.IMAGE ? '请先上传水印图片' : '请输入水印文字';
                 previewTip.classList.remove('hidden');
             }
             updatePositionModeTag();
         }
 
-        /** 仅绘制原图（无水印），用于水印渲染异常时的降级恢复 */
         function drawPlainImage(ctx, source) {
             ctx.drawImage(source.image, 0, 0, ctx.canvas.width, ctx.canvas.height);
         }
 
-        /* 参数变更 → 防抖调度重绘（80ms 窗口合并高频输入）；同时触发批量缩略图全量重渲染 */
         var schedulePreviewRender = debounce(function () {
             renderPreview();
             renderBatchThumbnails();
         }, CONFIG.TICK_DELAY);
 
-        /* --- 下载图片按钮：导出前必经禁用态校验，disabled 时点击无效 --- */
-        btnExport.addEventListener('click', function () {
-            exportImage(currentFormat);
-        });
+        btnExport.addEventListener('click', function () { exportImage(currentFormat); });
+        btnZip.addEventListener('click', function () { downloadZipPackage(); });
 
-        /* --- 打包下载按钮：批量模式可用，disabled 时点击无效 --- */
-        btnZip.addEventListener('click', function () {
-            downloadZipPackage();
-        });
-
-        /**
-         * 原尺寸渲染内部函数：创建与原图像素一致的画布 → 统一渲染管线 → Blob
-         * 单张导出与批量打包逐张共用此实现，从代码层面保证两者结果一致（spec 5.4.1-6）
-         * @param {object} source 原图信息 { image, width, height }
-         * @param {string} format png / jpg
-         * @returns {Promise<Blob>}
-         */
         function renderExportCanvas(source, format) {
             var exportCanvas = document.createElement('canvas');
             exportCanvas.width = source.width;
             exportCanvas.height = source.height;
             var ctx = exportCanvas.getContext('2d');
-            /* JPG 时以白色铺底填补透明通道（仅导出/打包场景） */
             applyWatermark(ctx, source, state.config, format === EXPORT_FORMAT.JPG);
             return canvasToBlob(exportCanvas, format);
         }
 
-        /**
-         * 导出入口：原尺寸画布 → 统一渲染管线 → Blob → 触发下载
-         * 前置校验（类型感知）：图片就绪 && 水印就绪，任一不满足返回 false 不触发下载
-         * 全程不修改 state、不重绘预览区，保证导出前后预览画面完全一致
-         * @param {string} format png / jpg
-         * @returns {Promise<boolean>} 是否成功触发下载
-         */
         function exportImage(format) {
             var source = state.sourceImage;
-            if (!source || !getWatermarkReady()) {
-                return Promise.resolve(false);
-            }
+            if (!source || !getWatermarkReady()) return Promise.resolve(false);
             return renderExportCanvas(source, format).then(function (blob) {
                 var url = URL.createObjectURL(blob);
                 var a = document.createElement('a');
@@ -2370,37 +2500,20 @@
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
-                /* 延迟释放 Blob URL，确保下载已开始 */
-                setTimeout(function () {
-                    URL.revokeObjectURL(url);
-                }, 1000);
+                setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
                 showToast('导出成功', 'success');
                 return true;
             }).catch(function () {
-                /* toBlob 失败 / 下载被浏览器拦截：保持预览与状态不变 */
-                showToast('下载失败，请检查浏览器下载权限', 'error');
+                showToast('下载失败', 'error');
                 return false;
             });
         }
 
-        /* ============================================================
-           ===================== 交互层：图片水印上传  =====================
-           ============================================================ */
-
-        /**
-         * 图片水印文件接入：校验 → 解码 → 写入 config.watermarkImage
-         * 替换上传前 revoke 旧水印图 objectURL；解码失败保持"未上传"状态
-         * @param {File} file 水印图片文件
-         */
         function handleWmImageAccept(file) {
             if (!file) return;
             var check = validateFile(file);
-            if (!check.ok) {
-                showToast('水印图片加载失败，请更换文件', 'error');
-                return;
-            }
+            if (!check.ok) { showToast('水印图片加载失败', 'error'); return; }
             loadImageFromFile(file).then(function (result) {
-                /* 释放旧水印图 Blob URL */
                 releaseWmImage();
                 wmImageMeta = {
                     image: result.source.image,
@@ -2417,15 +2530,12 @@
                 updateControlState();
                 schedulePreviewRender();
             }).catch(function () {
-                showToast('水印图片加载失败，请更换文件', 'error');
+                showToast('水印图片加载失败', 'error');
             });
         }
 
-        /** 释放图片水印资源并复位 UI 状态 */
         function releaseWmImage() {
-            if (wmImageMeta && wmImageMeta.objectUrl) {
-                URL.revokeObjectURL(wmImageMeta.objectUrl);
-            }
+            if (wmImageMeta && wmImageMeta.objectUrl) URL.revokeObjectURL(wmImageMeta.objectUrl);
             wmImageMeta = null;
             state.config = Object.assign({}, state.config, { watermarkImage: null });
             wmImageThumb.removeAttribute('src');
@@ -2433,16 +2543,6 @@
             wmImageZone.style.display = '';
         }
 
-        /* ============================================================
-           ===================== 交互层：自由拖拽子系统  =====================
-           ============================================================ */
-
-        /**
-         * 九宫格吸附：求选中格子中心的「原图像素」坐标（供选中九宫格与拖拽联动）
-         * @param {string} position 九宫格枚举值
-         * @param {number} fontPt 原图像素字号（pt 直译）
-         * @returns {{x: number, y: number}}
-         */
         function snapPositionToGrid(position, fontPt) {
             var source = state.sourceImage;
             if (!source) return { x: 0, y: 0 };
@@ -2457,28 +2557,10 @@
             return { x: center.cx, y: center.cy };
         }
 
-        /**
-         * 预览指针坐标 → 相对原图像素坐标（水印中心语义）
-         * scale = 原图宽 / 预览宽
-         * @param {{x: number, y: number}} pointer 预览画布内坐标
-         * @param {number} scale 换算倍率
-         * @returns {{x: number, y: number}}
-         */
         function pointerToSource(pointer, scale) {
             return { x: pointer.x * scale, y: pointer.y * scale };
         }
 
-        /**
-         * 自由坐标边界钳制（含旋转后包围盒 AABB）
-         * 中心坐标限制在 [halfW, sourceW-halfW] × [halfH, sourceH-halfH]；
-         * 超大水印（2×half 已超图尺寸）时归中，保证恒有合法坐标
-         * @param {number} x 候选中心 x（原图像素）
-         * @param {number} y 候选中心 y（原图像素）
-         * @param {{halfW: number, halfH: number}} box 旋转包围盒半宽半高
-         * @param {number} sourceW 原图宽
-         * @param {number} sourceH 原图高
-         * @returns {{x: number, y: number}} 钳制后中心坐标
-         */
         function clampFreePosition(x, y, box, sourceW, sourceH) {
             if (box.halfW * 2 >= sourceW || box.halfH * 2 >= sourceH) {
                 return { x: sourceW / 2, y: sourceH / 2 };
@@ -2489,28 +2571,15 @@
             };
         }
 
-        /* 拖拽状态机内部变量 */
-        var _drag = {
-            bound: false,    // 是否已绑定指针事件
-            active: false,   // 是否处于一次拖拽会话
-            moving: false,   // 是否已越过阈值进入拖动
-            pointerId: null,
-            startX: 0, startY: 0,  // pointerdown 时的预览坐标
-            baseX: 0, baseY: 0     // pointerdown 时的水印中心（原图像素）
-        };
+        var _drag = { bound: false, active: false, moving: false, pointerId: null, startX: 0, startY: 0, baseX: 0, baseY: 0 };
 
-        /**
-         * 启用/禁用预览画布上的水印自由拖拽
-         * 仅在「非平铺 && 图片已加载 && 水印就绪」时启用（由 updateControlState 调用）
-         * @param {boolean} enabled
-         */
         function setDragEnabled(enabled) {
             if (enabled && !_drag.bound) {
                 previewCanvas.addEventListener('pointerdown', dragOnDown);
                 previewCanvas.addEventListener('pointermove', dragOnMove);
                 previewCanvas.addEventListener('pointerup', dragOnUp);
                 previewCanvas.addEventListener('pointercancel', dragOnUp);
-                previewCanvas.style.touchAction = 'none'; // 防触摸滚动冲突（spec 4.5-2）
+                previewCanvas.style.touchAction = 'none';
                 _drag.bound = true;
             } else if (!enabled && _drag.bound) {
                 previewCanvas.removeEventListener('pointerdown', dragOnDown);
@@ -2524,163 +2593,67 @@
             }
         }
 
-        /** pointerdown：记录按下点与当前水印中心，捕获指针 */
         function dragOnDown(e) {
             if (state.config.tileEnabled || !state.sourceImage || !getWatermarkReady()) return;
-            /* 忽略非画布左键点击与其它指针 */
             if (e.button && e.button !== 0) return;
-
             var source = state.sourceImage;
-            var previewW = Math.min(source.width, CONFIG.PREVIEW_MAX_WIDTH);
-            var scale = source.width / previewW;
-
             var rect = previewCanvas.getBoundingClientRect();
-            _drag.active = true;
-            _drag.moving = false;
-            _drag.pointerId = e.pointerId;
-            _drag.startX = e.clientX - rect.left;
-            _drag.startY = e.clientY - rect.top;
+            _drag.active = true; _drag.moving = false; _drag.pointerId = e.pointerId;
+            _drag.startX = e.clientX - rect.left; _drag.startY = e.clientY - rect.top;
             _drag.baseX = state.config.positionMode === POSITION_MODE.FREE ? state.config.freeX : 0;
             _drag.baseY = state.config.positionMode === POSITION_MODE.FREE ? state.config.freeY : 0;
-
-            /* 若当前处于九宫格模式，先换算对应中心作为基准（positionMode 维持 grid，待位移后切 free） */
             if (state.config.positionMode !== POSITION_MODE.FREE) {
                 var snapped = snapPositionToGrid(state.config.position, state.config.fontSizePt);
-                _drag.baseX = snapped.x;
-                _drag.baseY = snapped.y;
+                _drag.baseX = snapped.x; _drag.baseY = snapped.y;
             }
-
-            try {
-                previewCanvas.setPointerCapture(e.pointerId);
-            } catch (err) { /* 某些环境不支持捕获则忽略 */ }
+            try { previewCanvas.setPointerCapture(e.pointerId); } catch (err) { /* 忽略 */ }
         }
 
-        /** pointermove：超过 DRAG_THRESHOLD 后按增量换算自由坐标并钳制回写 */
         function dragOnMove(e) {
             if (!_drag.active) return;
             var source = state.sourceImage;
             if (!source) return;
-
             var rect = previewCanvas.getBoundingClientRect();
             var curX = e.clientX - rect.left;
             var curY = e.clientY - rect.top;
-
             var dx = curX - _drag.startX;
             var dy = curY - _drag.startY;
-            if (!_drag.moving && Math.abs(dx) < CONFIG.DRAG_THRESHOLD && Math.abs(dy) < CONFIG.DRAG_THRESHOLD) {
-                return; // 未超过阈值：保持待命，防误触
-            }
+            if (!_drag.moving && Math.abs(dx) < CONFIG.DRAG_THRESHOLD && Math.abs(dy) < CONFIG.DRAG_THRESHOLD) return;
             _drag.moving = true;
-
             var previewW = Math.min(source.width, CONFIG.PREVIEW_MAX_WIDTH);
-            var scale = source.width / previewW; // 预览像素 → 原图像素倍率
-
-            /* 计算当前水印未旋转尺寸（原图像素系）并求旋转包围盒 */
+            var scale = source.width / previewW;
             var ctx = previewCanvas.getContext('2d');
             var cfgForSize = Object.assign({}, state.config, { positionMode: POSITION_MODE.GRID });
             var size = computeWatermarkSize(ctx, cfgForSize, 1);
             var box = getRotatedBoxHalf(size.width, size.height, state.config.rotationDeg);
-
             var candidate = pointerToSource({ x: _drag.baseX / scale + dx, y: _drag.baseY / scale + dy }, scale);
             var clamped = clampFreePosition(candidate.x, candidate.y, box, source.width, source.height);
-
-            state.config = Object.assign({}, state.config, {
-                freeX: clamped.x,
-                freeY: clamped.y,
-                positionMode: POSITION_MODE.FREE // 位移后脱离九宫格锚定
-            });
+            state.config = Object.assign({}, state.config, { freeX: clamped.x, freeY: clamped.y, positionMode: POSITION_MODE.FREE });
             schedulePreviewRender();
         }
 
-        /** pointerup：释放指针捕获并最终重绘一次 */
         function dragOnUp(e) {
             if (!_drag.active) return;
-            _drag.active = false;
-            _drag.moving = false;
-            try {
-                previewCanvas.releasePointerCapture(e.pointerId);
-            } catch (err) { /* 忽略 */ }
-            renderPreview();
-            renderBatchThumbnails();
+            _drag.active = false; _drag.moving = false;
+            try { previewCanvas.releasePointerCapture(e.pointerId); } catch (err) { /* 忽略 */ }
+            renderPreview(); renderBatchThumbnails();
         }
 
-        /* ============================================================
-           ===================== 交互层：批量处理模式  =====================
-           ============================================================ */
-        /** 批量条目状态中文文案映射 */
-        var STATUS_TEXT = {
-            'pending': '待处理',
-            'processing': '处理中',
-            'success': '成功',
-            'failed': '失败'
-        };
-        /** 批量条目状态 → 角标 CSS 类 */
-        var STATUS_CLASS = {
-            'pending': 'status-pending',
-            'processing': 'status-processing',
-            'success': 'status-success',
-            'failed': 'status-failed'
-        };
-        var _batchIdSeq = 0; // 条目自增序列（保证 id 唯一）
+        var STATUS_TEXT = { 'pending': '待处理', 'processing': '处理中', 'success': '成功', 'failed': '失败' };
+        var STATUS_CLASS = { 'pending': 'status-pending', 'processing': 'status-processing', 'success': 'status-success', 'failed': 'status-failed' };
+        var _batchIdSeq = 0;
 
-        /**
-         * 单张 / 批量模式切换：联动上传区 multiple、任务列表显隐、导出按钮切换
-         * 切换不丢失单图与批量各自已加载的数据
-         * @param {string} mode single / batch
-         */
-        function switchMode(mode) {
-            state.mode = mode;
-
-            /* 模式按钮高亮 */
-            for (var i = 0; i < modeBtns.length; i++) {
-                if (modeBtns[i].getAttribute('data-mode') === mode) {
-                    modeBtns[i].classList.add('active');
-                } else {
-                    modeBtns[i].classList.remove('active');
-                }
-            }
-
-            /* 上传区：批量模式开启多选 + 文案变化 */
-            fileInput.multiple = (mode === 'batch');
-            uploadText.textContent = mode === 'batch' ?
-                '点击或拖拽多张图片到此处（最多 ' + CONFIG.BATCH_MAX + ' 张）' :
-                '点击或拖拽图片到此处';
-
-            /* 任务列表与导出按钮显隐 */
-            batchPanel.classList.toggle('hidden', mode !== 'batch');
-            btnExport.classList.toggle('hidden', mode === 'batch');
-            btnZip.classList.toggle('hidden', mode !== 'batch');
-
-            if (mode === 'batch') renderBatchList();
-            updateControlState();
-        }
-
-        /**
-         * 批量任务入列（校验已通过后调用）
-         * 惰性解码：先以 pending 入列，source 置 null，避免 30 张大图同时解码阻塞首帧
-         * @param {File} file 校验通过的图片文件
-         * @returns {string|null} 新条目 id；超过 BATCH_MAX 返回 null
-         */
         function addBatchItem(file) {
             if (state.batchTask.items.length >= CONFIG.BATCH_MAX) return null;
             _batchIdSeq++;
-            var item = {
-                id: 'batch_' + _batchIdSeq,
-                file: file,
-                name: file.name,
-                status: STATUS.PENDING,
-                error: null,
-                source: null,     // 惰性解码：pending 阶段不持有 Image
-                objectUrl: null
-            };
+            var item = { id: 'batch_' + _batchIdSeq, file: file, name: file.name, status: STATUS.PENDING, error: null, source: null, objectUrl: null };
             state.batchTask.items.push(item);
             renderBatchList();
-            decodeBatchItem(item); // 异步补全 source
+            decodeBatchItem(item);
             updateControlState();
             return item.id;
         }
 
-        /** 逐条目惰性解码：解码完成置 success 并渲染缩略图，失败置 failed 并点名提示 */
         function decodeBatchItem(item) {
             updateBatchItemState(item.id, STATUS.PROCESSING);
             loadImageFromFile(item.file).then(function (result) {
@@ -2694,36 +2667,21 @@
             });
         }
 
-        /** 按 id 查找批量条目 */
         function findBatchItem(id) {
             var items = state.batchTask.items;
-            for (var i = 0; i < items.length; i++) {
-                if (items[i].id === id) return items[i];
-            }
+            for (var i = 0; i < items.length; i++) { if (items[i].id === id) return items[i]; }
             return null;
         }
 
-        /**
-         * 条目状态机流转：pending/processing/success/failed
-         * success 不得回退；任一 failed 即禁用打包按钮并提示
-         * @param {string} id 条目 id
-         * @param {string} status 目标状态
-         * @param {string} [error] failed 时原因
-         */
         function updateBatchItemState(id, status, error) {
-            var item = findBatchItem(id);
-            if (!item) return;
-            if (item.status === STATUS.SUCCESS) return; // 成功项不回退
-            item.status = status;
-            item.error = error || null;
+            var item = findBatchItem(id); if (!item) return;
+            if (item.status === STATUS.SUCCESS) return;
+            item.status = status; item.error = error || null;
             updateBatchItemStatusUI(item);
-            if (status === STATUS.FAILED) {
-                showToast('任务列表存在失败项', 'error');
-            }
+            if (status === STATUS.FAILED) showToast('任务列表存在失败项', 'error');
             updateControlState();
         }
 
-        /** 更新单个条目的状态角标 DOM */
         function updateBatchItemStatusUI(item) {
             var el = batchList.querySelector('.batch-item[data-id="' + item.id + '"]');
             if (!el) return;
@@ -2735,26 +2693,17 @@
             el.classList.toggle('failed', item.status === STATUS.FAILED);
         }
 
-        /** 渲染单个条目的受限宽缩略图 */
         function renderBatchItemThumb(item) {
             var el = batchList.querySelector('.batch-item[data-id="' + item.id + '"] canvas');
             if (!el || !item.source || item.status === STATUS.FAILED) return;
             var source = item.source;
-            var tw = Math.min(source.width, 400); // 缩略图受限宽，控制批量重绘成本
+            var tw = Math.min(source.width, 400);
             var th = Math.round(source.height * tw / source.width);
             var ctx = prepareCanvas(el, tw, th);
-            try {
-                applyWatermark(ctx, source, state.config, false);
-            } catch (e) {
-                ctx.drawImage(source.image, 0, 0, tw, th);
-            }
+            try { applyWatermark(ctx, source, state.config, false); }
+            catch (e) { ctx.drawImage(source.image, 0, 0, tw, th); }
         }
 
-        /**
-         * 全列表缩略图重渲染（参数变更防抖触发）：遍历成功条目以统一配置快照重绘
-         * 用 setTimeout 分片让出主线程，避免 30 张大图一次重绘阻塞交互
-         * @param {string} [skipId] 可跳过指定条目
-         */
         function renderBatchThumbnails(skipId) {
             if (state.mode !== 'batch') return;
             var items = state.batchTask.items;
@@ -2762,27 +2711,21 @@
             function step() {
                 var done = 0;
                 while (idx < items.length && done < 3) {
-                    var item = items[idx];
-                    idx++;
-                    done++;
+                    var item = items[idx]; idx++; done++;
                     if (item.id === skipId || item.status !== STATUS.SUCCESS) continue;
                     renderBatchItemThumb(item);
                 }
-                if (idx < items.length) {
-                    setTimeout(step, 0); // 分片让出主线程
-                }
+                if (idx < items.length) setTimeout(step, 0);
             }
             step();
         }
 
-        /** 全量重建批量任务列表 DOM */
         function renderBatchList() {
             var items = state.batchTask.items;
             batchList.innerHTML = '';
             if (items.length === 0) {
-                var empty = document.createElement('div');
-                empty.className = 'batch-empty';
-                empty.textContent = '批量模式下上传的图片将显示在这里';
+                var empty = document.createElement('div'); empty.className = 'batch-empty';
+                empty.textContent = '上传多张图片后显示批量任务';
                 batchList.appendChild(empty);
                 return;
             }
@@ -2791,68 +2734,37 @@
                 var card = document.createElement('div');
                 card.className = 'batch-item' + (item.status === STATUS.FAILED ? ' failed' : '');
                 card.setAttribute('data-id', item.id);
-
-                var canvas = document.createElement('canvas');
-                canvas.width = 0;
-                canvas.height = 0;
-
-                var delBtn = document.createElement('button');
-                delBtn.type = 'button';
-                delBtn.className = 'batch-item-remove';
-                delBtn.textContent = '×';
-                delBtn.title = '移除该任务';
-
-                var info = document.createElement('div');
-                info.className = 'batch-item-info';
-                var name = document.createElement('div');
-                name.className = 'batch-item-name';
-                name.textContent = item.name;
-                name.title = item.name;
+                var canvas = document.createElement('canvas'); canvas.width = 0; canvas.height = 0;
+                var delBtn = document.createElement('button'); delBtn.type = 'button';
+                delBtn.className = 'batch-item-remove'; delBtn.textContent = '×'; delBtn.title = '移除'; var info = document.createElement('div'); info.className = 'batch-item-info';
+                var name = document.createElement('div'); name.className = 'batch-item-name';
+                name.textContent = item.name; name.title = item.name;
                 var badge = document.createElement('span');
                 badge.className = 'batch-item-status ' + (STATUS_CLASS[item.status] || 'status-pending');
                 badge.textContent = item.status === STATUS.FAILED && item.error ? item.error : (STATUS_TEXT[item.status] || item.status);
-
-                info.appendChild(name);
-                info.appendChild(badge);
-                card.appendChild(canvas);
-                card.appendChild(delBtn);
-                card.appendChild(info);
+                info.appendChild(name); info.appendChild(badge);
+                card.appendChild(canvas); card.appendChild(delBtn); card.appendChild(info);
                 batchList.appendChild(card);
-
-                /* 已解码成功则立即渲染缩略图 */
-                if (item.status === STATUS.SUCCESS) {
-                    renderBatchItemThumb(item);
-                }
+                if (item.status === STATUS.SUCCESS) renderBatchItemThumb(item);
             }
         }
 
-        /** 移除单个批量条目（释放其 objectURL） */
         function removeBatchItem(id) {
             var items = state.batchTask.items;
             for (var i = 0; i < items.length; i++) {
-                if (items[i].id === id) {
-                    if (items[i].objectUrl) URL.revokeObjectURL(items[i].objectUrl);
-                    items.splice(i, 1);
-                    break;
-                }
+                if (items[i].id === id) { if (items[i].objectUrl) URL.revokeObjectURL(items[i].objectUrl); items.splice(i, 1); break; }
             }
-            renderBatchList();
-            updateControlState();
+            renderBatchList(); updateControlState();
         }
 
-        /** 清空全部批量任务（释放全部 objectURL） */
         function clearBatchTask() {
             var items = state.batchTask.items;
-            for (var i = 0; i < items.length; i++) {
-                if (items[i].objectUrl) URL.revokeObjectURL(items[i].objectUrl);
-            }
+            for (var i = 0; i < items.length; i++) { if (items[i].objectUrl) URL.revokeObjectURL(items[i].objectUrl); }
             state.batchTask.items = [];
-            renderBatchList();
-            updateControlState();
+            renderBatchList(); updateControlState();
             showToast('已清空批量任务', 'info');
         }
 
-        /* 批量条目移除按钮：事件委托 */
         batchList.addEventListener('click', function (e) {
             var btn = e.target;
             if (btn && btn.classList && btn.classList.contains('batch-item-remove')) {
@@ -2861,73 +2773,44 @@
             }
         });
 
-        /**
-         * 打包就绪判定（批量模式）：存在条目 && 全部 success && 水印就绪 && JSZip 可用
-         * @returns {boolean}
-         */
         function canZip() {
             if (state.mode !== 'batch') return false;
             if (!getWatermarkReady()) return false;
             if (!state.zipEnabled) return false;
             var items = state.batchTask.items;
             if (items.length === 0) return false;
-            for (var i = 0; i < items.length; i++) {
-                if (items[i].status !== STATUS.SUCCESS) return false;
-            }
+            for (var i = 0; i < items.length; i++) { if (items[i].status !== STATUS.SUCCESS) return false; }
             return true;
         }
 
-        /* ============================================================
-           ===================== 交互层：JSZip 打包下载  =====================
-           ============================================================ */
-        var _zipLoading = false; // JSZip 加载防重入标志
+        var _zipLoading = false;
 
-        /**
-         * 确保本地化 JSZip 已加载（动态注入 script，页面预加载 + 使用前二次检测）
-         * 全程不发起任何远程请求，加载失败仅降级批量打包、单张导出不受影响
-         * @returns {Promise<boolean>} 是否可用（window.JSZip 存在）
-         */
         function ensureZipLibLoaded() {
             return new Promise(function (resolve) {
                 if (state.zipEnabled) { resolve(true); return; }
                 if (window.JSZip) { state.zipEnabled = true; updateControlState(); resolve(true); return; }
                 if (_zipLoading) {
-                    /* 加载进行中：轮询等待一次注入结果 */
                     var tries = 0;
                     var timer = setInterval(function () {
                         tries++;
-                        if (window.JSZip) {
-                            clearInterval(timer);
-                            state.zipEnabled = true;
-                            updateControlState();
-                            resolve(true);
-                        } else if (tries > 50) {
-                            clearInterval(timer);
-                            state.zipEnabled = false;
-                            updateControlState();
-                            resolve(false);
-                        }
+                        if (window.JSZip) { clearInterval(timer); state.zipEnabled = true; updateControlState(); resolve(true); }
+                        else if (tries > 50) { clearInterval(timer); state.zipEnabled = false; updateControlState(); resolve(false); }
                     }, 100);
                     return;
                 }
                 _zipLoading = true;
                 var script = document.createElement('script');
-                script.src = CONFIG.ZIP_LIB_PATH;
-                script.async = true;
+                script.src = CONFIG.ZIP_LIB_PATH; script.async = true;
                 script.onload = function () {
                     _zipLoading = false;
                     state.zipEnabled = !!window.JSZip;
-                    if (!state.zipEnabled) {
-                        showToast('批量打包组件加载失败，请检查本地文件是否完整；单张导出不受影响', 'error');
-                    }
-                    updateControlState();
-                    resolve(state.zipEnabled);
+                    if (!state.zipEnabled) showToast('批量打包组件加载失败，单张导出不受影响', 'error');
+                    updateControlState(); resolve(state.zipEnabled);
                 };
                 script.onerror = function () {
-                    _zipLoading = false;
-                    state.zipEnabled = false;
+                    _zipLoading = false; state.zipEnabled = false;
                     updateControlState();
-                    showToast('批量打包组件加载失败，请检查本地文件是否完整；单张导出不受影响', 'error');
+                    showToast('批量打包组件加载失败，单张导出不受影响', 'error');
                     resolve(false);
                 };
                 var head = document.getElementsByTagName('head')[0] || document.body;
@@ -2935,10 +2818,6 @@
             });
         }
 
-        /**
-         * 生成 ZIP 文件名：watermark_batch_yyyyMMdd_HHmmss.zip（确保不同批次可区分）
-         * @returns {string}
-         */
         function buildZipFileName() {
             var d = new Date();
             function pad(n) { return (n < 10 ? '0' : '') + n; }
@@ -2947,13 +2826,6 @@
                 pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds()) + '.zip';
         }
 
-        /**
-         * ZIP 内部文件名重名去重：剥离原扩展名 → 替换为导出格式扩展名
-         * 重名时附加 _1/_2 序号（photo.png → photo_1.png）
-         * @param {string} name 候选源文件名
-         * @param {Set} usedNames 已占用名集合（按渲染完成序维护）
-         * @returns {string}
-         */
         function uniqueZipName(name, usedNames) {
             var base = name.replace(/\.[^.]+$/, '') || 'image';
             var ext = '.' + currentFormat;
@@ -2967,77 +2839,60 @@
             return candidate;
         }
 
-        /**
-         * 打包下载入口：校验 JSZip → 逐张原尺寸渲染加入 ZIP → generateAsync → 触发下载
-         * 任一 toBlob/generateAsync 失败即中止整个打包，不残留半成品 ZIP
-         * @returns {Promise<boolean>} 是否成功触发 ZIP 下载
-         */
         function downloadZipPackage() {
-            /* 双保险前置校验：JSZip 可用 + 全部任务 success + 水印就绪 */
             if (!canZip()) return Promise.resolve(false);
-
             return ensureZipLibLoaded().then(function (zipOK) {
-                if (!zipOK) {
-                    showToast('批量打包组件加载失败，请检查本地文件是否完整；单张导出不受影响', 'error');
-                    return false;
-                }
+                if (!zipOK) { showToast('批量打包组件加载失败，单张导出不受影响', 'error'); return false; }
                 showToast('正在生成压缩包…', 'info', 5000);
-
                 var zip = new JSZip();
-                var items = state.batchTask.items.filter(function (it) {
-                    return it.status === STATUS.SUCCESS;
-                });
+                var items = state.batchTask.items.filter(function (it) { return it.status === STATUS.SUCCESS; });
                 var usedNames = new Set();
-
-                /* 逐张渲染（setTimeout 分片让出主线程，避免长任务阻塞页面） */
                 function renderOne(index) {
                     if (index >= items.length) return compressAndSave();
                     var item = items[index];
                     return renderExportCanvas(item.source, currentFormat).then(function (blob) {
                         zip.file(uniqueZipName(item.name, usedNames), blob);
-                        return new Promise(function (resolve) {
-                            setTimeout(resolve, 0);
-                        });
-                    }).then(function () {
-                        return renderOne(index + 1);
-                    });
+                        return new Promise(function (resolve) { setTimeout(resolve, 0); });
+                    }).then(function () { return renderOne(index + 1); });
                 }
-
                 function compressAndSave() {
                     return zip.generateAsync({ type: 'blob' }).then(function (blob) {
                         var url = URL.createObjectURL(blob);
                         var a = document.createElement('a');
-                        a.href = url;
-                        a.download = buildZipFileName();
-                        document.body.appendChild(a);
-                        a.click();
-                        document.body.removeChild(a);
-                        setTimeout(function () {
-                            URL.revokeObjectURL(url);
-                        }, 1000);
-                        showToast('打包完成', 'success');
-                        return true;
+                        a.href = url; a.download = buildZipFileName();
+                        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+                        showToast('打包完成', 'success'); return true;
                     });
                 }
-
                 return renderOne(0).catch(function () {
-                    /* 打包任一步失败：已加入 zip 的内容丢弃，不触发下载（spec 4.2-4） */
-                    showToast('打包失败，请减少批量张数或降低图片分辨率后重试', 'error');
-                    return false;
+                    showToast('打包失败，请减少批量张数或降低图片分辨率后重试', 'error'); return false;
                 });
             });
         }
 
-        /* ============================================================
-           =====================  初始化  =====================
+/* ============================================================
+           手风琴折叠交互 - 每个手风琴项独立展开/收起，不互斥
            ============================================================ */
+        (function initAccordion() {
+            var headers = document.querySelectorAll('.accordion-header');
+            headers.forEach(function (header) {
+                header.addEventListener('click', function () {
+                    // 找到父级 .accordion-item，切换 .collapsed 类
+                    var item = header.closest('.accordion-item');
+                    if (item) {
+                        item.classList.toggle('collapsed');
+                    }
+                });
+            });
+            // 默认全部展开（不添加 collapsed 类）
+        })();
+
         (function init() {
-            /* 恢复默认配置（页面首次加载即默认值，与 HTML 控件初始值一致） */
             state.config = Object.assign({}, DEFAULT_CONFIG);
-            switchMode('single'); // 统一初始化模式与控件状态
+            switchToSingleMode();
             updateTypeVisibility();
             updateControlState();
-            /* 页面打开即预加载本地 JSZip（异步非阻塞，不阻塞首屏） */
             ensureZipLibLoaded();
         })();
     </script>
