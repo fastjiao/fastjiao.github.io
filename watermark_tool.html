@@ -2,13 +2,10 @@
 <html lang="zh-CN">
 
 <head>
-    <!-- ============================================================
-         图片加水印工具（watermark_tool）
+    <!-- 图片加水印工具（watermark_tool）
          - 纯前端单文件应用，所有处理在浏览器本地完成，无任何后端
          - 功能：上传图片 → 配置水印 → 实时预览 → 下载导出
-         - 说明：如需调整参数区间（字号/透明度/大小上限等），
-                 只需修改下方 JS 中 CONFIG 常量区，无需改动业务逻辑
-         ============================================================ -->
+         - 说明：如需调整参数区间（字号/透明度/大小上限等），只需修改下方 JS 中 CONFIG 常量区，无需改动业务逻辑 -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>图片加水印工具</title>
@@ -1003,6 +1000,25 @@
                 width: 100%;
             }
         }
+    
+        .main-container {
+            display: flex; /* 新增：使用 Flexbox 布局 */
+            height: calc(100vh - 64px); /* 减去顶部导航栏的高度 */
+        }
+
+        .sidebar {
+            width: 300px; /* 固定宽度 */
+            background: #fff;
+            padding: 20px;
+            overflow-y: auto; /* 内容过长时可滚动 */
+        }
+
+        .content-area {
+            flex: 1; /* 占据剩余空间 */
+            padding: 20px;
+            background: #f9f9f9;
+        }
+
     </style>
 </head>
 
