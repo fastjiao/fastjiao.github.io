@@ -912,6 +912,72 @@
             display: none;
         }
 
+        /* 需求2：自定义位置（拖拽）区域 */
+        .custom-pos-zone {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .custom-pos-zone .switch-row {
+            margin-bottom: 6px;
+        }
+
+        .custom-pos-hint {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            line-height: 1.5;
+            margin: 0 0 6px;
+        }
+
+        /* 拖拽实时坐标显示 */
+        .custom-pos-xy {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent);
+            background: var(--accent-soft);
+            border-radius: 8px;
+            padding: 6px 10px;
+            margin-bottom: 6px;
+            font-family: "SF Mono", "Menlo", "Consolas", monospace;
+            letter-spacing: 0.02em;
+        }
+
+        .custom-pos-xy.hidden {
+            display: none;
+        }
+
+        /* 复位按钮 */
+        .reset-pos-btn {
+            border: 1px solid var(--border);
+            background: var(--bg-surface);
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 180ms ease;
+        }
+
+        .reset-pos-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .reset-pos-btn.hidden {
+            display: none;
+        }
+
+        /* 拖拽启用中：预览画布光标样式 */
+        .preview-stage.dragging canvas {
+            cursor: grab;
+        }
+
+        .preview-stage.dragging canvas:active {
+            cursor: grabbing;
+        }
+
         /* 隐藏类 */
         .type-hidden {
             display: none !important;
@@ -1684,6 +1750,19 @@
                                 <input type="radio" name="position" id="pos-bc" value="bottom-center"><label for="pos-bc">中下</label>
                                 <input type="radio" name="position" id="pos-rb" value="right-bottom" checked><label for="pos-rb">右下</label>
                             </fieldset>
+                            <!-- 需求2：自定义位置（拖拽） -->
+                            <div class="custom-pos-zone">
+                                <div class="switch-row">
+                                    <label class="control-label" for="custom-pos-toggle">自定义位置（拖拽）</label>
+                                    <span class="switch">
+                                        <input type="checkbox" id="custom-pos-toggle">
+                                        <span class="slider"></span>
+                                    </span>
+                                </div>
+                                <p id="custom-pos-hint" class="custom-pos-hint">开启后可直接在右侧预览图上按住水印拖动调整位置</p>
+                                <div id="custom-pos-xy" class="custom-pos-xy hidden">X: --% &nbsp;·&nbsp; Y: --%</div>
+                                <button type="button" id="btn-reset-pos" class="reset-pos-btn hidden">复位到右下角</button>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1825,6 +1904,7 @@
             positionMode: POSITION_MODE.GRID,
             freeX: 0,
             freeY: 0,
+            customPosEnabled: false, // 需求2：自定义位置（拖拽）开关
             watermarkImage: null
         };
 
@@ -2108,6 +2188,10 @@
         var rotationRange = document.getElementById('rotation-range');
         var rotationNum = document.getElementById('rotation-num');
         var posModeTag = document.getElementById('pos-mode-tag');
+        var customPosToggle = document.getElementById('custom-pos-toggle');
+        var customPosXy = document.getElementById('custom-pos-xy');
+        var btnResetPos = document.getElementById('btn-reset-pos');
+        var previewStage = document.getElementById('preview-stage');
         var batchPanel = document.getElementById('batch-panel');
         var batchList = document.getElementById('batch-list');
         var btnClearBatch = document.getElementById('btn-clear-batch');
@@ -2309,12 +2393,41 @@
                 var snapped = snapPositionToGrid(e.target.value, state.config.fontSizePt);
                 state.config = Object.assign({}, state.config, { freeX: snapped.x, freeY: snapped.y });
                 updatePositionModeTag();
+                updateCustomPosUI();
                 schedulePreviewRender();
             }
         });
         tileToggle.addEventListener('change', function () {
             state.config = Object.assign({}, state.config, { tileEnabled: tileToggle.checked });
             updateControlState();
+            schedulePreviewRender();
+        });
+        /* 需求2：自定义位置（拖拽）开关 */
+        customPosToggle.addEventListener('change', function () {
+            state.config = Object.assign({}, state.config, { customPosEnabled: customPosToggle.checked });
+            // 开启拖拽时，若当前处于九宫格模式，先将九宫格锚点的中心坐标写入 freeX/freeY，作为拖拽基准
+            if (customPosToggle.checked) {
+                syncGridToFree();
+            }
+            updateControlState();
+            updateCustomPosUI();
+            schedulePreviewRender();
+        });
+        /* 复位按钮：回到右下角九宫格 */
+        btnResetPos.addEventListener('click', function () {
+            state.config = Object.assign({}, state.config, {
+                position: 'right-bottom',
+                positionMode: POSITION_MODE.GRID,
+                customPosEnabled: false
+            });
+            customPosToggle.checked = false;
+            var rb = document.getElementById('pos-rb');
+            if (rb) rb.checked = true;
+            var snapped = snapPositionToGrid('right-bottom', state.config.fontSizePt);
+            state.config = Object.assign({}, state.config, { freeX: snapped.x, freeY: snapped.y });
+            updateControlState();
+            updateCustomPosUI();
+            updatePositionModeTag();
             schedulePreviewRender();
         });
         typeTextRadio.addEventListener('change', function () {
@@ -2428,6 +2541,49 @@
             else posModeTag.classList.add('hidden');
         }
 
+        /**
+         * 需求2：将九宫格锚点中心坐标写入 freeX/freeY，作为拖拽的初始基准
+         * 用于开启"自定义位置"开关时，让拖拽起点与当前九宫格位置一致，避免水印跳动
+         */
+        function syncGridToFree() {
+            var source = state.sourceImage;
+            if (!source) return;
+            var snapped = snapPositionToGrid(state.config.position, state.config.fontSizePt);
+            state.config = Object.assign({}, state.config, {
+                freeX: snapped.x,
+                freeY: snapped.y
+            });
+        }
+
+        /**
+         * 需求2：刷新自定义位置相关的 UI 状态
+         * - 拖拽开关关闭时隐藏坐标/复位控件
+         * - 拖拽进行时显示坐标/复位，并计算百分比
+         */
+        function updateCustomPosUI(freeX, freeY) {
+            var enabled = state.config.customPosEnabled;
+            var source = state.sourceImage;
+            var hasFree = state.config.positionMode === POSITION_MODE.FREE;
+            if (enabled && hasFree && source) {
+                customPosXy.classList.remove('hidden');
+                btnResetPos.classList.remove('hidden');
+                var x = freeX != null ? freeX : state.config.freeX;
+                var y = freeY != null ? freeY : state.config.freeY;
+                var pctX = Math.round(x / source.width * 100);
+                var pctY = Math.round(y / source.height * 100);
+                customPosXy.textContent = 'X: ' + pctX + '%  ·  Y: ' + pctY + '%';
+            } else {
+                customPosXy.classList.add('hidden');
+                btnResetPos.classList.add('hidden');
+            }
+            // 拖拽启用时给预览区加拖拽光标
+            if (enabled && !!source && !state.config.tileEnabled) {
+                previewStage.classList.add('dragging');
+            } else {
+                previewStage.classList.remove('dragging');
+            }
+        }
+
         function updateControlState() {
             var imageReady = !!state.sourceImage;
             var ready = imageReady && getWatermarkReady();
@@ -2438,8 +2594,10 @@
             positionGroup.disabled = tile;
             if (tile) positionGroup.classList.add('disabled');
             else positionGroup.classList.remove('disabled');
-            setDragEnabled(!tile && imageReady && getWatermarkReady());
+            // 需求2：拖拽仅在"自定义位置"开关开启时启用
+            setDragEnabled(state.config.customPosEnabled && !tile && imageReady && getWatermarkReady());
             updatePositionModeTag();
+            updateCustomPosUI();
         }
 
         function renderPreview() {
@@ -2595,7 +2753,7 @@
         }
 
         function dragOnDown(e) {
-            if (state.config.tileEnabled || !state.sourceImage || !getWatermarkReady()) return;
+            if (state.config.tileEnabled || !state.config.customPosEnabled || !state.sourceImage || !getWatermarkReady()) return;
             if (e.button && e.button !== 0) return;
             var source = state.sourceImage;
             var rect = previewCanvas.getBoundingClientRect();
@@ -2630,6 +2788,7 @@
             var candidate = pointerToSource({ x: _drag.baseX / scale + dx, y: _drag.baseY / scale + dy }, scale);
             var clamped = clampFreePosition(candidate.x, candidate.y, box, source.width, source.height);
             state.config = Object.assign({}, state.config, { freeX: clamped.x, freeY: clamped.y, positionMode: POSITION_MODE.FREE });
+            updateCustomPosUI(clamped.x, clamped.y);
             schedulePreviewRender();
         }
 
@@ -2637,6 +2796,7 @@
             if (!_drag.active) return;
             _drag.active = false; _drag.moving = false;
             try { previewCanvas.releasePointerCapture(e.pointerId); } catch (err) { /* 忽略 */ }
+            updateCustomPosUI();
             renderPreview(); renderBatchThumbnails();
         }
 
@@ -2886,7 +3046,14 @@
                     }
                 });
             });
-            // 默认全部展开（不添加 collapsed 类）
+            // 【需求1】默认只展开第一个板块（水印类型），其余全部折叠收起
+            // 用户点击标题后才能展开看到内容
+            var allItems = document.querySelectorAll('.accordion-item');
+            for (var i = 0; i < allItems.length; i++) {
+                if (i > 0) {
+                    allItems[i].classList.add('collapsed');
+                }
+            }
         })();
 
         (function init() {
