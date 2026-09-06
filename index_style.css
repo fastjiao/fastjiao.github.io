@@ -246,13 +246,12 @@
             color: var(--text-primary);
         }
 
-        /* ===== 页面主体布局：左右固定侧栏 + 居中内容 ===== */
+        /* ===== 页面主体布局：Flex 三栏 + 侧栏 sticky 跟随 ===== */
         .site-main {
-            padding: 1.5rem 300px 1.5rem 440px;
-            max-width: none;
+            padding: 1.5rem 1.5rem 1.5rem 1.5rem;
+            max-width: 1400px;
             width: 100%;
-            margin: 0;
-            overflow-x: auto;
+            margin: 0 auto;
             position: relative;
         }
 
@@ -260,44 +259,45 @@
             display: flex;
             justify-content: center;
             align-items: flex-start;
+            gap: 1.5rem;
             width: 100%;
             position: relative;
         }
 
-        /* 左侧固定栏 */
+        /* 左侧栏：sticky 跟随滚动，避免 fixed 与中间内容错位 */
         .left-column {
             display: flex;
             flex-direction: column;
             gap: 1.25rem;
-            position: fixed;
-            left: 100px;
+            flex: 0 0 360px;
+            width: 360px;
+            position: sticky;
             top: 80px;
-            width: 400px;
             z-index: 10;
         }
 
-        /* 右侧固定栏 */
+        /* 右侧栏：sticky 跟随滚动 */
         .right-column {
             display: flex;
             flex-direction: column;
             gap: 1.25rem;
-            width: 260px;
-            position: fixed;
-            right: 100px;
+            flex: 0 0 280px;
+            width: 280px;
+            position: sticky;
             top: 80px;
             z-index: 10;
         }
 
-        /* 中间内容栈 */
+        /* 中间内容栈：自适应填充剩余空间 */
         .center-stack {
             display: flex;
             flex-direction: column;
             gap: 1.25rem;
-            width: 550px;
-            min-width: 320px;
+            flex: 1 1 0;
+            min-width: 0;
+            max-width: 620px;
             position: relative;
             z-index: 10;
-            margin: 0 auto;
         }
 
         /* ===== 个人资料卡片（Linear 微边框 + 微弱环境光） ===== */
@@ -312,7 +312,7 @@
             flex-direction: column;
             align-items: center;
             color: var(--text-primary);
-            flex: 0 0 400px;
+
             box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 8px 32px rgba(0, 0, 0, 0.35);
             position: relative;
             transition: border-color 220ms ease, box-shadow 220ms ease;
@@ -325,9 +325,9 @@
 
         /* 个人介绍卡片 */
         .middle-card {
-            width: 550px;
+            width: 100%;
             height: 200px;
-            min-width: 320px;
+            min-width: 0;
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
             border-radius: 16px;
@@ -340,7 +340,6 @@
             font-family: var(--font);
             font-size: 1.05rem;
             position: relative;
-            margin: 0 auto;
             box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 8px 32px rgba(0, 0, 0, 0.35);
             transition: border-color 220ms ease;
         }
@@ -536,45 +535,103 @@
             box-shadow: 0 0 6px rgba(99, 102, 241, 0.55);
         }
 
-        /* ===== 响应式布局 ===== */
-        @media (max-width:1300px) {
+        /* ===== 响应式布局：三档断点，避免错位与重叠 ===== */
+        /* 中屏（≤1100px）：右栏移到中间下方，左栏保持 sticky */
+        @media (max-width:1100px) {
             .site-main {
-                padding: 1.5rem 1rem 1.5rem 1rem;
+                max-width: 760px;
             }
 
             .site-main .layout {
-                flex-direction: column;
-                align-items: center;
+                flex-wrap: wrap;
+                justify-content: center;
             }
 
-            .left-column,
-            .right-column,
-            .middle-card,
-            .calendar-panel {
-                width: 100%;
-                height: auto;
-                min-height: 560px;
+            .left-column {
+                flex: 0 0 320px;
+                width: 320px;
             }
 
-            .profile-card {
+            .right-column {
+                flex: 1 1 100%;
                 width: 100%;
-                min-height: 280px;
+                flex-direction: row;
+                flex-wrap: wrap;
+                gap: 1rem;
+                position: static;
+                order: 3;
+            }
+
+            .right-column .calendar-panel,
+            .right-column .schedule-card {
+                flex: 1 1 320px;
+                min-width: 0;
+            }
+
+            .center-stack {
+                flex: 1 1 0;
+                order: 2;
+                max-width: 420px;
             }
         }
 
-        @media (max-width:900px) {
+        /* 窄屏（≤760px）：单栏堆叠，全部取消 sticky */
+        @media (max-width:760px) {
+            .site-main {
+                max-width: 100%;
+                padding: 1rem;
+            }
+
             .site-main .layout {
                 flex-direction: column;
-                align-items: center;
+                align-items: stretch;
+                gap: 1.25rem;
             }
 
             .left-column,
             .right-column,
-            .middle-card,
-            .profile-card {
+            .center-stack {
+                flex: 0 0 auto;
                 width: 100%;
+                max-width: 100%;
+                position: static;
+                order: initial;
+            }
+
+            .right-column {
+                flex-direction: column;
+            }
+
+            .right-column .calendar-panel,
+            .right-column .schedule-card {
+                flex: 0 0 auto;
+                min-width: 0;
+            }
+
+            .middle-card {
                 height: auto;
-                min-height: 280px;
+                min-height: 160px;
+                padding: 20px;
+            }
+        }
+
+        /* 极窄屏（≤480px）：进一步紧凑化 */
+        @media (max-width:480px) {
+            .site-header .container {
+                padding: 0.6rem 0.75rem;
+            }
+
+            .nav-links {
+                gap: 0.25rem;
+            }
+
+            .nav-link {
+                padding: 5px 9px;
+                font-size: 0.85rem;
+            }
+
+            .photo-wall-frame {
+                grid-template-columns: 1fr;
             }
         }
 
