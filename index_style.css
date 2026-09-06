@@ -246,31 +246,30 @@
             color: var(--text-primary);
         }
 
-        /* ===== 页面主体布局：Flex 三栏 + 侧栏 sticky 跟随 ===== */
+        /* ===== 页面主体布局：CSS Grid 三栏 1:2:1 + 侧栏 sticky 跟随 ===== */
         .site-main {
-            padding: 1.5rem 1.5rem 1.5rem 1.5rem;
+            padding: 1.5rem;
             max-width: 1400px;
             width: 100%;
             margin: 0 auto;
             position: relative;
         }
 
+        /* 大屏 (>1024px)：三列 1:2:1，gap 控制间距 */
         .site-main .layout {
-            display: flex;
-            justify-content: center;
-            align-items: flex-start;
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr;
             gap: 1.5rem;
             width: 100%;
             position: relative;
         }
 
-        /* 左侧栏：sticky 跟随滚动，避免 fixed 与中间内容错位 */
+        /* 左侧栏：sticky 跟随滚动 */
         .left-column {
             display: flex;
             flex-direction: column;
             gap: 1.25rem;
-            flex: 0 0 360px;
-            width: 360px;
+            min-width: 0;
             position: sticky;
             top: 80px;
             z-index: 10;
@@ -281,21 +280,18 @@
             display: flex;
             flex-direction: column;
             gap: 1.25rem;
-            flex: 0 0 280px;
-            width: 280px;
+            min-width: 0;
             position: sticky;
             top: 80px;
             z-index: 10;
         }
 
-        /* 中间内容栈：自适应填充剩余空间 */
+        /* 中间内容栈：自适应填充 */
         .center-stack {
             display: flex;
             flex-direction: column;
             gap: 1.25rem;
-            flex: 1 1 0;
             min-width: 0;
-            max-width: 620px;
             position: relative;
             z-index: 10;
         }
@@ -373,7 +369,7 @@
             position: relative;
             z-index: 2;
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 16px;
             margin-top: 44px;
         }
@@ -535,31 +531,32 @@
             box-shadow: 0 0 6px rgba(99, 102, 241, 0.55);
         }
 
-        /* ===== 响应式布局：三档断点，避免错位与重叠 ===== */
-        /* 中屏（≤1100px）：右栏移到中间下方，左栏保持 sticky */
-        @media (max-width:1100px) {
+        /* ===== 响应式布局：两档断点（桌面端优先） ===== */
+        /* 中屏 (768px–1024px)：两列，左+中并排，右栏跨整行移至下方 */
+        @media (max-width:1024px) {
             .site-main {
-                max-width: 760px;
+                max-width: 1000px;
             }
 
             .site-main .layout {
-                flex-wrap: wrap;
-                justify-content: center;
+                grid-template-columns: 1fr 1fr;
             }
 
             .left-column {
-                flex: 0 0 320px;
-                width: 320px;
+                position: sticky;
+                top: 80px;
+            }
+
+            .center-stack {
+                grid-column: 2;
             }
 
             .right-column {
-                flex: 1 1 100%;
-                width: 100%;
+                grid-column: 1 / -1;
                 flex-direction: row;
                 flex-wrap: wrap;
                 gap: 1rem;
                 position: static;
-                order: 3;
             }
 
             .right-column .calendar-panel,
@@ -567,35 +564,25 @@
                 flex: 1 1 320px;
                 min-width: 0;
             }
-
-            .center-stack {
-                flex: 1 1 0;
-                order: 2;
-                max-width: 420px;
-            }
         }
 
-        /* 窄屏（≤760px）：单栏堆叠，全部取消 sticky */
-        @media (max-width:760px) {
+        /* 小屏 (<768px)：单列堆叠，顺序：个人信息 → 图片 → 日历 */
+        @media (max-width:768px) {
             .site-main {
                 max-width: 100%;
                 padding: 1rem;
             }
 
             .site-main .layout {
-                flex-direction: column;
-                align-items: stretch;
+                grid-template-columns: 1fr;
                 gap: 1.25rem;
             }
 
             .left-column,
             .right-column,
             .center-stack {
-                flex: 0 0 auto;
-                width: 100%;
-                max-width: 100%;
                 position: static;
-                order: initial;
+                grid-column: auto;
             }
 
             .right-column {
@@ -615,7 +602,7 @@
             }
         }
 
-        /* 极窄屏（≤480px）：进一步紧凑化 */
+        /* 极窄屏 (≤480px)：进一步紧凑化 */
         @media (max-width:480px) {
             .site-header .container {
                 padding: 0.6rem 0.75rem;
@@ -628,10 +615,6 @@
             .nav-link {
                 padding: 5px 9px;
                 font-size: 0.85rem;
-            }
-
-            .photo-wall-frame {
-                grid-template-columns: 1fr;
             }
         }
 
