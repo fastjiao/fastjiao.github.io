@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="教公台（Jiao Workbench）—— 一个集快捷启动、网易云音乐打卡、抖音、千问、每日签到于一体的个人工作台桌面应用。" />
+  <title>教公台 · Jiao Workbench</title>
+  <script>document.documentElement.classList.add("js");</script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- 滚动进度条：随页面滚动实时填充，置于页面最顶部 -->
+  <div class="scroll-progress" id="scrollProgress"></div>
+
+  <!-- 粒子背景画布：漂浮的莫兰迪浅蓝粒子，随鼠标轻微互动 -->
+  <canvas id="particles" aria-hidden="true"></canvas>
+
+  <!-- 鼠标跟随光晕：柔和的光斑跟随光标移动 -->
+  <div class="cursor-glow" id="cursorGlow" aria-hidden="true"></div>
+
+  <!-- 顶部导航 -->
+  <header class="nav" id="nav">
+    <div class="nav-inner">
+      <a class="brand" href="#top">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="16" rx="3"></rect>
+            <path d="M3 9h18"></path>
+            <path d="M8 7h.01M12 7h.01M16 7h.01"></path>
+          </svg>
+        </span>
+        <span class="brand-name">教公台</span>
+      </a>
+      <nav class="nav-links" aria-label="页内导航">
+        <a href="#features">功能</a>
+        <a href="#preview">界面</a>
+        <a href="#download">下载</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="切换明暗主题" title="切换明暗主题">
+        <span class="theme-icon theme-icon-sun" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"></path>
+          </svg>
+        </span>
+        <span class="theme-icon theme-icon-moon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+          </svg>
+        </span>
+      </button>
+    </div>
+  </header>
+
+  <main id="top">
+    <!-- Hero 首屏 -->
+    <section class="hero">
+      <div class="hero-inner">
+        <p class="hero-kicker reveal">PERSONAL WORKBENCH FOR WINDOWS</p>
+        <h1 class="hero-title reveal">教公台</h1>
+        <p class="hero-sub reveal">你的桌面，一站聚合</p>
+        <p class="hero-desc reveal">
+          一款把快捷启动、网易云音乐打卡、千问与每日签到<br class="br-desktop" />
+          收进同一个窗口的个人工作台。
+        </p>
+        <div class="hero-actions reveal">
+          <a class="btn btn-primary" id="hero-download-btn" href="jiaogt.exe" download="jiaogt.exe">
+            免费下载
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path>
+            </svg>
+          </a>
+          <a class="btn btn-ghost" href="#features">
+            了解功能
+            <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M12 5v14M5 12l7 7 7-7"></path>
+            </svg>
+          </a>
+        </div>
+        <p class="hero-meta reveal">
+          <span class="meta-chip">Windows · 官方安装包</span>
+          <span class="meta-chip">当前版本 v3.6.9</span>
+        </p>
+      </div>
+      <!-- 向下滚动提示 -->
+      <a class="scroll-hint" href="#features" aria-label="向下滚动">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 9l6 6 6-6"></path>
+        </svg>
+      </a>
+    </section>
+
+    <!-- 功能特性 -->
+    <section class="section" id="features">
+      <div class="section-head reveal">
+        <p class="section-kicker">FEATURES</p>
+        <h2 class="section-title">把这些事，都装进一个窗口</h2>
+      </div>
+      <div class="features-grid">
+        <article class="feature-card reveal">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="8" height="8" rx="2"></rect>
+              <rect x="13" y="3" width="8" height="8" rx="2"></rect>
+              <rect x="3" y="13" width="8" height="8" rx="2"></rect>
+              <rect x="13" y="13" width="8" height="8" rx="2"></rect>
+            </svg>
+          </div>
+          <h3>快捷启动</h3>
+          <p>自动识别电脑里已安装的软件，一键唤起常用程序，还能自定义图标。</p>
+        </article>
+        <article class="feature-card reveal">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M9 18V5l12-2v13"></path>
+              <circle cx="6" cy="18" r="3"></circle>
+              <circle cx="18" cy="16" r="3"></circle>
+            </svg>
+          </div>
+          <h3>网易云音乐</h3>
+          <p>登录即听、歌词跟踪、每日打卡听歌，循环与快捷键随心设定。</p>
+        </article>
+        <article class="feature-card reveal">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 7l-7 5 7 5V7z"></path>
+              <rect x="1" y="5" width="15" height="14" rx="2"></rect>
+            </svg>
+          </div>
+          <h3>抖音 & 千问</h3>
+          <p>常用网站一键直达，登录态持久保存，无需反复扫码。</p>
+        </article>
+        <article class="feature-card reveal">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="4"></rect>
+              <path d="M8 2v4M16 2v4M3 10h18"></path>
+              <path d="M12 13v4M10 15h4"></path>
+            </svg>
+          </div>
+          <h3>每日签到</h3>
+          <p>网页签到一键搞定，自动判定结果，从此不再错过每日签到。</p>
+        </article>
+        <article class="feature-card reveal">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+          </div>
+          <h3>明暗主题</h3>
+          <p>跟随系统自动切换，也可手动锁定浅色或深色，随你心情。</p>
+        </article>
+        <article class="feature-card reveal">
+          <div class="feature-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 2l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 7.7l5.4-.8L12 2z"></path>
+            </svg>
+          </div>
+          <h3>标准部署</h3>
+          <p>正式安装包一键部署，自动注册系统，更新维护更省心。</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- 界面预览 -->
+    <section class="section" id="preview">
+      <div class="section-head reveal">
+        <p class="section-kicker">INTERFACE</p>
+        <h2 class="section-title">一眼清爽，专注于你的事</h2>
+      </div>
+      <!-- 模拟应用窗口：用纯 CSS 还原工作台界面，示意而非真实截图 -->
+      <div class="window reveal">
+        <div class="window-bar">
+          <div class="window-dots" aria-hidden="true">
+            <span></span><span></span><span></span>
+          </div>
+          <span class="window-title">教公台</span>
+          <span class="window-spacer"></span>
+        </div>
+        <div class="window-body">
+          <aside class="mock-sidebar" aria-hidden="true">
+            <span class="mock-side-item active"></span>
+            <span class="mock-side-item"></span>
+            <span class="mock-side-item"></span>
+            <span class="mock-side-item"></span>
+            <span class="mock-side-item"></span>
+          </aside>
+          <div class="mock-main">
+            <div class="mock-titlebar">
+              <span class="mock-title"></span>
+            </div>
+            <div class="mock-grid">
+              <span class="mock-app"></span>
+              <span class="mock-app"></span>
+              <span class="mock-app"></span>
+              <span class="mock-app"></span>
+              <span class="mock-app"></span>
+              <span class="mock-app"></span>
+            </div>
+          </div>
+          <div class="mock-player" aria-hidden="true">
+            <span class="mock-cover"></span>
+            <span class="mock-lines"><i></i><i></i><i></i></span>
+            <span class="mock-btns"><i></i><i></i><i></i></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 下载 -->
+    <section class="section" id="download">
+      <div class="download-card reveal">
+        <p class="section-kicker">DOWNLOAD</p>
+        <h2 class="section-title">准备好了吗？</h2>
+        <p class="download-desc">当前版本 <strong>v3.6.9</strong> · 适用于 Windows 10 / 11（64 位）</p>
+        <!-- ⬇ 下载按钮：点击后平滑返回顶部，并高亮提示顶部的“免费下载”按钮 -->
+        <a class="btn btn-primary btn-lg" id="scroll-to-download" href="#top">
+          下载 Windows 版
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M12 3v12M7 10l5 5 5-5M5 21h14"></path>
+          </svg>
+        </a>
+        <p class="download-note">标准 Windows 安装包，安装引导清晰，一键完成部署</p>
+      </div>
+    </section>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <p>&copy; 2026 教公台 · Jiao Workbench</p>
+      <p class="footer-domain"><a href="https://www.ljiao.me" target="_blank" rel="noopener">www.ljiao.me</a></p>
+      <p class="footer-note">个人 vibe-coding 作品 · 内容由 AI 辅助生成</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

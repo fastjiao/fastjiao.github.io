@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>网页库</title>
+    <link rel="stylesheet" href="web_ku.css">
+</head>
+
+<body>
+    <!-- ========== 顶部导航栏 ========== -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <a class="nav-back" id="back-btn" href="index.html" title="返回主页">&larr;</a>
+            <div class="nav-breadcrumb">
+                <a class="nav-back" id="breadcrumb-home" href="index.html"
+                    style="width: auto; height: auto; font-size: 14px; color: #A0A0A0;">主页</a>
+                <span>/</span>
+                <span>网页库</span>
+                <span id="crumb-folder" style="display:none;"></span>
+            </div>
+        </div>
+        <div class="navbar-right">
+            <button class="nav-btn" id="btn-add-link">添加链接</button>
+            <button class="nav-btn" id="btn-new-folder">新建文件夹</button>
+            <button class="nav-btn" id="btn-manage">管理链接</button>
+        </div>
+    </nav>
+
+
+    <!-- ========== 布局：左侧树状导航 + 主内容 ========== -->
+    <div class="page-wrap">
+        <!-- ========== 左侧树状导航栏（与文件夹同步） ========== -->
+        <aside class="sidebar">
+            <div class="sidebar-title">网页库</div>
+            <div class="sidebar-tree" id="sidebar-tree"></div>
+        </aside>
+
+    <main class="main-content">
+        <!-- 页面标题 -->
+        <div class="page-header">
+            <h1 class="page-title">网页库</h1>
+            <p class="page-desc">保存和管理常用网页链接，支持用文件夹分类整理</p>
+        </div>
+
+        <!-- ========== 添加新链接弹窗 ========== -->
+        <div class="modal-overlay" id="addModal">
+            <div class="modal-box" style="height:auto; min-height:250px;">
+                <h3 class="modal-title">添加新链接</h3>
+                <div class="add-link-inputs">
+                    <div class="input-group">
+                        <label for="new-link-url">网址 URL</label>
+                        <input type="text" id="new-link-url" placeholder="输入网站地址">
+                    </div>
+                    <div class="input-group">
+                        <label for="new-link-name">名称</label>
+                        <input type="text" id="new-link-name" placeholder="输入网站名称">
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn cancel" id="addLinkCancel">取消</button>
+                    <button class="modal-btn confirm" id="addLinkConfirm">确认</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 列表表头 -->
+        <div class="list-header">
+            <span class="list-header-name">链接名称</span>
+
+        </div>
+
+        <!-- 链接列表（由 JS 动态渲染） -->
+        <ul class="links-list" id="links-list"></ul>
+
+        <!-- ========== 删除确认弹窗 ========== -->
+        <div class="modal-overlay" id="removeModal">
+            <div class="modal-box">
+                <h3 class="modal-title">删除链接</h3>
+                <p class="modal-message" id="removeMsg"></p>
+                <div class="modal-actions">
+                    <button class="modal-btn cancel" id="removeCancel">取消</button>
+                    <button class="modal-btn confirm" id="removeConfirm">确认</button>
+                </div>
+                <span class="modal-remind" id="removeRemind">不再提示</span>
+            </div>
+        </div>
+
+        <!-- ========== 新建/重命名文件夹悬浮窗 ========== -->
+        <div class="modal-overlay" id="folderModal">
+            <div class="modal-box">
+                <h3 class="modal-title" id="folderModalTitle">新建文件夹</h3>
+                <div class="folder-modal-input-group">
+                    <input type="text" id="folder-name-input" placeholder="输入文件夹名称" maxlength="30">
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn cancel" id="folderModalCancel">取消</button>
+                    <button class="modal-btn confirm" id="folderModalConfirm">确认</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 悬浮操作菜单（三个点点击） ========== -->
+        <div class="action-menu" id="actionMenu">
+            <button class="action-menu-item" id="actionRename">重命名</button>
+            <button class="action-menu-item" id="actionMove">移动至...</button>
+            <button class="action-menu-item danger" id="actionDelete">删除</button>
+        </div>
+
+        <!-- ========== 移动目标弹窗 ========== -->
+        <div class="modal-overlay" id="moveModal">
+            <div class="modal-box" style="height:auto; min-height:220px;">
+                <h3 class="modal-title" id="moveModalTitle">移动至...</h3>
+                <div class="move-target-list" id="moveTargetList"></div>
+                <div class="modal-actions">
+                    <button class="modal-btn cancel" id="moveCancel">取消</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 重命名链接弹窗 ========== -->
+        <div class="modal-overlay" id="renameLinkModal">
+            <div class="modal-box">
+                <h3 class="modal-title">重命名链接</h3>
+                <div class="folder-modal-input-group">
+                    <input type="text" id="rename-link-input" placeholder="输入新名称" maxlength="30">
+                </div>
+                <div class="modal-actions">
+                    <button class="modal-btn cancel" id="renameLinkCancel">取消</button>
+                    <button class="modal-btn confirm" id="renameLinkConfirm">确认</button>
+                </div>
+            </div>
+        </div>
+    </main>
+    </div>
+
+    <script src="web_ku.js" defer></script>
+</body>
+
+</html>

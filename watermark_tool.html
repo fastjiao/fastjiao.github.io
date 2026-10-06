@@ -1,0 +1,3069 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>图片加水印工具</title>
+    <style>
+        /* ============================================================
+           Apple 极简主义设计系统
+           配色：白底 #FFFFFF / 浅灰 #F5F5F7 / 强调色 #0071E3 / 主文字 #1D1D1F / 副文字 #86868B
+           质感：毛玻璃 blur(20px)、超柔阴影、大圆角 16-24px、连续曲率 Squircle
+           字体：SF Pro / Inter → system-ui 回退，大标题粗体 + 小标签轻体
+           ============================================================ */
+
+        :root {
+            --bg-primary: #F5F5F7;
+            --bg-surface: #FFFFFF;
+            --bg-sidebar: rgba(245, 245, 247, 0.82);
+            --accent: #0071E3;
+            --accent-soft: rgba(0, 113, 227, 0.08);
+            --accent-glow: rgba(0, 113, 227, 0.18);
+            --text-primary: #1D1D1F;
+            --text-secondary: #86868B;
+            --text-tertiary: #AEAEB2;
+            --border: rgba(0, 0, 0, 0.06);
+            --border-strong: rgba(0, 0, 0, 0.10);
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.06), 0 2px 4px rgba(0, 0, 0, 0.04);
+            --shadow-lg: 0 12px 40px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.04), 0 8px 32px rgba(0, 0, 0, 0.06);
+            --radius-sm: 10px;
+            --radius-md: 16px;
+            --radius-lg: 22px;
+            --radius-xl: 28px;
+            --sidebar-w: 288px;
+            --header-h: 52px;
+            --transition: 220ms cubic-bezier(0.25, 0.1, 0.25, 1);
+            --transition-spring: 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            height: 100vh;
+            overflow: hidden;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            letter-spacing: -0.01em;
+        }
+
+        /* ============================================================
+           顶部导航栏 - 毛玻璃效果
+           ============================================================ */
+        .site-header {
+            width: 100%;
+            height: var(--header-h);
+            background: rgba(255, 255, 255, 0.72);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-bottom: 1px solid var(--border);
+            flex-shrink: 0;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .site-header .container {
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            font-weight: 700;
+            font-size: 17px;
+            color: var(--text-primary);
+            text-decoration: none;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .nav-links .nav-item {
+            position: relative;
+        }
+
+        .nav-links a.nav-link,
+        .nav-links .nav-item>span.nav-link {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 7px 14px;
+            font-weight: 500;
+            font-size: 14px;
+            border-radius: 20px;
+            display: inline-block;
+            cursor: pointer;
+            transition: all 180ms ease;
+        }
+
+        .nav-links a.nav-link:hover,
+        .nav-links .nav-item>span.nav-link:hover {
+            color: var(--text-primary);
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        .nav-links a.nav-link.active {
+            color: var(--accent);
+            background: var(--accent-soft);
+        }
+
+        .nav-links .dropdown-menu {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            min-width: 120px;
+            padding: 6px;
+            list-style: none;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-lg);
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-6px);
+            transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        .nav-links .nav-item:hover .dropdown-menu,
+        .nav-links .nav-item:focus-within .dropdown-menu {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            pointer-events: auto;
+        }
+
+        .nav-links .dropdown-menu a {
+            display: block;
+            padding: 7px 12px;
+            border-radius: 8px;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 13px;
+            transition: background 120ms ease;
+        }
+
+        .nav-links .dropdown-menu a:hover {
+            background: var(--accent-soft);
+            color: var(--accent);
+        }
+
+        /* ============================================================
+           主容器 - Flexbox 左右分栏
+           ============================================================ */
+        .main-container {
+            display: flex;
+            height: calc(100vh - var(--header-h));
+            overflow: hidden;
+        }
+
+        /* ============================================================
+           左侧侧边栏 - 毛玻璃质感 + 粉彩图标菜单
+           ============================================================ */
+        .sidebar {
+            width: var(--sidebar-w);
+            flex-shrink: 0;
+            background: var(--bg-sidebar);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px 16px 32px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.12);
+            border-radius: 4px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        /* 侧边栏菜单项 - 粉彩圆形图标 + 中文标签 */
+        .sidebar-menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: all var(--transition);
+            position: relative;
+            user-select: none;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .sidebar-menu-item:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        /* 选中态：背景高亮 + 左侧蓝色指示条 */
+        .sidebar-menu-item.active {
+            background: var(--accent-soft);
+            color: var(--accent);
+        }
+
+        .sidebar-menu-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 3px;
+            height: 20px;
+            background: var(--accent);
+            border-radius: 3px;
+        }
+
+        /* 粉彩圆形图标容器 */
+        .sidebar-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: transform var(--transition-spring);
+        }
+
+        .sidebar-menu-item.active .sidebar-icon {
+            transform: scale(1.08);
+        }
+
+        .sidebar-menu-item:hover .sidebar-icon {
+            transform: scale(1.05);
+        }
+
+        /* 图标内 SVG 样式 */
+        .sidebar-icon svg {
+            width: 18px;
+            height: 18px;
+            stroke-width: 1.8;
+        }
+
+        /* 各功能模块的粉彩色 */
+        .icon-type {
+            background: #EBF5FF;
+            color: #0071E3;
+        }
+
+        /* 蓝 - 水印类型 */
+        .icon-text {
+            background: #F3E8FF;
+            color: #8B5CF6;
+        }
+
+        /* 紫 - 文字内容 */
+        .icon-font {
+            background: #FFF1F2;
+            color: #E11D48;
+        }
+
+        /* 粉 - 字体 */
+        .icon-size {
+            background: #ECFDF5;
+            color: #10B981;
+        }
+
+        /* 绿 - 字号 */
+        .icon-color {
+            background: #FFFBEB;
+            color: #F59E0B;
+        }
+
+        /* 琥珀 - 颜色 */
+        .icon-opacity {
+            background: #F0F9FF;
+            color: #0EA5E9;
+        }
+
+        /* 天蓝 - 透明度 */
+        .icon-rotate {
+            background: #FFF7ED;
+            color: #F97316;
+        }
+
+        /* 橙 - 旋转 */
+        .icon-position {
+            background: #F5F3FF;
+            color: #6366F1;
+        }
+
+        /* 靛蓝 - 位置 */
+        .icon-tile {
+            background: #ECFEFF;
+            color: #14B8A6;
+        }
+
+        /* 青绿 - 平铺 */
+        .icon-image-wm {
+            background: #FEF2F2;
+            color: #DC2626;
+        }
+
+        /* 红 - 图片水印 */
+        .icon-upload {
+            background: #F0FDF4;
+            color: #16A34A;
+        }
+
+        /* 绿 - 上传 */
+
+
+        /* 侧边栏分组标题 */
+        .sidebar-group-title {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-tertiary);
+            padding: 16px 14px 8px;
+            margin-top: 4px;
+        }
+
+        .sidebar-group-title:first-child {
+            padding-top: 0;
+            margin-top: 0;
+        }
+
+        /* ============================================================
+           上传区 - 大圆角虚线卡片（Apple 风格）
+           ============================================================ */
+        .upload-zone {
+            border: 1.5px dashed var(--border-strong);
+            border-radius: var(--radius-lg);
+            background: var(--bg-surface);
+            padding: 20px 16px 18px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition);
+            margin-bottom: 8px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .upload-zone:hover {
+            border-color: var(--accent);
+            background: rgba(0, 113, 227, 0.03);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+        .upload-zone.active {
+            border-color: var(--accent);
+            background: rgba(0, 113, 227, 0.03);
+            box-shadow: 0 0 0 6px var(--accent-glow);
+        }
+
+        .upload-zone .upload-icon {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 10px;
+            background: linear-gradient(135deg, #0071E3 0%, #42A5F5 100%);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFFFFF;
+        }
+
+        .upload-zone .upload-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .upload-zone .upload-text {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+            letter-spacing: -0.01em;
+        }
+
+        .upload-zone .upload-hint {
+            margin-top: 4px;
+            font-size: 12px;
+            color: var(--text-tertiary);
+        }
+
+        .upload-zone .file-name {
+            display: none;
+            margin-top: 10px;
+            padding: 6px 12px;
+            background: var(--accent-soft);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--accent);
+            word-break: break-all;
+            font-weight: 500;
+        }
+
+        .upload-zone.has-file .file-name {
+            display: inline-block;
+        }
+
+        /* ============================================================
+           手风琴折叠面板 - 独立展开/收起 + 平滑高度过渡
+           ============================================================ */
+
+        /* 手风琴单元容器：边距由内部 padding 控制 */
+        .accordion-item {
+            margin-bottom: 4px;
+        }
+
+        /* 
+           标题栏 - 点击可折叠/展开
+           复用粉彩图标 + 右侧箭头，左侧无选中指示条（手风琴不需要互斥选中态）
+        */
+        .accordion-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 11px 14px;
+            border-radius: var(--radius-md);
+            cursor: pointer;
+            transition: background-color var(--transition);
+            user-select: none;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .accordion-header:hover {
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        /* 手风琴标题文字，弹性填充剩余空间 */
+        .accordion-label {
+            flex: 1;
+        }
+
+        /* 
+           箭头图标容器
+           展开时旋转 90°（朝下），收起时朝右
+        */
+        .accordion-arrow {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 280ms cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text-tertiary);
+        }
+
+        /* 收起状态：箭头朝右（默认 0°） */
+        .accordion-item.collapsed .accordion-arrow {
+            transform: rotate(0deg);
+        }
+
+        /* 展开状态：箭头朝下（顺时针 90°） */
+        .accordion-item:not(.collapsed) .accordion-arrow {
+            transform: rotate(90deg);
+        }
+
+        .accordion-arrow svg {
+            width: 16px;
+            height: 16px;
+            stroke-width: 2;
+        }
+
+        /* 
+           【平滑高度过渡】
+           利用 CSS Grid 的 grid-template-rows: 0fr → 1fr 实现不定高内容展开/收起动画
+           grid-template-rows 可过渡，避免了 max-height 需要预估固定值的缺陷
+        */
+        .accordion-body {
+            display: grid;
+            grid-template-rows: 1fr;
+            transition: grid-template-rows 320ms cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity 280ms ease 40ms;
+            opacity: 1;
+        }
+
+        /* 收起状态：grid-template-rows 为 0fr，内容不可见但 DOM 保留 */
+        .accordion-item.collapsed .accordion-body {
+            grid-template-rows: 0fr;
+            opacity: 0;
+            transition: grid-template-rows 320ms cubic-bezier(0.4, 0, 0.2, 1),
+                        opacity 200ms ease;
+        }
+
+        /* 内层包裹器：overflow:hidden 隐藏超出的内容，padding 在此实现视觉间距 */
+        .accordion-body-inner {
+            overflow: hidden;
+            background: var(--bg-surface);
+            border-radius: var(--radius-md);
+            padding: 0 16px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        /* 展开时内层有 padding（顶部底部分别控制，视觉与标题栏衔接） */
+        .accordion-item:not(.collapsed) .accordion-body-inner {
+            padding: 12px 16px;
+            margin-bottom: 2px;
+        }
+
+        /* 标签/控件的通用包装（原 settings-panel 语义迁移） */
+        /* .settings-panel { */
+            /* 不再负责显隐，显隐由 accordion-body 控制 */
+        /* } */
+
+        /* 控件标签 */
+        .control-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            letter-spacing: 0.01em;
+        }
+
+        /* 文字输入 */
+        .text-input {
+            width: 100%;
+            height: 40px;
+            padding: 0 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text-primary);
+            background: var(--bg-surface);
+            outline: none;
+            transition: all 180ms ease;
+        }
+
+        .text-input::placeholder {
+            color: var(--text-tertiary);
+        }
+
+        .text-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-soft);
+        }
+
+        /* 下拉选择 */
+        .select-input {
+            width: 100%;
+            height: 40px;
+            padding: 0 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-family: inherit;
+            color: var(--text-primary);
+            background: var(--bg-surface);
+            outline: none;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath fill='%2386868B' d='M7 9.5L2.5 5h9z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            transition: all 180ms ease;
+        }
+
+        .select-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-soft);
+        }
+
+        /* 滑块 + 数字输入 */
+        .range-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .range-row input[type="range"] {
+            flex: 1;
+            height: 6px;
+            accent-color: var(--accent);
+            cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .range-row .num-input {
+            width: 56px;
+            height: 34px;
+            padding: 0 6px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            font-family: inherit;
+            text-align: center;
+            color: var(--text-primary);
+            outline: none;
+            background: var(--bg-surface);
+            transition: all 180ms ease;
+        }
+
+        .range-row .num-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-soft);
+        }
+
+        .range-row .unit {
+            font-size: 12px;
+            color: var(--text-tertiary);
+            flex-shrink: 0;
+            font-weight: 500;
+        }
+
+        /* 颜色选择 */
+        .color-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .color-row input[type="color"] {
+            width: 40px;
+            height: 40px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 2px;
+            background: var(--bg-surface);
+            cursor: pointer;
+            transition: all 180ms ease;
+        }
+
+        .color-row input[type="color"]:hover {
+            border-color: var(--accent);
+        }
+
+        .color-row .hex-input {
+            flex: 1;
+            height: 40px;
+            padding: 0 14px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            font-family: "SF Mono", "Menlo", "Consolas", monospace;
+            color: var(--text-primary);
+            outline: none;
+            background: var(--bg-surface);
+            transition: all 180ms ease;
+        }
+
+        .color-row .hex-input:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 4px var(--accent-soft);
+        }
+
+        /* 水印类型切换组 */
+        .type-group {
+            display: flex;
+            gap: 8px;
+        }
+
+        .type-group input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .type-group label {
+            flex: 1;
+            text-align: center;
+            padding: 10px 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition);
+            user-select: none;
+        }
+
+        .type-group label:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .type-group input[type="radio"]:checked+label {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #FFFFFF;
+            box-shadow: 0 2px 8px rgba(0, 113, 227, 0.3);
+        }
+
+        /* 九宫格位置 */
+        .position-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+
+        .position-grid input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .position-grid label {
+            display: block;
+            text-align: center;
+            padding: 10px 4px;
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition);
+            user-select: none;
+        }
+
+        .position-grid label:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .position-grid input[type="radio"]:checked+label {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #FFFFFF;
+            box-shadow: 0 2px 8px rgba(0, 113, 227, 0.3);
+        }
+
+        .position-grid.disabled {
+            opacity: 0.4;
+            pointer-events: none;
+        }
+
+        /* 开关（Toggle Switch）- 修复版 */
+        .switch-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .switch-row .control-label {
+            margin-bottom: 0;
+            flex: 1;
+        }
+
+        .switch {
+            position: relative;
+            width: 48px;
+            height: 28px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .switch input[type="checkbox"] {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            z-index: 2;
+            margin: 0;
+        }
+
+        .switch .slider {
+            position: absolute;
+            inset: 0;
+            background: #D1D1D6;
+            border-radius: 28px;
+            transition: background 220ms cubic-bezier(0.25, 0.1, 0.25, 1);
+        }
+
+        .switch .slider::before {
+            content: "";
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            left: 2px;
+            top: 2px;
+            background: #FFFFFF;
+            border-radius: 50%;
+            transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15), 0 1px 1px rgba(0, 0, 0, 0.06);
+        }
+
+        .switch input[type="checkbox"]:checked+.slider {
+            background: var(--accent);
+        }
+
+        .switch input[type="checkbox"]:checked+.slider::before {
+            transform: translateX(20px);
+        }
+
+        /* 图片水印子区域 */
+        .wm-image-zone {
+            border: 1.5px dashed var(--border-strong);
+            border-radius: var(--radius-sm);
+            padding: 18px 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all var(--transition);
+            background: var(--bg-surface);
+        }
+
+        .wm-image-zone:hover {
+            border-color: var(--accent);
+            background: var(--accent-soft);
+        }
+
+        .wm-image-zone .wm-image-text {
+            font-size: 13px;
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .wm-image-zone .wm-image-hint {
+            margin-top: 4px;
+            font-size: 11px;
+            color: var(--text-tertiary);
+        }
+
+        .wm-image-preview {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px;
+            background: var(--bg-surface);
+        }
+
+        .wm-image-preview img {
+            width: 44px;
+            height: 44px;
+            object-fit: contain;
+            border-radius: 8px;
+            background: #F5F5F7;
+        }
+
+        .wm-image-preview.hidden {
+            display: none;
+        }
+
+        .remove-btn {
+            margin-left: auto;
+            border: none;
+            background: #FF3B30;
+            color: #FFFFFF;
+            font-size: 12px;
+            font-weight: 500;
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 180ms ease;
+        }
+
+        .remove-btn:hover {
+            background: #E0352B;
+            box-shadow: 0 2px 8px rgba(255, 59, 48, 0.3);
+        }
+
+        /* 位置模式标签 */
+        .pos-mode-tag {
+            margin-left: 8px;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--accent);
+            background: var(--accent-soft);
+            border-radius: 10px;
+            padding: 2px 8px;
+            vertical-align: middle;
+        }
+
+        .pos-mode-tag.hidden {
+            display: none;
+        }
+
+        /* 需求2：自定义位置（拖拽）区域 */
+        .custom-pos-zone {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border);
+        }
+
+        .custom-pos-zone .switch-row {
+            margin-bottom: 6px;
+        }
+
+        .custom-pos-hint {
+            font-size: 11px;
+            color: var(--text-tertiary);
+            line-height: 1.5;
+            margin: 0 0 6px;
+        }
+
+        /* 拖拽实时坐标显示 */
+        .custom-pos-xy {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--accent);
+            background: var(--accent-soft);
+            border-radius: 8px;
+            padding: 6px 10px;
+            margin-bottom: 6px;
+            font-family: "SF Mono", "Menlo", "Consolas", monospace;
+            letter-spacing: 0.02em;
+        }
+
+        .custom-pos-xy.hidden {
+            display: none;
+        }
+
+        /* 复位按钮 */
+        .reset-pos-btn {
+            border: 1px solid var(--border);
+            background: var(--bg-surface);
+            color: var(--text-secondary);
+            font-size: 12px;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 180ms ease;
+        }
+
+        .reset-pos-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .reset-pos-btn.hidden {
+            display: none;
+        }
+
+        /* 拖拽启用中：预览画布光标样式 */
+        .preview-stage.dragging canvas {
+            cursor: grab;
+        }
+
+        .preview-stage.dragging canvas:active {
+            cursor: grabbing;
+        }
+
+        /* 隐藏类 */
+        .type-hidden {
+            display: none !important;
+        }
+
+        /* ============================================================
+           右侧内容区 - 大面积留白 + 预览卡片
+           ============================================================ */
+        .content-area {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-primary);
+            overflow: hidden;
+            padding: 24px 28px;
+            gap: 16px;
+        }
+
+        /* 顶部工具栏 */
+        .preview-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-shrink: 0;
+        }
+
+        .preview-title-group h2 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            letter-spacing: -0.02em;
+        }
+
+        .export-bar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 格式选择器 */
+        .format-group {
+            display: inline-flex;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .format-btn {
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px 18px;
+            cursor: pointer;
+            transition: all 180ms ease;
+            letter-spacing: -0.01em;
+        }
+
+        .format-btn+.format-btn {
+            border-left: 1px solid var(--border);
+        }
+
+        .format-btn.active {
+            background: var(--accent);
+            color: #FFFFFF;
+        }
+
+        /* 导出按钮 */
+        .export-btn {
+            border: none;
+            background: var(--accent);
+            color: #FFFFFF;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 9px 22px;
+            border-radius: 22px;
+            cursor: pointer;
+            transition: all var(--transition);
+            box-shadow: 0 2px 8px rgba(0, 113, 227, 0.25);
+            white-space: nowrap;
+            letter-spacing: -0.01em;
+        }
+
+        .export-btn:hover:not(:disabled) {
+            background: #0062CC;
+            box-shadow: 0 4px 16px rgba(0, 113, 227, 0.35);
+            transform: translateY(-1px);
+        }
+
+        .export-btn:active:not(:disabled) {
+            transform: scale(0.97);
+        }
+
+        .export-btn:disabled {
+            background: #D1D1D6;
+            color: #AEAEB2;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .zip-btn {
+            background: #34C759;
+            box-shadow: 0 2px 8px rgba(52, 199, 89, 0.25);
+        }
+
+        .zip-btn:hover:not(:disabled) {
+            background: #2DB14D;
+            box-shadow: 0 4px 16px rgba(52, 199, 89, 0.35);
+        }
+
+        /* ============================================================
+           预览区域 - 大圆角白色卡片
+           ============================================================ */
+        .preview-stage-wrap {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+        }
+
+        .preview-stage {
+            width: 100%;
+            background: var(--bg-surface);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            border: 1px solid var(--border);
+        }
+
+        .preview-stage canvas {
+            display: block;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .preview-tip {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 15px;
+            font-weight: 500;
+            color: var(--text-tertiary);
+            letter-spacing: -0.01em;
+            pointer-events: none;
+        }
+
+        .preview-tip.hidden {
+            display: none;
+        }
+
+        /* 降级提示 */
+        .degrade-banner {
+            display: none;
+            background: #FFF3CD;
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            font-size: 13px;
+            color: #856404;
+            text-align: center;
+            flex-shrink: 0;
+            font-weight: 500;
+        }
+
+        .degrade-banner.show {
+            display: block;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ============================================================
+           批量任务列表
+           ============================================================ */
+        .batch-panel {
+            flex-shrink: 0;
+            background: var(--bg-surface);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-md);
+            padding: 16px;
+            border: 1px solid var(--border);
+            max-height: 180px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .batch-panel.hidden {
+            display: none;
+        }
+
+        .batch-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            flex-shrink: 0;
+        }
+
+        .batch-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .link-btn {
+            border: none;
+            background: none;
+            color: #FF3B30;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 120ms ease;
+        }
+
+        .link-btn:hover {
+            opacity: 0.8;
+        }
+
+        .batch-list {
+            display: flex;
+            gap: 10px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+        }
+
+        .batch-empty {
+            width: 100%;
+            text-align: center;
+            color: var(--text-tertiary);
+            font-size: 13px;
+            padding: 20px 0;
+        }
+
+        .batch-item {
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+            background: var(--bg-surface);
+            position: relative;
+            flex-shrink: 0;
+            width: 132px;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition);
+        }
+
+        .batch-item:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+
+        .batch-item canvas {
+            display: block;
+            width: 100%;
+            height: auto;
+            background: #FAFAFA;
+        }
+
+        .batch-item-info {
+            padding: 8px 10px;
+        }
+
+        .batch-item-name {
+            font-size: 11px;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .batch-item-status {
+            display: inline-block;
+            margin-top: 4px;
+            font-size: 10px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+
+        .status-pending {
+            background: #F0F0F5;
+            color: #8E8E93;
+        }
+
+        .status-processing {
+            background: var(--accent-soft);
+            color: var(--accent);
+        }
+
+        .status-success {
+            background: #E8F8ED;
+            color: #34C759;
+        }
+
+        .status-failed {
+            background: #FFF0EF;
+            color: #FF3B30;
+        }
+
+        .batch-item.failed {
+            border-color: #FF3B30;
+        }
+
+        .batch-item-remove {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            border: none;
+            background: rgba(0, 0, 0, 0.55);
+            color: #FFFFFF;
+            font-size: 10px;
+            width: 20px;
+            height: 20px;
+            line-height: 20px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: none;
+            z-index: 2;
+            backdrop-filter: blur(4px);
+            transition: background 120ms ease;
+        }
+
+        .batch-item:hover .batch-item-remove {
+            display: block;
+        }
+
+        .batch-item-remove:hover {
+            background: #FF3B30;
+        }
+
+        /* ============================================================
+           Toast 轻提示 - 圆角胶囊
+           ============================================================ */
+        .toast-container {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            z-index: 9999;
+            pointer-events: none;
+            max-width: 92vw;
+        }
+
+        .toast {
+            padding: 12px 24px;
+            border-radius: 24px;
+            color: #FFFFFF;
+            font-size: 14px;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+            opacity: 1;
+            transition: opacity 300ms ease, transform 300ms ease;
+            letter-spacing: -0.01em;
+        }
+
+        .toast.fade-out {
+            opacity: 0;
+            transform: translateY(8px);
+        }
+
+        .toast.toast-success {
+            background: rgba(52, 199, 89, 0.92);
+        }
+
+        .toast.toast-error {
+            background: rgba(255, 59, 48, 0.92);
+        }
+
+        .toast.toast-info {
+            background: rgba(0, 113, 227, 0.92);
+        }
+
+        /* 模式标签 */
+        .mode-tag {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 600;
+            background: var(--accent-soft);
+            color: var(--accent);
+            padding: 4px 12px;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            letter-spacing: 0.01em;
+        }
+
+        /* ============================================================
+           响应式：<860px 手机竖屏
+           ============================================================ */
+        @media (max-width: 859px) {
+            .main-container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                max-height: 40vh;
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                padding: 14px;
+            }
+
+            .content-area {
+                padding: 16px;
+            }
+
+            .preview-header {
+                flex-direction: column;
+                align-items: stretch;
+                gap: 12px;
+            }
+
+            .export-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .format-group {
+                align-self: stretch;
+            }
+
+            .format-btn {
+                flex: 1;
+                text-align: center;
+            }
+
+            .export-btn,
+            .zip-btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .preview-stage {
+                border-radius: var(--radius-lg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- ==================== 顶部导航栏 ==================== -->
+    <header class="site-header" role="banner">
+        <div class="container">
+            <a href="https://www.ljiao.me" class="brand" target="_blank" rel="noopener noreferrer">www.ljiao.me</a>
+            <nav class="nav-links" role="navigation" aria-label="主导航">
+                <a href="index.html" class="nav-link">首页</a>
+                <a href="about.html" class="nav-link">关于我</a>
+                <a href="web_ku.html" class="nav-link">网页库</a>
+                <a href="myplace.html" class="nav-link">我的空间</a>
+                <a href="watermark_tool.html" class="nav-link active">添加水印工具</a>
+                <!-- <div class="nav-item">
+                    <span class="nav-link">联系我</span>
+                    <ul class="dropdown-menu" aria-label="联系我下拉菜单">
+                        <li><a href="contact_weixin.html">微信</a></li>
+                        <li><a href="contact_qq.html">QQ</a></li>
+                        <li><a href="contact_xhs.html">小红书</a></li>
+                        <li><a href="contact_dy.html">抖音</a></li>
+                    </ul>
+                </div> -->
+            </nav>
+        </div>
+    </header>
+
+    <!-- ==================== 主容器：毛玻璃侧边栏 + 内容区 ==================== -->
+    <main class="main-container">
+
+        <!-- ========== 左侧侧边栏 - 粉彩图标菜单 + 折叠设置面板 ========== -->
+        <aside class="sidebar" aria-label="水印工具设置">
+
+            <!-- 模式标签 -->
+            <span id="mode-tag" class="mode-tag">单张模式</span>
+
+            <!-- 上传区域 -->
+            <div id="upload-zone" class="upload-zone" role="button" tabindex="0" aria-label="上传图片">
+                <div class="upload-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                        <polyline points="17 8 12 3 7 8" />
+                        <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                </div>
+                <p id="upload-text" class="upload-text">点击或拖拽图片到此处</p>
+                <p class="upload-hint">JPG / PNG / WebP，最大 20MB</p>
+                <p id="file-name" class="file-name"></p>
+                <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" hidden>
+            </div>
+
+<!-- ===== 手风琴 1：水印类型 ===== -->
+            <div class="accordion-item">
+                <div class="accordion-header" data-panel="panel-type">
+                    <span class="sidebar-icon icon-type">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="3" />
+                            <line x1="8" y1="8" x2="16" y2="8" />
+                            <line x1="8" y1="12" x2="16" y2="12" />
+                            <line x1="8" y1="16" x2="12" y2="16" />
+                        </svg>
+                    </span>
+                    <span class="accordion-label">水印类型</span>
+                    <span class="accordion-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-body-inner">
+                        <div class="settings-panel" id="panel-type">
+                            <div class="type-group" role="radiogroup" aria-label="水印类型">
+                                <input type="radio" name="wmtype" id="type-text" value="text" checked>
+                                <label for="type-text">文字</label>
+                                <input type="radio" name="wmtype" id="type-image" value="image">
+                                <label for="type-image">图片</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== 手风琴 2：文字内容 ===== -->
+            <div class="accordion-item">
+                <div class="accordion-header" data-panel="sec-type-text" id="menu-text">
+                    <span class="sidebar-icon icon-text">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="4 7 4 4 20 4 20 7" />
+                            <line x1="9" y1="20" x2="15" y2="20" />
+                            <line x1="12" y1="4" x2="12" y2="20" />
+                        </svg>
+                    </span>
+                    <span class="accordion-label">文字内容</span>
+                    <span class="accordion-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-body-inner">
+                        <div class="settings-panel" id="sec-type-text">
+                            <label class="control-label" for="text-input">水印文字</label>
+                            <input type="text" id="text-input" class="text-input" placeholder="请输入水印文字" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== 手风琴 3：字体设置 ===== -->
+            <div class="accordion-item">
+                <div class="accordion-header" data-panel="sec-type-font-family" id="menu-font">
+                    <span class="sidebar-icon icon-font">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="4 7 4 4 20 4 20 7" />
+                            <line x1="9" y1="20" x2="15" y2="20" />
+                            <line x1="12" y1="4" x2="12" y2="20" />
+                        </svg>
+                    </span>
+                    <span class="accordion-label">字体设置</span>
+                    <span class="accordion-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-body-inner">
+                        <div class="settings-panel" id="sec-type-font-family">
+                            <label class="control-label" for="font-select">字体样式</label>
+                            <select id="font-select" class="select-input">
+                                <option value="Microsoft YaHei, PingFang SC, sans-serif">微软雅黑</option>
+                                <option value="SimSun, STSong, serif">宋体</option>
+                                <option value="SimHei, STHeiti, sans-serif">黑体</option>
+                                <option value="KaiTi, STKaiti, serif">楷体</option>
+                                <option value="FangSong, STFangsong, serif">仿宋</option>
+                                <option value="Arial, Helvetica, sans-serif">Arial</option>
+                                <option value="Georgia, Times New Roman, serif">Georgia</option>
+                                <option value="Courier New, monospace">Courier New</option>
+                                <option value="Verdana, Geneva, sans-serif">Verdana</option>
+                            </select>
+                        </div>
+                        <div class="settings-panel" id="sec-type-font-size" style="margin-top:12px">
+                            <label class="control-label" for="font-range">字号（8 - 200 pt）</label>
+                            <div class="range-row">
+                                <input type="range" id="font-range" min="8" max="200" step="1" value="48">
+                                <input type="number" id="font-num" class="num-input" min="8" max="200" value="48">
+                                <span class="unit">pt</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== 手风琴 4：颜色调整 ===== -->
+            <div class="accordion-item">
+                <div class="accordion-header" data-panel="sec-type-color" id="menu-color">
+                    <span class="sidebar-icon icon-color">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <path d="M12 2a10 10 0 0 1 0 20" />
+                            <path d="M12 2a10 10 0 0 0 0 20" />
+                        </svg>
+                    </span>
+                    <span class="accordion-label">颜色调整</span>
+                    <span class="accordion-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-body-inner">
+                        <div class="settings-panel" id="sec-type-color">
+                            <label class="control-label" for="color-picker">文字颜色</label>
+                            <div class="color-row">
+                                <input type="color" id="color-picker" value="#FFFFFF">
+                                <input type="text" id="color-text" class="hex-input" value="#FFFFFF" placeholder="#RRGGBB" maxlength="9" autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== 手风琴 5：透明度 ===== -->
+            <div class="accordion-item">
+                <div class="accordion-header" data-panel="panel-opacity" id="menu-opacity">
+                    <span class="sidebar-icon icon-opacity">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" opacity="0.4" />
+                            <circle cx="12" cy="12" r="6" />
+                        </svg>
+                    </span>
+                    <span class="accordion-label">透明度</span>
+                    <span class="accordion-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-body-inner">
+                        <div class="settings-panel" id="panel-opacity">
+                            <label class="control-label" for="opacity-range">不透明度（0 - 100%）</label>
+                            <div class="range-row">
+                                <input type="range" id="opacity-range" min="0" max="100" step="1" value="80">
+                                <input type="number" id="opacity-num" class="num-input" min="0" max="100" value="80">
+                                <span class="unit">%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== 手风琴 6：图片水印 ===== -->
+            <div class="accordion-item type-hidden" id="menu-imagewm">
+                <div class="accordion-header" data-panel="sec-image-wm">
+                    <span class="sidebar-icon icon-image-wm">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="18" height="18" rx="3" />
+                            <circle cx="8.5" cy="8.5" r="1.5" />
+                            <polyline points="21 15 16 10 5 21" />
+                        </svg>
+                    </span>
+                    <span class="accordion-label">图片水印</span>
+                    <span class="accordion-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-body-inner">
+                        <div class="settings-panel" id="sec-image-wm">
+                            <div id="wm-image-zone" class="wm-image-zone" role="button" tabindex="0">
+                                <p class="wm-image-text">点击上传水印图片</p>
+                                <p class="wm-image-hint">推荐透明底 PNG / JPG / WebP</p>
+                            </div>
+                            <div id="wm-image-preview" class="wm-image-preview hidden">
+                                <img id="wm-image-thumb" alt="水印图片预览">
+                                <button type="button" id="btn-remove-wm-image" class="remove-btn">移除</button>
+                            </div>
+                            <input type="file" id="wm-image-input" accept="image/jpeg,image/png,image/webp" hidden>
+                            <div style="margin-top:12px">
+                                <label class="control-label" for="wm-scale-range">尺寸（占原图宽 5 - 50%）</label>
+                                <div class="range-row">
+                                    <input type="range" id="wm-scale-range" min="5" max="50" step="1" value="20">
+                                    <input type="number" id="wm-scale-num" class="num-input" min="5" max="50" value="20">
+                                    <span class="unit">%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== 手风琴 7：旋转角度 ===== -->
+            <div class="accordion-item">
+                <div class="accordion-header" data-panel="panel-rotate" id="menu-rotate">
+                    <span class="sidebar-icon icon-rotate">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="1 4 1 10 7 10" />
+                            <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10" />
+                        </svg>
+                    </span>
+                    <span class="accordion-label">旋转角度</span>
+                    <span class="accordion-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-body-inner">
+                        <div class="settings-panel" id="panel-rotate">
+                            <label class="control-label" for="rotation-range">角度（-180° ~ 180°）</label>
+                            <div class="range-row">
+                                <input type="range" id="rotation-range" min="-180" max="180" step="1" value="-30">
+                                <input type="number" id="rotation-num" class="num-input" min="-180" max="180" value="-30">
+                                <span class="unit">°</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== 手风琴 8：水印位置 ===== -->
+            <div class="accordion-item">
+                <div class="accordion-header" data-panel="panel-position" id="menu-position">
+                    <span class="sidebar-icon icon-position">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="3" />
+                            <circle cx="12" cy="12" r="3" />
+                        </svg>
+                    </span>
+                    <span class="accordion-label">水印位置</span>
+                    <span id="pos-mode-tag" class="pos-mode-tag hidden">自由定位</span>
+                    <span class="accordion-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-body-inner">
+                        <div class="settings-panel" id="panel-position">
+                            <fieldset id="position-group" class="position-grid" disabled="disabled">
+                                <legend style="display:none">水印位置</legend>
+                                <input type="radio" name="position" id="pos-lt" value="left-top"><label for="pos-lt">左上</label>
+                                <input type="radio" name="position" id="pos-tc" value="top-center"><label for="pos-tc">中上</label>
+                                <input type="radio" name="position" id="pos-rt" value="right-top"><label for="pos-rt">右上</label>
+                                <input type="radio" name="position" id="pos-lc" value="left-center"><label for="pos-lc">左中</label>
+                                <input type="radio" name="position" id="pos-cc" value="center"><label for="pos-cc">正中</label>
+                                <input type="radio" name="position" id="pos-rc" value="right-center"><label for="pos-rc">右中</label>
+                                <input type="radio" name="position" id="pos-lb" value="left-bottom"><label for="pos-lb">左下</label>
+                                <input type="radio" name="position" id="pos-bc" value="bottom-center"><label for="pos-bc">中下</label>
+                                <input type="radio" name="position" id="pos-rb" value="right-bottom" checked><label for="pos-rb">右下</label>
+                            </fieldset>
+                            <!-- 需求2：自定义位置（拖拽） -->
+                            <div class="custom-pos-zone">
+                                <div class="switch-row">
+                                    <label class="control-label" for="custom-pos-toggle">自定义位置（拖拽）</label>
+                                    <span class="switch">
+                                        <input type="checkbox" id="custom-pos-toggle">
+                                        <span class="slider"></span>
+                                    </span>
+                                </div>
+                                <p id="custom-pos-hint" class="custom-pos-hint">开启后可直接在右侧预览图上按住水印拖动调整位置</p>
+                                <div id="custom-pos-xy" class="custom-pos-xy hidden">X: --% &nbsp;·&nbsp; Y: --%</div>
+                                <button type="button" id="btn-reset-pos" class="reset-pos-btn hidden">复位到右下角</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== 手风琴 9：平铺模式 ===== -->
+            <div class="accordion-item">
+                <div class="accordion-header" data-panel="panel-tile" id="menu-tile">
+                    <span class="sidebar-icon icon-tile">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="3" width="7" height="7" />
+                            <rect x="14" y="3" width="7" height="7" />
+                            <rect x="3" y="14" width="7" height="7" />
+                            <rect x="14" y="14" width="7" height="7" />
+                        </svg>
+                    </span>
+                    <span class="accordion-label">平铺模式</span>
+                    <span class="accordion-arrow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </span>
+                </div>
+                <div class="accordion-body">
+                    <div class="accordion-body-inner">
+                        <div class="settings-panel" id="panel-tile">
+                            <div class="switch-row">
+                                <label class="control-label" for="tile-toggle">水印铺满整张图片</label>
+                                <span class="switch">
+                                    <input type="checkbox" id="tile-toggle">
+                                    <span class="slider"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </aside>
+
+        <!-- ========== 右侧内容区 ========== -->
+        <div class="content-area">
+
+            <!-- 降级提示 -->
+            <div id="degrade-banner" class="degrade-banner" role="alert">
+                当前浏览器不支持水印处理，请更换 Chrome / Edge / Firefox / Safari 最新版本
+            </div>
+
+            <!-- 顶部工具栏 -->
+            <div class="preview-header">
+                <div class="preview-title-group">
+                    <h2>实时预览</h2>
+                </div>
+                <div class="export-bar">
+                    <div class="format-group" role="group" aria-label="导出格式">
+                        <button type="button" class="format-btn active" data-format="png">PNG</button>
+                        <button type="button" class="format-btn" data-format="jpg">JPG</button>
+                    </div>
+                    <button id="btn-export" class="export-btn" disabled>下载图片</button>
+                    <button id="btn-zip" class="export-btn zip-btn hidden" disabled>打包下载 ZIP</button>
+                </div>
+            </div>
+
+            <!-- 预览区域 -->
+            <div class="preview-stage-wrap">
+                <div class="preview-stage" id="preview-stage">
+                    <canvas id="preview-canvas"></canvas>
+                    <div id="preview-tip" class="preview-tip">请先上传图片</div>
+                </div>
+            </div>
+
+            <!-- 批量任务列表 -->
+            <div id="batch-panel" class="batch-panel hidden">
+                <div class="batch-head">
+                    <span class="batch-title">批量任务列表</span>
+                    <button type="button" id="btn-clear-batch" class="link-btn">清空</button>
+                </div>
+                <div id="batch-list" class="batch-list">
+                    <div class="batch-empty">上传多张图片后显示批量任务</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Toast 容器 -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <script>
+        /* ============================================================
+           =====================  配置常量区  =========================
+           【用途】所有参数取值区间唯一来源；后续调参只需修改本区
+           ============================================================= */
+        var CONFIG = {
+            FONT_SIZE_MIN: 8,
+            FONT_SIZE_MAX: 200,
+            OPACITY_MIN: 0,
+            OPACITY_MAX: 100,
+            MAX_FILE_SIZE: 20 * 1024 * 1024,
+            ALLOWED_MIME: ['image/jpeg', 'image/png', 'image/webp'],
+            PREVIEW_MAX_WIDTH: 1200,
+            TILE_GAP_RATIO: 2.0,
+            TICK_DELAY: 80,
+            JPG_QUALITY: 0.92,
+            TOAST_DURATION: 2400,
+            ROTATION_MIN: -180,
+            ROTATION_MAX: 180,
+            ROTATION_DEFAULT: -30,
+            IMAGE_SCALE_MIN: 5,
+            IMAGE_SCALE_MAX: 50,
+            IMAGE_SCALE_DEFAULT: 20,
+            BATCH_MAX: 30,
+            DRAG_THRESHOLD: 3,
+            ZIP_LIB_PATH: 'jszip.min.js',
+            ZIP_NAME_PREFIX: 'watermark_batch',
+            DEFAULT_FONT: 'Microsoft YaHei, PingFang SC, sans-serif'
+        };
+
+        var POSITION = Object.freeze({
+            'left-top': true, 'top-center': true, 'right-top': true,
+            'left-center': true, 'center': true, 'right-center': true,
+            'left-bottom': true, 'bottom-center': true, 'right-bottom': true
+        });
+        var EXPORT_FORMAT = Object.freeze({ PNG: 'png', JPG: 'jpg' });
+        var TYPE = Object.freeze({ TEXT: 'text', IMAGE: 'image' });
+        var STATUS = Object.freeze({ PENDING: 'pending', PROCESSING: 'processing', SUCCESS: 'success', FAILED: 'failed' });
+        var POSITION_MODE = Object.freeze({ GRID: 'grid', FREE: 'free' });
+
+        var DEFAULT_CONFIG = {
+            type: TYPE.TEXT,
+            text: '',
+            fontFamily: CONFIG.DEFAULT_FONT,
+            fontSizePt: 48,
+            colorHex: '#FFFFFF',
+            opacityPct: 80,
+            position: 'right-bottom',
+            tileEnabled: false,
+            rotationDeg: CONFIG.ROTATION_DEFAULT,
+            imageScalePct: CONFIG.IMAGE_SCALE_DEFAULT,
+            positionMode: POSITION_MODE.GRID,
+            freeX: 0,
+            freeY: 0,
+            customPosEnabled: false, // 需求2：自定义位置（拖拽）开关
+            watermarkImage: null
+        };
+
+        var wmImageMeta = null;
+
+        var state = {
+            sourceImage: null,
+            config: Object.assign({}, DEFAULT_CONFIG),
+            lastValidColor: '#FFFFFF',
+            objectUrl: null,
+            mode: 'single',
+            batchTask: { items: [], zipName: null },
+            zipEnabled: false
+        };
+
+        var currentFormat = EXPORT_FORMAT.PNG;
+        var _measureCache = null;
+
+        function clampValue(value, min, max) {
+            if (typeof value !== 'number' || isNaN(value)) return min;
+            return Math.min(Math.max(value, min), max);
+        }
+
+        function debounce(fn, delay) {
+            var timer = null;
+            return function () {
+                var that = this;
+                var args = arguments;
+                if (timer) clearTimeout(timer);
+                timer = setTimeout(function () { timer = null; fn.apply(that, args); }, delay);
+            };
+        }
+
+        function isValidColor(value) {
+            return /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(value);
+        }
+
+        function validateFile(file) {
+            if (CONFIG.ALLOWED_MIME.indexOf(file.type) === -1) {
+                return { ok: false, message: '仅支持 JPG、PNG、WebP 格式' };
+            }
+            if (file.size > CONFIG.MAX_FILE_SIZE) {
+                return { ok: false, message: '图片大小不能超过 20MB' };
+            }
+            return { ok: true };
+        }
+
+        function buildFileName(originalName, ext) {
+            if (originalName && originalName.trim()) {
+                var stem = originalName.replace(/\.[^.]+$/, '');
+                return stem + '_水印.' + ext;
+            }
+            return 'watermark_图片.' + ext;
+        }
+
+        function canvasToBlob(canvas, format) {
+            return new Promise(function (resolve, reject) {
+                var mime = format === EXPORT_FORMAT.JPG ? 'image/jpeg' : 'image/png';
+                var quality = format === EXPORT_FORMAT.JPG ? CONFIG.JPG_QUALITY : undefined;
+                canvas.toBlob(function (blob) {
+                    if (!blob) { reject(new Error('toBlob 返回空')); return; }
+                    resolve(blob);
+                }, mime, quality);
+            });
+        }
+
+        var toastContainer = document.getElementById('toast-container');
+
+        function showToast(text, type, duration) {
+            var el = document.createElement('div');
+            el.className = 'toast toast-' + (type || 'info');
+            el.textContent = text;
+            while (toastContainer.children.length >= 3) {
+                toastContainer.removeChild(toastContainer.firstChild);
+            }
+            toastContainer.appendChild(el);
+            var lifetime = duration || CONFIG.TOAST_DURATION;
+            setTimeout(function () {
+                el.classList.add('fade-out');
+                setTimeout(function () {
+                    if (el.parentNode) el.parentNode.removeChild(el);
+                }, 320);
+            }, lifetime);
+        }
+
+        function prepareCanvas(canvas, width, height) {
+            if (canvas.width !== width || canvas.height !== height) {
+                canvas.width = width;
+                canvas.height = height;
+            }
+            return canvas.getContext('2d');
+        }
+
+        function measureWatermark(ctx, text, fontPx, fontFamily) {
+            var key = text + '|' + fontPx + '|' + fontFamily;
+            if (_measureCache && _measureCache.has(key)) return _measureCache.get(key);
+            ctx.font = fontPx + 'px ' + fontFamily;
+            var width = ctx.measureText(text).width;
+            var result = { width: width, height: fontPx * 1.2 };
+            if (_measureCache) _measureCache.set(key, result);
+            return result;
+        }
+
+        function getAnchorMap(position, fontPx) {
+            var margin = fontPx * 0.5;
+            var anchor = {
+                'left-top': { textAlign: 'left', textBaseline: 'top', marginX: margin, marginY: margin },
+                'top-center': { textAlign: 'center', textBaseline: 'top', marginX: 0, marginY: margin },
+                'right-top': { textAlign: 'right', textBaseline: 'top', marginX: margin, marginY: margin },
+                'left-center': { textAlign: 'left', textBaseline: 'middle', marginX: margin, marginY: 0 },
+                'center': { textAlign: 'center', textBaseline: 'middle', marginX: 0, marginY: 0 },
+                'right-center': { textAlign: 'right', textBaseline: 'middle', marginX: margin, marginY: 0 },
+                'left-bottom': { textAlign: 'left', textBaseline: 'bottom', marginX: margin, marginY: margin },
+                'bottom-center': { textAlign: 'center', textBaseline: 'bottom', marginX: 0, marginY: margin },
+                'right-bottom': { textAlign: 'right', textBaseline: 'bottom', marginX: margin, marginY: margin }
+            };
+            return anchor[position] || anchor['right-bottom'];
+        }
+
+        function computeSingleAnchor(position, fontPx, canvasW, canvasH) {
+            var a = getAnchorMap(position, fontPx);
+            var x, y;
+            if (a.textAlign === 'left') x = a.marginX;
+            else if (a.textAlign === 'right') x = canvasW - a.marginX;
+            else x = canvasW / 2;
+            if (a.textBaseline === 'top') y = a.marginY;
+            else if (a.textBaseline === 'bottom') y = canvasH - a.marginY;
+            else y = canvasH / 2;
+            return { x: x, y: y, textAlign: a.textAlign, textBaseline: a.textBaseline };
+        }
+
+        function computeWatermarkSize(ctx, config, scale) {
+            if (config.type === TYPE.IMAGE && config.watermarkImage) {
+                var w = config.watermarkImage.width * (config.imageScalePct / 100) * scale;
+                var h = w * (config.watermarkImage.height / config.watermarkImage.width);
+                return { width: w, height: h };
+            }
+            var fontPx = config.fontSizePt * scale;
+            var fontFamily = config.fontFamily || CONFIG.DEFAULT_FONT;
+            return measureWatermark(ctx, (config.text || '').trim(), fontPx, fontFamily);
+        }
+
+        function getRotatedBoxHalf(width, height, rotationDeg) {
+            var rad = rotationDeg * Math.PI / 180;
+            return {
+                halfW: Math.abs(width * Math.cos(rad) / 2) + Math.abs(height * Math.sin(rad) / 2),
+                halfH: Math.abs(width * Math.sin(rad) / 2) + Math.abs(height * Math.cos(rad) / 2)
+            };
+        }
+
+        function computeTileCells(ctx, config, scale, canvasW, canvasH, gapRatio) {
+            var size = computeWatermarkSize(ctx, config, scale);
+            var cellW = size.width * gapRatio;
+            var cellH = size.height * gapRatio;
+            var cells = [];
+            for (var y = 0; y < canvasH; y += cellH) {
+                for (var x = 0; x < canvasW; x += cellW) {
+                    cells.push({ x: x, y: y });
+                }
+            }
+            return cells;
+        }
+
+        function computeCenter(ctx, config, scale, canvasW, canvasH) {
+            if (config.positionMode === POSITION_MODE.FREE) {
+                return { cx: config.freeX * scale, cy: config.freeY * scale };
+            }
+            var size = computeWatermarkSize(ctx, config, scale);
+            var halfW = size.width / 2;
+            var halfH = size.height / 2;
+            if (config.type === TYPE.IMAGE) {
+                var anchorI = getAnchorMap(config.position, size.height);
+                var ax = anchorI.textAlign === 'left' ? anchorI.marginX
+                    : (anchorI.textAlign === 'right' ? canvasW - anchorI.marginX : canvasW / 2);
+                var ay = anchorI.textBaseline === 'top' ? anchorI.marginY
+                    : (anchorI.textBaseline === 'bottom' ? canvasH - anchorI.marginY : canvasH / 2);
+                return {
+                    cx: ax + (anchorI.textAlign === 'right' ? -halfW : (anchorI.textAlign === 'left' ? halfW : 0)),
+                    cy: ay + (anchorI.textBaseline === 'bottom' ? -halfH : (anchorI.textBaseline === 'top' ? halfH : 0))
+                };
+            }
+            var fontPx = config.fontSizePt * scale;
+            var a = computeSingleAnchor(config.position, fontPx, canvasW, canvasH);
+            var cx = a.x + (a.textAlign === 'right' ? -halfW : (a.textAlign === 'left' ? halfW : 0));
+            var cy = a.y + (a.textBaseline === 'bottom' ? -halfH : (a.textBaseline === 'top' ? halfH : 0));
+            return { cx: cx, cy: cy };
+        }
+
+        var _lastScale = 1;
+
+        function drawWatermarkContent(ctx, config, size) {
+            if (config.type === TYPE.IMAGE && config.watermarkImage) {
+                ctx.drawImage(config.watermarkImage, -size.width / 2, -size.height / 2, size.width, size.height);
+            } else {
+                var fontFamily = config.fontFamily || CONFIG.DEFAULT_FONT;
+                ctx.font = (config.fontSizePt * _lastScale) + 'px ' + fontFamily;
+                ctx.fillStyle = config.colorHex;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText((config.text || '').trim(), 0, 0);
+            }
+        }
+
+        function applyWatermark(ctx, source, config, jpgFillWhite) {
+            var img = source.image;
+            var canvasW = ctx.canvas.width;
+            var canvasH = ctx.canvas.height;
+            var scale = canvasW / source.width;
+            _measureCache = new Map();
+            _lastScale = scale;
+            ctx.save();
+            if (jpgFillWhite) {
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, canvasW, canvasH);
+            }
+            ctx.drawImage(img, 0, 0, canvasW, canvasH);
+            var contentReady = (config.type === TYPE.IMAGE)
+                ? !!(config.watermarkImage)
+                : !!((config.text || '').trim());
+            if (!contentReady) { _measureCache = null; ctx.restore(); return; }
+            ctx.globalAlpha = clampValue(config.opacityPct, CONFIG.OPACITY_MIN, CONFIG.OPACITY_MAX) / 100;
+            var rotationRad = config.rotationDeg * Math.PI / 180;
+            if (config.tileEnabled) {
+                var size = computeWatermarkSize(ctx, config, scale);
+                var cells = computeTileCells(ctx, config, scale, canvasW, canvasH, CONFIG.TILE_GAP_RATIO);
+                for (var i = 0; i < cells.length; i++) {
+                    ctx.save();
+                    ctx.translate(cells[i].x + size.width / 2, cells[i].y + size.height / 2);
+                    ctx.rotate(rotationRad);
+                    drawWatermarkContent(ctx, config, size);
+                    ctx.restore();
+                }
+            } else {
+                var c = computeCenter(ctx, config, scale, canvasW, canvasH);
+                var s = computeWatermarkSize(ctx, config, scale);
+                ctx.save();
+                ctx.translate(c.cx, c.cy);
+                ctx.rotate(rotationRad);
+                drawWatermarkContent(ctx, config, s);
+                ctx.restore();
+            }
+            _measureCache = null;
+            ctx.restore();
+        }
+
+        /* 交互层：UI 元素引用 */
+        var uploadZone = document.getElementById('upload-zone');
+        var fileInput = document.getElementById('file-input');
+        var fileNameEl = document.getElementById('file-name');
+        var uploadText = document.getElementById('upload-text');
+        var degradeBanner = document.getElementById('degrade-banner');
+        var previewCanvas = document.getElementById('preview-canvas');
+        var previewTip = document.getElementById('preview-tip');
+        var textInput = document.getElementById('text-input');
+        var fontSelect = document.getElementById('font-select');
+        var fontRange = document.getElementById('font-range');
+        var fontNum = document.getElementById('font-num');
+        var colorPicker = document.getElementById('color-picker');
+        var colorText = document.getElementById('color-text');
+        var opacityRange = document.getElementById('opacity-range');
+        var opacityNum = document.getElementById('opacity-num');
+        var positionGroup = document.getElementById('position-group');
+        var tileToggle = document.getElementById('tile-toggle');
+        var btnExport = document.getElementById('btn-export');
+        var btnZip = document.getElementById('btn-zip');
+        var formatBtns = document.querySelectorAll('.format-btn');
+        var typeTextRadio = document.getElementById('type-text');
+        var typeImageRadio = document.getElementById('type-image');
+        var secTypeText = document.getElementById('sec-type-text');
+        var secTypeFontFamily = document.getElementById('sec-type-font-family');
+        var secTypeFontSize = document.getElementById('sec-type-font-size');
+        var secTypeColor = document.getElementById('sec-type-color');
+        var secImageWm = document.getElementById('sec-image-wm');
+        var wmImageZone = document.getElementById('wm-image-zone');
+        var wmImageInput = document.getElementById('wm-image-input');
+        var wmImagePreview = document.getElementById('wm-image-preview');
+        var wmImageThumb = document.getElementById('wm-image-thumb');
+        var btnRemoveWmImage = document.getElementById('btn-remove-wm-image');
+        var wmScaleRange = document.getElementById('wm-scale-range');
+        var wmScaleNum = document.getElementById('wm-scale-num');
+        var rotationRange = document.getElementById('rotation-range');
+        var rotationNum = document.getElementById('rotation-num');
+        var posModeTag = document.getElementById('pos-mode-tag');
+        var customPosToggle = document.getElementById('custom-pos-toggle');
+        var customPosXy = document.getElementById('custom-pos-xy');
+        var btnResetPos = document.getElementById('btn-reset-pos');
+        var previewStage = document.getElementById('preview-stage');
+        var batchPanel = document.getElementById('batch-panel');
+        var batchList = document.getElementById('batch-list');
+        var btnClearBatch = document.getElementById('btn-clear-batch');
+        var modeTag = document.getElementById('mode-tag');
+
+        function detectCapabilities() {
+            var canvasSupport = typeof HTMLCanvasElement !== 'undefined';
+            var ctxSupport = false;
+            if (canvasSupport) {
+                try {
+                    var probe = document.createElement('canvas');
+                    ctxSupport = !!(probe.getContext && probe.getContext('2d'));
+                } catch (e) { ctxSupport = false; }
+            }
+            var urlSupport = typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function';
+            var blobSupport = typeof HTMLCanvasElement !== 'undefined' && typeof HTMLCanvasElement.prototype.toBlob === 'function';
+            if (!(canvasSupport && ctxSupport && urlSupport && blobSupport)) {
+                degradeBanner.classList.add('show');
+                uploadZone.style.pointerEvents = 'none';
+                uploadZone.style.opacity = '0.5';
+                btnExport.disabled = true;
+                return false;
+            }
+            return true;
+        }
+
+        var supportOK = detectCapabilities();
+
+        function loadImageFromFile(file) {
+            return new Promise(function (resolve, reject) {
+                var url = URL.createObjectURL(file);
+                var img = new Image();
+                img.onload = function () {
+                    resolve({
+                        source: { name: file.name, image: img, width: img.naturalWidth, height: img.naturalHeight },
+                        url: url
+                    });
+                };
+                img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('解码失败')); };
+                img.src = url;
+            });
+        }
+
+        function setDropZoneActive(active) {
+            if (active) uploadZone.classList.add('active');
+            else uploadZone.classList.remove('active');
+        }
+
+        function handleFileAccept(file) {
+            if (!file) return;
+            var check = validateFile(file);
+            if (!check.ok) { showToast(check.message, 'error'); return; }
+            loadImageFromFile(file).then(function (result) {
+                if (state.objectUrl) { URL.revokeObjectURL(state.objectUrl); state.objectUrl = null; }
+                state.sourceImage = result.source;
+                state.objectUrl = result.url;
+                fileNameEl.textContent = '已加载：' + result.source.name + '（' + result.source.width + ' × ' + result.source.height + '）';
+                uploadZone.classList.add('has-file');
+                renderPreview();
+                updateControlState();
+            }).catch(function () { showToast('图片加载失败，请更换文件', 'error'); });
+        }
+
+        uploadZone.addEventListener('click', function () { if (supportOK) fileInput.click(); });
+        uploadZone.addEventListener('keydown', function (e) {
+            if (supportOK && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); fileInput.click(); }
+        });
+        fileInput.addEventListener('change', function (e) {
+            var files = e.target.files;
+            handleFilesAccept(files);
+            fileInput.value = '';
+        });
+        uploadZone.addEventListener('dragover', function (e) { e.preventDefault(); setDropZoneActive(true); });
+        uploadZone.addEventListener('dragenter', function (e) { e.preventDefault(); setDropZoneActive(true); });
+        uploadZone.addEventListener('dragleave', function () { setDropZoneActive(false); });
+        uploadZone.addEventListener('drop', function (e) {
+            e.preventDefault();
+            setDropZoneActive(false);
+            var files = e.dataTransfer && e.dataTransfer.files;
+            handleFilesAccept(files);
+        });
+
+        function handleFilesAccept(files) {
+            if (!files || files.length === 0) return;
+            var validFiles = [];
+            for (var i = 0; i < files.length; i++) {
+                var file = files[i];
+                if (!file) continue;
+                var check = validateFile(file);
+                if (!check.ok) {
+                    showToast((file.name || '文件') + ' 加载失败：' + check.message, 'error');
+                    continue;
+                }
+                validFiles.push(file);
+            }
+            if (validFiles.length === 0) return;
+            if (validFiles.length === 1) {
+                switchToSingleMode();
+                handleFileAccept(validFiles[0]);
+            } else {
+                switchToBatchMode(validFiles);
+            }
+        }
+
+        function switchToSingleMode() {
+            if (state.mode === 'single') return;
+            state.mode = 'single';
+            modeTag.textContent = '单张模式';
+            batchPanel.classList.add('hidden');
+            btnExport.classList.remove('hidden');
+            btnZip.classList.add('hidden');
+            uploadText.textContent = '点击或拖拽图片到此处';
+            fileInput.multiple = false;
+            updateControlState();
+        }
+
+        function switchToBatchMode(validFiles) {
+            if (state.objectUrl) { URL.revokeObjectURL(state.objectUrl); state.objectUrl = null; }
+            state.sourceImage = null;
+            fileNameEl.textContent = '';
+            uploadZone.classList.remove('has-file');
+            state.mode = 'batch';
+            modeTag.textContent = '批量模式（' + validFiles.length + ' 张）';
+            batchPanel.classList.remove('hidden');
+            btnExport.classList.add('hidden');
+            btnZip.classList.remove('hidden');
+            uploadText.textContent = '点击或拖拽多张图片到此处（最多 ' + CONFIG.BATCH_MAX + ' 张）';
+            fileInput.multiple = true;
+            var acceptedCount = 0;
+            for (var i = 0; i < validFiles.length; i++) {
+                if (acceptedCount >= CONFIG.BATCH_MAX) {
+                    showToast('单次最多上传 ' + CONFIG.BATCH_MAX + ' 张图片', 'error');
+                    break;
+                }
+                acceptedCount++;
+                addBatchItem(validFiles[i]);
+            }
+            modeTag.textContent = '批量模式（' + state.batchTask.items.length + ' 张）';
+            renderPreview();
+            updateControlState();
+        }
+
+        textInput.addEventListener('input', function () {
+            state.config = Object.assign({}, state.config, { text: textInput.value });
+            updateControlState();
+            schedulePreviewRender();
+        });
+        fontSelect.addEventListener('change', function () {
+            state.config = Object.assign({}, state.config, { fontFamily: fontSelect.value });
+            schedulePreviewRender();
+        });
+        fontRange.addEventListener('input', function () {
+            var v = parseInt(fontRange.value, 10);
+            fontNum.value = v;
+            state.config = Object.assign({}, state.config, { fontSizePt: v });
+            schedulePreviewRender();
+        });
+        fontNum.addEventListener('change', function () {
+            var v = clampValue(parseInt(fontNum.value, 10), CONFIG.FONT_SIZE_MIN, CONFIG.FONT_SIZE_MAX);
+            fontRange.value = v;
+            fontNum.value = v;
+            state.config = Object.assign({}, state.config, { fontSizePt: v });
+            schedulePreviewRender();
+        });
+        colorPicker.addEventListener('input', function () {
+            var v = colorPicker.value;
+            state.lastValidColor = v;
+            colorText.value = v;
+            state.config = Object.assign({}, state.config, { colorHex: v });
+            schedulePreviewRender();
+        });
+        colorText.addEventListener('change', function () {
+            var v = (colorText.value || '').trim();
+            if (isValidColor(v)) {
+                state.lastValidColor = v;
+                state.config = Object.assign({}, state.config, { colorHex: v });
+                if (v.length === 7) colorPicker.value = v;
+            } else {
+                colorText.value = state.lastValidColor;
+            }
+            schedulePreviewRender();
+        });
+        opacityRange.addEventListener('input', function () {
+            var v = parseInt(opacityRange.value, 10);
+            opacityNum.value = v;
+            state.config = Object.assign({}, state.config, { opacityPct: v });
+            schedulePreviewRender();
+        });
+        opacityNum.addEventListener('change', function () {
+            var v = clampValue(parseInt(opacityNum.value, 10), CONFIG.OPACITY_MIN, CONFIG.OPACITY_MAX);
+            opacityRange.value = v;
+            opacityNum.value = v;
+            state.config = Object.assign({}, state.config, { opacityPct: v });
+            schedulePreviewRender();
+        });
+        positionGroup.addEventListener('change', function (e) {
+            if (e.target.name === 'position' && e.target.checked) {
+                state.config = Object.assign({}, state.config, { position: e.target.value, positionMode: POSITION_MODE.GRID });
+                var snapped = snapPositionToGrid(e.target.value, state.config.fontSizePt);
+                state.config = Object.assign({}, state.config, { freeX: snapped.x, freeY: snapped.y });
+                updatePositionModeTag();
+                updateCustomPosUI();
+                schedulePreviewRender();
+            }
+        });
+        tileToggle.addEventListener('change', function () {
+            state.config = Object.assign({}, state.config, { tileEnabled: tileToggle.checked });
+            updateControlState();
+            schedulePreviewRender();
+        });
+        /* 需求2：自定义位置（拖拽）开关 */
+        customPosToggle.addEventListener('change', function () {
+            state.config = Object.assign({}, state.config, { customPosEnabled: customPosToggle.checked });
+            // 开启拖拽时，若当前处于九宫格模式，先将九宫格锚点的中心坐标写入 freeX/freeY，作为拖拽基准
+            if (customPosToggle.checked) {
+                syncGridToFree();
+            }
+            updateControlState();
+            updateCustomPosUI();
+            schedulePreviewRender();
+        });
+        /* 复位按钮：回到右下角九宫格 */
+        btnResetPos.addEventListener('click', function () {
+            state.config = Object.assign({}, state.config, {
+                position: 'right-bottom',
+                positionMode: POSITION_MODE.GRID,
+                customPosEnabled: false
+            });
+            customPosToggle.checked = false;
+            var rb = document.getElementById('pos-rb');
+            if (rb) rb.checked = true;
+            var snapped = snapPositionToGrid('right-bottom', state.config.fontSizePt);
+            state.config = Object.assign({}, state.config, { freeX: snapped.x, freeY: snapped.y });
+            updateControlState();
+            updateCustomPosUI();
+            updatePositionModeTag();
+            schedulePreviewRender();
+        });
+        typeTextRadio.addEventListener('change', function () {
+            if (typeTextRadio.checked) {
+                state.config = Object.assign({}, state.config, { type: TYPE.TEXT });
+                updateTypeVisibility();
+                updateControlState();
+                schedulePreviewRender();
+            }
+        });
+        typeImageRadio.addEventListener('change', function () {
+            if (typeImageRadio.checked) {
+                state.config = Object.assign({}, state.config, { type: TYPE.IMAGE });
+                updateTypeVisibility();
+                updateControlState();
+                schedulePreviewRender();
+            }
+        });
+        wmImageZone.addEventListener('click', function () { wmImageInput.click(); });
+        wmImageZone.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); wmImageInput.click(); }
+        });
+        wmImageInput.addEventListener('change', function () {
+            var file = wmImageInput.files && wmImageInput.files[0];
+            if (file) handleWmImageAccept(file);
+            wmImageInput.value = '';
+        });
+        btnRemoveWmImage.addEventListener('click', function () {
+            releaseWmImage();
+            showToast('已移除水印图片', 'info');
+            updateControlState();
+            schedulePreviewRender();
+        });
+        wmScaleRange.addEventListener('input', function () {
+            var v = parseInt(wmScaleRange.value, 10);
+            wmScaleNum.value = v;
+            state.config = Object.assign({}, state.config, { imageScalePct: v });
+            schedulePreviewRender();
+        });
+        wmScaleNum.addEventListener('change', function () {
+            var v = clampValue(parseInt(wmScaleNum.value, 10), CONFIG.IMAGE_SCALE_MIN, CONFIG.IMAGE_SCALE_MAX);
+            wmScaleRange.value = v;
+            wmScaleNum.value = v;
+            state.config = Object.assign({}, state.config, { imageScalePct: v });
+            schedulePreviewRender();
+        });
+        rotationRange.addEventListener('input', function () {
+            var v = parseInt(rotationRange.value, 10);
+            rotationNum.value = v;
+            state.config = Object.assign({}, state.config, { rotationDeg: v });
+            schedulePreviewRender();
+        });
+        rotationNum.addEventListener('change', function () {
+            var v = clampValue(parseInt(rotationNum.value, 10), CONFIG.ROTATION_MIN, CONFIG.ROTATION_MAX);
+            rotationRange.value = v;
+            rotationNum.value = v;
+            state.config = Object.assign({}, state.config, { rotationDeg: v });
+            schedulePreviewRender();
+        });
+        btnClearBatch.addEventListener('click', function () { clearBatchTask(); });
+
+        for (var i = 0; i < formatBtns.length; i++) {
+            (function (btn) {
+                btn.addEventListener('click', function () {
+                    for (var j = 0; j < formatBtns.length; j++) {
+                        formatBtns[j].classList.remove('active');
+                    }
+                    btn.classList.add('active');
+                    currentFormat = btn.getAttribute('data-format');
+                });
+            })(formatBtns[i]);
+        }
+
+        function getWatermarkReady() {
+            if (!state.config) return false;
+            if (state.config.type === TYPE.IMAGE) return !!state.config.watermarkImage;
+            return !!(state.config.text && state.config.text.trim());
+        }
+
+        function updateTypeVisibility() {
+            var isImage = state.config.type === TYPE.IMAGE;
+            // 文字水印专属面板区域的 accordion-item 显隐
+            var menuTextItem = document.getElementById('menu-text');
+            var menuFontItem = document.getElementById('menu-font');
+            var menuColorItem = document.getElementById('menu-color');
+            var menuImageWmItem = document.getElementById('menu-imagewm');
+            // 文字模式下隐藏图片水印，图片模式下隐藏文字相关项
+            if (menuTextItem) {
+                var textAccordion = menuTextItem.closest('.accordion-item');
+                if (textAccordion) textAccordion.classList.toggle('type-hidden', isImage);
+            }
+            if (menuFontItem) {
+                var fontAccordion = menuFontItem.closest('.accordion-item');
+                if (fontAccordion) fontAccordion.classList.toggle('type-hidden', isImage);
+            }
+            if (menuColorItem) {
+                var colorAccordion = menuColorItem.closest('.accordion-item');
+                if (colorAccordion) colorAccordion.classList.toggle('type-hidden', isImage);
+            }
+            if (menuImageWmItem) {
+                menuImageWmItem.classList.toggle('type-hidden', !isImage);
+            }
+            // 保留对旧 panel div 的 type-hidden 兼容（图片水印面板）
+            secImageWm.classList.toggle('type-hidden', !isImage);
+        }
+
+        function updatePositionModeTag() {
+            var free = state.config.positionMode === POSITION_MODE.FREE &&
+                !state.config.tileEnabled && !!state.sourceImage;
+            if (free) posModeTag.classList.remove('hidden');
+            else posModeTag.classList.add('hidden');
+        }
+
+        /**
+         * 需求2：将九宫格锚点中心坐标写入 freeX/freeY，作为拖拽的初始基准
+         * 用于开启"自定义位置"开关时，让拖拽起点与当前九宫格位置一致，避免水印跳动
+         */
+        function syncGridToFree() {
+            var source = state.sourceImage;
+            if (!source) return;
+            var snapped = snapPositionToGrid(state.config.position, state.config.fontSizePt);
+            state.config = Object.assign({}, state.config, {
+                freeX: snapped.x,
+                freeY: snapped.y
+            });
+        }
+
+        /**
+         * 需求2：刷新自定义位置相关的 UI 状态
+         * - 拖拽开关关闭时隐藏坐标/复位控件
+         * - 拖拽进行时显示坐标/复位，并计算百分比
+         */
+        function updateCustomPosUI(freeX, freeY) {
+            var enabled = state.config.customPosEnabled;
+            var source = state.sourceImage;
+            var hasFree = state.config.positionMode === POSITION_MODE.FREE;
+            if (enabled && hasFree && source) {
+                customPosXy.classList.remove('hidden');
+                btnResetPos.classList.remove('hidden');
+                var x = freeX != null ? freeX : state.config.freeX;
+                var y = freeY != null ? freeY : state.config.freeY;
+                var pctX = Math.round(x / source.width * 100);
+                var pctY = Math.round(y / source.height * 100);
+                customPosXy.textContent = 'X: ' + pctX + '%  ·  Y: ' + pctY + '%';
+            } else {
+                customPosXy.classList.add('hidden');
+                btnResetPos.classList.add('hidden');
+            }
+            // 拖拽启用时给预览区加拖拽光标
+            if (enabled && !!source && !state.config.tileEnabled) {
+                previewStage.classList.add('dragging');
+            } else {
+                previewStage.classList.remove('dragging');
+            }
+        }
+
+        function updateControlState() {
+            var imageReady = !!state.sourceImage;
+            var ready = imageReady && getWatermarkReady();
+            var singleMode = state.mode === 'single';
+            btnExport.disabled = !(singleMode && ready);
+            btnZip.disabled = !canZip();
+            var tile = state.config.tileEnabled;
+            positionGroup.disabled = tile;
+            if (tile) positionGroup.classList.add('disabled');
+            else positionGroup.classList.remove('disabled');
+            // 需求2：拖拽仅在"自定义位置"开关开启时启用
+            setDragEnabled(state.config.customPosEnabled && !tile && imageReady && getWatermarkReady());
+            updatePositionModeTag();
+            updateCustomPosUI();
+        }
+
+        function renderPreview() {
+            var source = state.sourceImage;
+            if (!source) {
+                previewCanvas.width = 0;
+                previewCanvas.height = 0;
+                previewTip.textContent = '请先上传图片';
+                previewTip.classList.remove('hidden');
+                return;
+            }
+            var previewW = Math.min(source.width, CONFIG.PREVIEW_MAX_WIDTH);
+            var previewH = Math.round(source.height * previewW / source.width);
+            var ctx = prepareCanvas(previewCanvas, previewW, previewH);
+            try {
+                applyWatermark(ctx, source, state.config, false);
+            } catch (e) {
+                drawPlainImage(ctx, source);
+                showToast('水印渲染失败', 'error');
+            }
+            if (getWatermarkReady()) {
+                previewTip.classList.add('hidden');
+            } else {
+                previewTip.textContent = state.config.type === TYPE.IMAGE ? '请先上传水印图片' : '请输入水印文字';
+                previewTip.classList.remove('hidden');
+            }
+            updatePositionModeTag();
+        }
+
+        function drawPlainImage(ctx, source) {
+            ctx.drawImage(source.image, 0, 0, ctx.canvas.width, ctx.canvas.height);
+        }
+
+        var schedulePreviewRender = debounce(function () {
+            renderPreview();
+            renderBatchThumbnails();
+        }, CONFIG.TICK_DELAY);
+
+        btnExport.addEventListener('click', function () { exportImage(currentFormat); });
+        btnZip.addEventListener('click', function () { downloadZipPackage(); });
+
+        function renderExportCanvas(source, format) {
+            var exportCanvas = document.createElement('canvas');
+            exportCanvas.width = source.width;
+            exportCanvas.height = source.height;
+            var ctx = exportCanvas.getContext('2d');
+            applyWatermark(ctx, source, state.config, format === EXPORT_FORMAT.JPG);
+            return canvasToBlob(exportCanvas, format);
+        }
+
+        function exportImage(format) {
+            var source = state.sourceImage;
+            if (!source || !getWatermarkReady()) return Promise.resolve(false);
+            return renderExportCanvas(source, format).then(function (blob) {
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = buildFileName(source.name, format);
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+                showToast('导出成功', 'success');
+                return true;
+            }).catch(function () {
+                showToast('下载失败', 'error');
+                return false;
+            });
+        }
+
+        function handleWmImageAccept(file) {
+            if (!file) return;
+            var check = validateFile(file);
+            if (!check.ok) { showToast('水印图片加载失败', 'error'); return; }
+            loadImageFromFile(file).then(function (result) {
+                releaseWmImage();
+                wmImageMeta = {
+                    image: result.source.image,
+                    name: result.source.name,
+                    width: result.source.width,
+                    height: result.source.height,
+                    objectUrl: result.url
+                };
+                state.config = Object.assign({}, state.config, { watermarkImage: wmImageMeta.image });
+                wmImageThumb.src = result.url;
+                wmImagePreview.classList.remove('hidden');
+                wmImageZone.style.display = 'none';
+                showToast('水印图片已加载', 'success');
+                updateControlState();
+                schedulePreviewRender();
+            }).catch(function () {
+                showToast('水印图片加载失败', 'error');
+            });
+        }
+
+        function releaseWmImage() {
+            if (wmImageMeta && wmImageMeta.objectUrl) URL.revokeObjectURL(wmImageMeta.objectUrl);
+            wmImageMeta = null;
+            state.config = Object.assign({}, state.config, { watermarkImage: null });
+            wmImageThumb.removeAttribute('src');
+            wmImagePreview.classList.add('hidden');
+            wmImageZone.style.display = '';
+        }
+
+        function snapPositionToGrid(position, fontPt) {
+            var source = state.sourceImage;
+            if (!source) return { x: 0, y: 0 };
+            var ctx = previewCanvas.getContext('2d');
+            var cfg = Object.assign({}, state.config, {
+                position: position,
+                positionMode: POSITION_MODE.GRID,
+                fontSizePt: fontPt,
+                rotationDeg: 0
+            });
+            var center = computeCenter(ctx, cfg, 1, source.width, source.height);
+            return { x: center.cx, y: center.cy };
+        }
+
+        function pointerToSource(pointer, scale) {
+            return { x: pointer.x * scale, y: pointer.y * scale };
+        }
+
+        function clampFreePosition(x, y, box, sourceW, sourceH) {
+            if (box.halfW * 2 >= sourceW || box.halfH * 2 >= sourceH) {
+                return { x: sourceW / 2, y: sourceH / 2 };
+            }
+            return {
+                x: clampValue(x, box.halfW, sourceW - box.halfW),
+                y: clampValue(y, box.halfH, sourceH - box.halfH)
+            };
+        }
+
+        var _drag = { bound: false, active: false, moving: false, pointerId: null, startX: 0, startY: 0, baseX: 0, baseY: 0 };
+
+        function setDragEnabled(enabled) {
+            if (enabled && !_drag.bound) {
+                previewCanvas.addEventListener('pointerdown', dragOnDown);
+                previewCanvas.addEventListener('pointermove', dragOnMove);
+                previewCanvas.addEventListener('pointerup', dragOnUp);
+                previewCanvas.addEventListener('pointercancel', dragOnUp);
+                previewCanvas.style.touchAction = 'none';
+                _drag.bound = true;
+            } else if (!enabled && _drag.bound) {
+                previewCanvas.removeEventListener('pointerdown', dragOnDown);
+                previewCanvas.removeEventListener('pointermove', dragOnMove);
+                previewCanvas.removeEventListener('pointerup', dragOnUp);
+                previewCanvas.removeEventListener('pointercancel', dragOnUp);
+                previewCanvas.style.touchAction = '';
+                _drag.bound = false;
+                _drag.active = false;
+                _drag.moving = false;
+            }
+        }
+
+        function dragOnDown(e) {
+            if (state.config.tileEnabled || !state.config.customPosEnabled || !state.sourceImage || !getWatermarkReady()) return;
+            if (e.button && e.button !== 0) return;
+            var source = state.sourceImage;
+            var rect = previewCanvas.getBoundingClientRect();
+            _drag.active = true; _drag.moving = false; _drag.pointerId = e.pointerId;
+            _drag.startX = e.clientX - rect.left; _drag.startY = e.clientY - rect.top;
+            _drag.baseX = state.config.positionMode === POSITION_MODE.FREE ? state.config.freeX : 0;
+            _drag.baseY = state.config.positionMode === POSITION_MODE.FREE ? state.config.freeY : 0;
+            if (state.config.positionMode !== POSITION_MODE.FREE) {
+                var snapped = snapPositionToGrid(state.config.position, state.config.fontSizePt);
+                _drag.baseX = snapped.x; _drag.baseY = snapped.y;
+            }
+            try { previewCanvas.setPointerCapture(e.pointerId); } catch (err) { /* 忽略 */ }
+        }
+
+        function dragOnMove(e) {
+            if (!_drag.active) return;
+            var source = state.sourceImage;
+            if (!source) return;
+            var rect = previewCanvas.getBoundingClientRect();
+            var curX = e.clientX - rect.left;
+            var curY = e.clientY - rect.top;
+            var dx = curX - _drag.startX;
+            var dy = curY - _drag.startY;
+            if (!_drag.moving && Math.abs(dx) < CONFIG.DRAG_THRESHOLD && Math.abs(dy) < CONFIG.DRAG_THRESHOLD) return;
+            _drag.moving = true;
+            var previewW = Math.min(source.width, CONFIG.PREVIEW_MAX_WIDTH);
+            var scale = source.width / previewW;
+            var ctx = previewCanvas.getContext('2d');
+            var cfgForSize = Object.assign({}, state.config, { positionMode: POSITION_MODE.GRID });
+            var size = computeWatermarkSize(ctx, cfgForSize, 1);
+            var box = getRotatedBoxHalf(size.width, size.height, state.config.rotationDeg);
+            var candidate = pointerToSource({ x: _drag.baseX / scale + dx, y: _drag.baseY / scale + dy }, scale);
+            var clamped = clampFreePosition(candidate.x, candidate.y, box, source.width, source.height);
+            state.config = Object.assign({}, state.config, { freeX: clamped.x, freeY: clamped.y, positionMode: POSITION_MODE.FREE });
+            updateCustomPosUI(clamped.x, clamped.y);
+            schedulePreviewRender();
+        }
+
+        function dragOnUp(e) {
+            if (!_drag.active) return;
+            _drag.active = false; _drag.moving = false;
+            try { previewCanvas.releasePointerCapture(e.pointerId); } catch (err) { /* 忽略 */ }
+            updateCustomPosUI();
+            renderPreview(); renderBatchThumbnails();
+        }
+
+        var STATUS_TEXT = { 'pending': '待处理', 'processing': '处理中', 'success': '成功', 'failed': '失败' };
+        var STATUS_CLASS = { 'pending': 'status-pending', 'processing': 'status-processing', 'success': 'status-success', 'failed': 'status-failed' };
+        var _batchIdSeq = 0;
+
+        function addBatchItem(file) {
+            if (state.batchTask.items.length >= CONFIG.BATCH_MAX) return null;
+            _batchIdSeq++;
+            var item = { id: 'batch_' + _batchIdSeq, file: file, name: file.name, status: STATUS.PENDING, error: null, source: null, objectUrl: null };
+            state.batchTask.items.push(item);
+            renderBatchList();
+            decodeBatchItem(item);
+            updateControlState();
+            return item.id;
+        }
+
+        function decodeBatchItem(item) {
+            updateBatchItemState(item.id, STATUS.PROCESSING);
+            loadImageFromFile(item.file).then(function (result) {
+                item.source = result.source;
+                item.objectUrl = result.url;
+                updateBatchItemState(item.id, STATUS.SUCCESS);
+                renderBatchItemThumb(item);
+            }).catch(function () {
+                updateBatchItemState(item.id, STATUS.FAILED, '图片加载或渲染失败');
+                showToast(item.name + ' 文件加载失败', 'error');
+            });
+        }
+
+        function findBatchItem(id) {
+            var items = state.batchTask.items;
+            for (var i = 0; i < items.length; i++) { if (items[i].id === id) return items[i]; }
+            return null;
+        }
+
+        function updateBatchItemState(id, status, error) {
+            var item = findBatchItem(id); if (!item) return;
+            if (item.status === STATUS.SUCCESS) return;
+            item.status = status; item.error = error || null;
+            updateBatchItemStatusUI(item);
+            if (status === STATUS.FAILED) showToast('任务列表存在失败项', 'error');
+            updateControlState();
+        }
+
+        function updateBatchItemStatusUI(item) {
+            var el = batchList.querySelector('.batch-item[data-id="' + item.id + '"]');
+            if (!el) return;
+            var badge = el.querySelector('.batch-item-status');
+            if (badge) {
+                badge.textContent = item.status === STATUS.FAILED && item.error ? item.error : (STATUS_TEXT[item.status] || item.status);
+                badge.className = 'batch-item-status ' + (STATUS_CLASS[item.status] || 'status-pending');
+            }
+            el.classList.toggle('failed', item.status === STATUS.FAILED);
+        }
+
+        function renderBatchItemThumb(item) {
+            var el = batchList.querySelector('.batch-item[data-id="' + item.id + '"] canvas');
+            if (!el || !item.source || item.status === STATUS.FAILED) return;
+            var source = item.source;
+            var tw = Math.min(source.width, 400);
+            var th = Math.round(source.height * tw / source.width);
+            var ctx = prepareCanvas(el, tw, th);
+            try { applyWatermark(ctx, source, state.config, false); }
+            catch (e) { ctx.drawImage(source.image, 0, 0, tw, th); }
+        }
+
+        function renderBatchThumbnails(skipId) {
+            if (state.mode !== 'batch') return;
+            var items = state.batchTask.items;
+            var idx = 0;
+            function step() {
+                var done = 0;
+                while (idx < items.length && done < 3) {
+                    var item = items[idx]; idx++; done++;
+                    if (item.id === skipId || item.status !== STATUS.SUCCESS) continue;
+                    renderBatchItemThumb(item);
+                }
+                if (idx < items.length) setTimeout(step, 0);
+            }
+            step();
+        }
+
+        function renderBatchList() {
+            var items = state.batchTask.items;
+            batchList.innerHTML = '';
+            if (items.length === 0) {
+                var empty = document.createElement('div'); empty.className = 'batch-empty';
+                empty.textContent = '上传多张图片后显示批量任务';
+                batchList.appendChild(empty);
+                return;
+            }
+            for (var i = 0; i < items.length; i++) {
+                var item = items[i];
+                var card = document.createElement('div');
+                card.className = 'batch-item' + (item.status === STATUS.FAILED ? ' failed' : '');
+                card.setAttribute('data-id', item.id);
+                var canvas = document.createElement('canvas'); canvas.width = 0; canvas.height = 0;
+                var delBtn = document.createElement('button'); delBtn.type = 'button';
+                delBtn.className = 'batch-item-remove'; delBtn.textContent = '×'; delBtn.title = '移除'; var info = document.createElement('div'); info.className = 'batch-item-info';
+                var name = document.createElement('div'); name.className = 'batch-item-name';
+                name.textContent = item.name; name.title = item.name;
+                var badge = document.createElement('span');
+                badge.className = 'batch-item-status ' + (STATUS_CLASS[item.status] || 'status-pending');
+                badge.textContent = item.status === STATUS.FAILED && item.error ? item.error : (STATUS_TEXT[item.status] || item.status);
+                info.appendChild(name); info.appendChild(badge);
+                card.appendChild(canvas); card.appendChild(delBtn); card.appendChild(info);
+                batchList.appendChild(card);
+                if (item.status === STATUS.SUCCESS) renderBatchItemThumb(item);
+            }
+        }
+
+        function removeBatchItem(id) {
+            var items = state.batchTask.items;
+            for (var i = 0; i < items.length; i++) {
+                if (items[i].id === id) { if (items[i].objectUrl) URL.revokeObjectURL(items[i].objectUrl); items.splice(i, 1); break; }
+            }
+            renderBatchList(); updateControlState();
+        }
+
+        function clearBatchTask() {
+            var items = state.batchTask.items;
+            for (var i = 0; i < items.length; i++) { if (items[i].objectUrl) URL.revokeObjectURL(items[i].objectUrl); }
+            state.batchTask.items = [];
+            renderBatchList(); updateControlState();
+            showToast('已清空批量任务', 'info');
+        }
+
+        batchList.addEventListener('click', function (e) {
+            var btn = e.target;
+            if (btn && btn.classList && btn.classList.contains('batch-item-remove')) {
+                var card = btn.closest('.batch-item');
+                if (card) removeBatchItem(card.getAttribute('data-id'));
+            }
+        });
+
+        function canZip() {
+            if (state.mode !== 'batch') return false;
+            if (!getWatermarkReady()) return false;
+            if (!state.zipEnabled) return false;
+            var items = state.batchTask.items;
+            if (items.length === 0) return false;
+            for (var i = 0; i < items.length; i++) { if (items[i].status !== STATUS.SUCCESS) return false; }
+            return true;
+        }
+
+        var _zipLoading = false;
+
+        function ensureZipLibLoaded() {
+            return new Promise(function (resolve) {
+                if (state.zipEnabled) { resolve(true); return; }
+                if (window.JSZip) { state.zipEnabled = true; updateControlState(); resolve(true); return; }
+                if (_zipLoading) {
+                    var tries = 0;
+                    var timer = setInterval(function () {
+                        tries++;
+                        if (window.JSZip) { clearInterval(timer); state.zipEnabled = true; updateControlState(); resolve(true); }
+                        else if (tries > 50) { clearInterval(timer); state.zipEnabled = false; updateControlState(); resolve(false); }
+                    }, 100);
+                    return;
+                }
+                _zipLoading = true;
+                var script = document.createElement('script');
+                script.src = CONFIG.ZIP_LIB_PATH; script.async = true;
+                script.onload = function () {
+                    _zipLoading = false;
+                    state.zipEnabled = !!window.JSZip;
+                    if (!state.zipEnabled) showToast('批量打包组件加载失败，单张导出不受影响', 'error');
+                    updateControlState(); resolve(state.zipEnabled);
+                };
+                script.onerror = function () {
+                    _zipLoading = false; state.zipEnabled = false;
+                    updateControlState();
+                    showToast('批量打包组件加载失败，单张导出不受影响', 'error');
+                    resolve(false);
+                };
+                var head = document.getElementsByTagName('head')[0] || document.body;
+                head.appendChild(script);
+            });
+        }
+
+        function buildZipFileName() {
+            var d = new Date();
+            function pad(n) { return (n < 10 ? '0' : '') + n; }
+            return CONFIG.ZIP_NAME_PREFIX + '_' + d.getFullYear() +
+                pad(d.getMonth() + 1) + pad(d.getDate()) + '_' +
+                pad(d.getHours()) + pad(d.getMinutes()) + pad(d.getSeconds()) + '.zip';
+        }
+
+        function uniqueZipName(name, usedNames) {
+            var base = name.replace(/\.[^.]+$/, '') || 'image';
+            var ext = '.' + currentFormat;
+            var candidate = base + ext;
+            var n = 1;
+            while (usedNames.has(candidate)) {
+                candidate = base + '_' + n + ext;
+                n++;
+            }
+            usedNames.add(candidate);
+            return candidate;
+        }
+
+        function downloadZipPackage() {
+            if (!canZip()) return Promise.resolve(false);
+            return ensureZipLibLoaded().then(function (zipOK) {
+                if (!zipOK) { showToast('批量打包组件加载失败，单张导出不受影响', 'error'); return false; }
+                showToast('正在生成压缩包…', 'info', 5000);
+                var zip = new JSZip();
+                var items = state.batchTask.items.filter(function (it) { return it.status === STATUS.SUCCESS; });
+                var usedNames = new Set();
+                function renderOne(index) {
+                    if (index >= items.length) return compressAndSave();
+                    var item = items[index];
+                    return renderExportCanvas(item.source, currentFormat).then(function (blob) {
+                        zip.file(uniqueZipName(item.name, usedNames), blob);
+                        return new Promise(function (resolve) { setTimeout(resolve, 0); });
+                    }).then(function () { return renderOne(index + 1); });
+                }
+                function compressAndSave() {
+                    return zip.generateAsync({ type: 'blob' }).then(function (blob) {
+                        var url = URL.createObjectURL(blob);
+                        var a = document.createElement('a');
+                        a.href = url; a.download = buildZipFileName();
+                        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                        setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+                        showToast('打包完成', 'success'); return true;
+                    });
+                }
+                return renderOne(0).catch(function () {
+                    showToast('打包失败，请减少批量张数或降低图片分辨率后重试', 'error'); return false;
+                });
+            });
+        }
+
+/* ============================================================
+           手风琴折叠交互 - 每个手风琴项独立展开/收起，不互斥
+           ============================================================ */
+        (function initAccordion() {
+            var headers = document.querySelectorAll('.accordion-header');
+            headers.forEach(function (header) {
+                header.addEventListener('click', function () {
+                    // 找到父级 .accordion-item，切换 .collapsed 类
+                    var item = header.closest('.accordion-item');
+                    if (item) {
+                        item.classList.toggle('collapsed');
+                    }
+                });
+            });
+            // 【需求1】默认只展开第一个板块（水印类型），其余全部折叠收起
+            // 用户点击标题后才能展开看到内容
+            var allItems = document.querySelectorAll('.accordion-item');
+            for (var i = 0; i < allItems.length; i++) {
+                if (i > 0) {
+                    allItems[i].classList.add('collapsed');
+                }
+            }
+        })();
+
+        (function init() {
+            state.config = Object.assign({}, DEFAULT_CONFIG);
+            switchToSingleMode();
+            updateTypeVisibility();
+            updateControlState();
+            ensureZipLibLoaded();
+        })();
+    </script>
+</body>
+
+</html>

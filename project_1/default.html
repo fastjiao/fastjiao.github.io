@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #1f3b73, #2a5caa);
+            color: #fff;
+            font-family: Arial, sans-serif;
+        }
+        .login-card {
+            width: min(440px, calc(100vw - 40px));
+            padding: 32px;
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(12px);
+        }
+        .login-card h1 {
+            margin: 0 0 12px;
+            font-size: 2rem;
+        }
+        .login-card p {
+            margin: 0 0 24px;
+            color: #dbe7ff;
+        }
+        .login-card label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .login-card input {
+            width: 100%;
+            padding: 12px 14px;
+            margin-bottom: 18px;
+            border: 1px solid rgba(255,255,255,0.25);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 1rem;
+        }
+        .login-card input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+        .login-card button {
+            width: 100%;
+            padding: 14px 16px;
+            border: none;
+            border-radius: 12px;
+            background: #4f7bff;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .login-card button:hover {
+            background: #3b69dd;
+        }
+        .error-message {
+            min-height: 22px;
+            margin-bottom: 12px;
+            color: #ffb3b3;
+            font-size: 0.95rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <h1>登录</h1>
+        <p>请输入用户名和密码，登录后进入主页。</p>
+        <div class="error-message" id="errorMessage"></div>
+        <form id="loginForm">
+            <label for="username">用户名</label>
+            <input id="username" name="username" type="text" placeholder="请输入用户名" autocomplete="username" required>
+            <label for="password">密码</label>
+            <input id="password" name="password" type="password" placeholder="请输入密码" autocomplete="current-password" required>
+            <button type="submit">登录</button>
+        </form>
+    </div>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = '';
+
+            if (!username || !password) {
+                errorMessage.textContent = '用户名和密码不能为空。';
+                return;
+            }
+
+            const validUser = 'admin';
+            const validPass = '123456';
+
+            if (username === validUser && password === validPass) {
+                window.location.href = 'index.html';
+            } else {
+                errorMessage.textContent = '用户名或密码错误，请重试。';
+            }
+        });
+    </script>
+</body>
+</html>

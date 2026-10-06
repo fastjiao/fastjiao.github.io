@@ -1,0 +1,16 @@
+const fs = require('fs');
+const h = fs.readFileSync('myplace.html', 'utf8');
+const bad = [];
+if (/<aa/.test(h)) bad.push('aa标签');
+if (/<!- /.test(h)) bad.push('坏注释');
+const openDiv = (h.match(/<div[\s>]/g) || []).length;
+const closeDiv = (h.match(/<\/div>/g) || []).length;
+if (openDiv !== closeDiv) bad.push('div不匹配 ' + openDiv + ' vs ' + closeDiv);
+const openA = (h.match(/<a[\s>]/g) || []).length;
+const closeA = (h.match(/<\/a>/g) || []).length;
+if (openA !== closeA) bad.push('a标签不匹配 ' + openA + ' vs ' + closeA);
+const openLi = (h.match(/<li>/g) || []).length;
+const closeLi = (h.match(/<\/li>/g) || []).length;
+if (openLi !== closeLi) bad.push('li不匹配');
+console.log(bad.length ? '存在问题: ' + bad.join(', ') : 'HTML结构OK');
+console.log('媒体查询:', /@media/.test(h) ? '有' : '无', '| 毛玻璃:', /backdrop-filter/.test(h) ? '有' : '无');

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>我的项目</title>
+    <link rel="preload" as="image" href="image/project_bj.webp" fetchpriority="high">
+    <link rel="stylesheet" href="shared_nav_light.css">
+    <style>body{background:url("image/project_bj.webp") center/cover no-repeat fixed;}.big-card{width:1200px;height:600px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.18);border-radius:24px;padding:32px;display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem;color:#222;box-shadow:0 10px 30px rgba(2,6,23,0.12);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}.big-card h1{grid-column:1/-1;justify-self:center;text-align:center;margin:0;font-size:90px;color:#fff;letter-spacing:.02em;}.small-card{width:550px;height:100px;background:transparent;border:1px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;color:#fff;font-size:30px;font-weight:600;box-shadow:0 6px 18px rgba(2,6,23,0.08);transition:transform 150ms ease;position:relative;overflow:hidden;}.small-card::before{content:"";position:absolute;inset:0;background:url("image/internet.webp") center/cover no-repeat;filter:blur(6px);z-index:0;}.small-card>*{position:relative;z-index:1;}.small-card:hover{transform:translateY(-2px);}a.small-card{text-decoration:none;color:inherit;}.small-card-icon{width:20px;height:20px;object-fit:contain;}</style>
+</head>
+
+<body>
+    <header class="site-header" role="banner">
+    <div class="container">
+        <a href="https://www.ljiao.me" class="brand" target="_blank" rel="noopener noreferrer">www.ljiao.me</a>
+        <nav class="nav-links" role="navigation" aria-label="主导航">
+            <a href="index.html" class="nav-link">首页</a>
+            <a href="about.html" class="nav-link">关于我</a>
+            <a href="web_ku.html" class="nav-link">网页库</a>
+            <a href="myplace.html" class="nav-link">我的空间</a>
+            <a href="watermark_tool.html" class="nav-link">添加水印工具</a>
+            <div class="nav-item nav-link">
+                联系我
+                <ul class="dropdown-menu" aria-label="联系我下拉菜单">
+                    <li><a href="contact_weixin.html">微信</a></li>
+                    <li><a href="contact_qq.html">QQ</a></li>
+                    <li><a href="contact_xhs.html">小红书</a></li>
+                    <li><a href="contact_dy.html">抖音</a></li>
+                </ul>
+            </div>
+        </nav>
+    </div>
+</header>
+    <main class="page-content">
+        <section class="big-card" aria-label="项目展示大卡片">
+            <h1>项目展示</h1>
+            <a href="project_1/index.html" class="small-card"><span>项目一</span><img src="image/jt_b.png" alt="点击前进"
+                    class="small-card-icon"></a>
+            <a href="https://github.com/fastjiao/myworkarea" target="_blank" rel="noopener noreferrer" class="small-card"><span>项目二</span><img src="image/jt_b.png" alt="点击前进"
+                    class="small-card-icon"></a>
+
+        </section>
+    </main>
+</body>
+
+</html>

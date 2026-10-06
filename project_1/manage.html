@@ -1,0 +1,666 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>链接管理</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #f7f7f7;
+            color: #333;
+        }
+        .page-wrap {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+        .page-header {
+            text-align: center;
+            margin-bottom: 24px;
+            background: #fafafa;
+            padding: 20px 24px;
+            border-radius: 12px;
+        }
+        .content-panel {
+            display: flex;
+            gap: 24px;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+        .left-panel {
+            flex: 0 0 320px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            background: #f0f4f8;
+            border-right: 1px solid #e1e4e8;
+            padding: 24px;
+            border-radius: 12px;
+        }
+        .main-panel {
+            flex: 1;
+            min-width: 420px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            padding: 24px;
+        }
+        h1 {
+            margin: 0;
+            font-size: 100px;
+            line-height: 100px;
+            text-align: center;
+            font-weight: normal;
+            font-family: '优设标题黑', Arial, sans-serif;
+        }
+        p {
+            margin: 0;
+            color: #555;
+            line-height: 1.5;
+            text-align: center;
+        }
+        .toolbar {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 0;
+        }
+        .toolbar button {
+            padding: 10px 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background: #fff;
+            cursor: pointer;
+        }
+        .toolbar button:hover {
+            background: #f0f0f0;
+        }
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 16px;
+        }
+        .link-card {
+            padding: 16px;
+            border-radius: 14px;
+            background: #fff;
+            box-shadow: 0 1px 8px rgba(0,0,0,.08);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .link-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .delete-btn {
+            padding: 8px 12px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            background: #ff4d4f;
+            color: #fff;
+            cursor: pointer;
+            transition: background .2s ease;
+        }
+        .delete-btn:hover {
+            background: #d9363e;
+        }
+        .link-card a {
+            color: #1a73e8;
+            text-decoration: none;
+            word-break: break-all;
+        }
+        .link-card a:hover {
+            text-decoration: underline;
+        }
+        .link-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #222;
+        }
+        .empty-state {
+            padding: 24px;
+            border-radius: 14px;
+            background: #fff;
+            box-shadow: 0 1px 8px rgba(0,0,0,.06);
+            text-align: center;
+            color: #666;
+            font-size: 1rem;
+        }
+        .toolbar {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+            margin-bottom: 0;
+        }
+        .toolbar button {
+            padding: 10px 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            background: #fff;
+            cursor: pointer;
+            text-align: left;
+        }
+        .toolbar button:hover {
+            background: #f0f0f0;
+        }
+        .modal {
+            position: fixed;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 999;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            width: min(520px, calc(100% - 40px));
+            padding: 24px;
+            border-radius: 16px;
+            background: #fff;
+            box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        .modal-content h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: #111;
+        }
+        .modal-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            min-width: 0;
+        }
+        .modal-field label {
+            font-size: 0.95rem;
+            color: #444;
+        }
+        .modal-field input {
+            width: 100%;
+            min-width: 0;
+            box-sizing: border-box;
+            padding: 10px 12px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            font-size: 1rem;
+        }
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .modal-actions button {
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            background: #fff;
+            cursor: pointer;
+        }
+        .modal-actions button.primary {
+            background: #1a73e8;
+            color: #fff;
+            border-color: #1a73e8;
+        }
+        .modal-actions button:hover {
+            opacity: 0.95;
+        }
+        .overlay {
+            position: fixed;
+            inset: 0;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        .overlay.active {
+            display: flex;
+        }
+        .modal-box {
+            width: 100%;
+            box-sizing: border-box;
+            max-width: 400px;
+            min-width: 300px;
+            background: #fff;
+            border-radius: 8px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        .confirm-box p {
+            margin: 0;
+            color: #333;
+            font-size: 18px;
+            line-height: 1.6;
+            text-align: center;
+        }
+        .confirm-actions {
+            display: flex;
+            justify-content: space-between;
+            gap: 16px;
+            margin-top: 30px;
+            padding: 0 5px;
+        }
+        .confirm-actions button {
+            flex: 1;
+            max-width: 160px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 16px;
+            font-weight: 500;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: opacity 0.2s ease, background 0.2s ease;
+        }
+        .confirm-actions button#confirm-cancel {
+            background: #fff;
+            color: #666;
+            border: 1px solid #e0e0e0;
+            margin-right: 10px;
+        }
+        .confirm-actions button#confirm-ok {
+            background: #007bff;
+            color: #fff;
+            border: none;
+        }
+        .confirm-actions button:hover {
+            opacity: 0.95;
+        }
+        .toast-container {
+            position: fixed;
+            top: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            pointer-events: none;
+        }
+        .toast {
+            min-width: 280px;
+            max-width: 420px;
+            padding: 12px 18px;
+            border-radius: 12px;
+            background: rgba(255, 245, 245, 0.94);
+            color: #b12d2e;
+            border: 1px solid rgba(177, 45, 46, 0.18);
+            box-shadow: 0 14px 30px rgba(0, 0, 0, 0.12);
+            font-size: 14px;
+            text-align: center;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.25s ease, transform 0.25s ease;
+            pointer-events: auto;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="page-wrap">
+        <div class="page-header">
+            <h1>超链接管理平台</h1>
+            <p>这里显示在“网页库”页面中新添加的自定义链接。</p>
+        </div>
+        <div class="content-panel">
+            <div class="left-panel">
+                <div class="toolbar">
+                    <button id="return-home" type="button">返回主页</button>
+                    <button id="go-back" type="button">返回网页库</button>
+                    <button id="refresh-links" type="button">刷新页面</button>
+                    <button id="clear-links" type="button">清空已添加链接</button>
+                    <button id="add-url" type="button">新增网页</button>
+                </div>
+            </div>
+            <div class="main-panel">
+                <div id="saved-links-container" class="links-grid"></div>
+                <div id="empty-state" class="empty-state">当前没有新增链接</div>
+        </div>
+    </div>
+    <div id="add-modal" class="modal" aria-hidden="true">
+        <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="add-modal-title">
+            <h2 id="add-modal-title">新增网页</h2>
+            <div class="modal-field">
+                <label for="modal-link-url">网址 URL</label>
+                <input id="modal-link-url" type="text" placeholder="输入网站URL" />
+            </div>
+            <div class="modal-field">
+                <label for="modal-link-name">名称</label>
+                <input id="modal-link-name" type="text" placeholder="输入网站名称" />
+            </div>
+            <div class="modal-actions">
+                <button id="modal-cancel" type="button">取消</button>
+                <button id="modal-save" type="button" class="primary">确认添加</button>
+            </div>
+        </div>
+    </div>
+    <div id="confirm-modal" class="overlay" aria-hidden="true">
+        <div class="modal-box" role="dialog" aria-modal="true" aria-labelledby="confirm-modal-title">
+            <p id="confirm-modal-title">确定要清空所有记录吗？</p>
+            <div class="confirm-actions">
+                <button id="confirm-cancel" type="button">取消</button>
+                <button id="confirm-ok" type="button" class="primary">确认</button>
+            </div>
+        </div>
+    </div>
+    <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+    <script>
+        (function() {
+            const STORAGE_KEY = 'customLinks_v1';
+            const COOKIE_KEY = 'customLinks_backup_v1';
+            const container = document.getElementById('saved-links-container');
+            const emptyState = document.getElementById('empty-state');
+            const refreshBtn = document.getElementById('refresh-links');
+            const clearBtn = document.getElementById('clear-links');
+            const goBackBtn = document.getElementById('go-back');
+            const returnHomeBtn = document.getElementById('return-home');
+
+            function getCookie(name) {
+                const match = document.cookie.match(new RegExp('(?:^|; )' + name.replace(/([.$?*|{}()\[\]\\\/\+^])/g, '\\$1') + '=([^;]*)'));
+                return match ? decodeURIComponent(match[1]) : null;
+            }
+
+            function loadLinks() {
+                try {
+                    const raw = localStorage.getItem(STORAGE_KEY);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        return Array.isArray(parsed) ? parsed : [];
+                    }
+                } catch (e) {
+                    console.error('load links from localStorage failed', e);
+                }
+
+                try {
+                    const cookieRaw = getCookie(COOKIE_KEY);
+                    if (cookieRaw) {
+                        const parsed = JSON.parse(cookieRaw);
+                        return Array.isArray(parsed) ? parsed : [];
+                    }
+                } catch (e) {
+                    console.error('load links from cookie failed', e);
+                }
+
+                return [];
+            }
+
+            function createLinkCard(item) {
+                const card = document.createElement('div');
+                card.className = 'link-card';
+
+                const actionRow = document.createElement('div');
+                actionRow.className = 'link-actions';
+
+                const name = document.createElement('div');
+                name.className = 'link-name';
+                name.textContent = item.name || item.url || '未命名链接';
+
+                const deleteBtn = document.createElement('button');
+                deleteBtn.type = 'button';
+                deleteBtn.className = 'delete-btn';
+                deleteBtn.textContent = '删除';
+                deleteBtn.addEventListener('click', function() {
+                    removeLink(item);
+                });
+
+                actionRow.appendChild(name);
+                actionRow.appendChild(deleteBtn);
+                card.appendChild(actionRow);
+
+                const url = document.createElement('a');
+                url.href = item.url || '#';
+                url.textContent = item.url || '链接地址丢失';
+                url.target = '_blank';
+                url.rel = 'noopener noreferrer';
+                card.appendChild(url);
+
+                return card;
+            }
+
+            function removeLink(item) {
+                try {
+                    const links = loadLinks();
+                    const index = links.findIndex(link => link.url === item.url && link.name === item.name);
+                    if (index === -1) return;
+                    links.splice(index, 1);
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
+                    document.cookie = COOKIE_KEY + '=' + encodeURIComponent(JSON.stringify(links)) + '; expires=' + new Date(Date.now() + 3650*24*60*60*1000).toUTCString() + '; path=/';
+                    renderLinks(links);
+                } catch (e) {
+                    console.error('removeLink failed', e);
+                }
+            }
+
+            function renderLinks(links) {
+                container.innerHTML = '';
+                if (!links || links.length === 0) {
+                    emptyState.style.display = 'block';
+                    return;
+                }
+                emptyState.style.display = 'none';
+                links.forEach(link => {
+                    if (!link || !link.url) return;
+                    container.appendChild(createLinkCard(link));
+                });
+            }
+
+            function updateView() {
+                renderLinks(loadLinks());
+            }
+
+            refreshBtn.addEventListener('click', function() {
+                location.reload();
+            });
+
+            goBackBtn.addEventListener('click', function() {
+                location.href = 'start web ku.html';
+            });
+
+            if (returnHomeBtn) {
+                returnHomeBtn.addEventListener('click', function() {
+                    location.href = 'index.html';
+                });
+            }
+
+            const confirmModal = document.getElementById('confirm-modal');
+            const confirmCancelBtn = document.getElementById('confirm-cancel');
+            const confirmOkBtn = document.getElementById('confirm-ok');
+
+            const closeConfirmModal = () => {
+                if (confirmModal) {
+                    confirmModal.classList.remove('active');
+                    confirmModal.setAttribute('aria-hidden', 'true');
+                }
+            };
+
+            const clearAllLinks = () => {
+                try {
+                    localStorage.removeItem(STORAGE_KEY);
+                } catch (e) {
+                    console.error('clear localStorage failed', e);
+                }
+                try {
+                    document.cookie = COOKIE_KEY + '=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/';
+                } catch (e) {
+                    console.error('clear cookie failed', e);
+                }
+                updateView();
+                closeConfirmModal();
+            };
+
+            if (clearBtn) {
+                clearBtn.addEventListener('click', function() {
+                    if (confirmModal) {
+                        confirmModal.classList.add('active');
+                        confirmModal.setAttribute('aria-hidden', 'false');
+                    }
+                });
+            }
+
+            if (confirmCancelBtn) {
+                confirmCancelBtn.addEventListener('click', closeConfirmModal);
+            }
+
+            if (confirmOkBtn) {
+                confirmOkBtn.addEventListener('click', clearAllLinks);
+            }
+
+            if (confirmModal) {
+                confirmModal.addEventListener('click', function(event) {
+                    if (event.target === confirmModal) {
+                        closeConfirmModal();
+                    }
+                });
+            }
+
+            function setCookie(name, value, days) {
+                const expires = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toUTCString();
+                document.cookie = name + '=' + encodeURIComponent(value) + '; expires=' + expires + '; path=/';
+            }
+
+            function normalizeUrl(url) {
+                const trimmed = (url || '').trim();
+                if (!trimmed) return '';
+                if (/^https?:\/\//i.test(trimmed)) return trimmed;
+                return 'https://' + trimmed;
+            }
+
+            function showModal() {
+                document.getElementById('add-modal').classList.add('active');
+                document.getElementById('modal-link-url').value = '';
+                document.getElementById('modal-link-name').value = '';
+                document.getElementById('modal-link-url').focus();
+            }
+
+            function hideModal() {
+                document.getElementById('add-modal').classList.remove('active');
+            }
+
+            function showToast(message) {
+                const toastContainer = document.getElementById('toast-container');
+                if (!toastContainer) return;
+
+                const toast = document.createElement('div');
+                toast.className = 'toast';
+                toast.textContent = message;
+                toastContainer.appendChild(toast);
+
+                requestAnimationFrame(() => {
+                    toast.classList.add('show');
+                });
+
+                setTimeout(() => {
+                    toast.classList.remove('show');
+                    toast.addEventListener('transitionend', () => {
+                        if (toast.parentNode) {
+                            toast.parentNode.removeChild(toast);
+                        }
+                    }, { once: true });
+                }, 1000);
+            }
+
+            function addModalLink() {
+                const urlInput = document.getElementById('modal-link-url');
+                const nameInput = document.getElementById('modal-link-name');
+                if (!urlInput || !nameInput) return;
+
+                const rawUrl = urlInput.value.trim();
+                const name = nameInput.value.trim();
+                if (!rawUrl) {
+                    showToast('请输入一个URL');
+                    urlInput.focus();
+                    return;
+                }
+                if (!name) {
+                    showToast('请输入一个名称');
+                    nameInput.focus();
+                    return;
+                }
+
+                const url = normalizeUrl(rawUrl);
+                const links = loadLinks();
+                const exists = links.some(link => (link.url || '').trim().toLowerCase() === url.toLowerCase() || (link.name || '').trim().toLowerCase() === name.toLowerCase());
+                if (exists) {
+                    showToast('该链接或名称已存在，请使用不同的内容。');
+                    return;
+                }
+
+                links.push({ url, name });
+                try {
+                    localStorage.setItem(STORAGE_KEY, JSON.stringify(links));
+                } catch (e) {
+                    console.error('save link failed', e);
+                }
+                setCookie(COOKIE_KEY, JSON.stringify(links), 3650);
+                updateView();
+                hideModal();
+            }
+
+            const addUrlBtn = document.getElementById('add-url');
+            if (addUrlBtn) {
+                addUrlBtn.addEventListener('click', function() {
+                    showModal();
+                });
+            }
+
+            const modalCancelBtn = document.getElementById('modal-cancel');
+            const modalSaveBtn = document.getElementById('modal-save');
+            const addModal = document.getElementById('add-modal');
+            if (modalCancelBtn) {
+                modalCancelBtn.addEventListener('click', hideModal);
+            }
+            if (modalSaveBtn) {
+                modalSaveBtn.addEventListener('click', addModalLink);
+            }
+            if (addModal) {
+                addModal.addEventListener('click', function(event) {
+                    if (event.target === addModal) {
+                        hideModal();
+                    }
+                });
+            }
+
+            window.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    hideModal();
+                }
+            });
+
+            window.addEventListener('storage', function(event) {
+                if (event.key === STORAGE_KEY) {
+                    updateView();
+                }
+            });
+
+            updateView();
+        })();
+    </script>
+</body>
+</html>
