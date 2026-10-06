@@ -276,6 +276,54 @@ button {
 [data-theme="dark"] .theme-icon-moon { display: block; }
 [data-theme="light"] .theme-icon-sun { display: block; }
 
+/* ---------- 返回主页按钮 + 面包屑 ---------- */
+.nav-back {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 9px;
+  color: var(--text-muted);
+  transition: color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.nav-back:hover {
+  color: var(--text);
+  background: var(--bg-2);
+}
+
+.nav-back:active {
+  transform: scale(0.92);
+}
+
+.nav-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  color: var(--text-faint);
+  white-space: nowrap;
+}
+
+.nav-crumb {
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+}
+
+.nav-crumb:hover {
+  color: var(--primary);
+}
+
+.nav-crumb-sep {
+  color: var(--text-faint);
+  opacity: 0.6;
+}
+
+.nav-crumb-current {
+  color: var(--text);
+  font-weight: 500;
+}
+
 /* ---------- 主内容宽度 ---------- */
 main {
   max-width: 1120px;
@@ -726,11 +774,17 @@ main {
 @media (max-width: 600px) {
   .nav-inner {
     padding: 0 18px;
+    gap: 14px;
   }
 
   .nav-links {
     gap: 16px;
     font-size: 14px;
+  }
+
+  /* 窄屏隐藏面包屑文字，仅保留返回箭头 */
+  .nav-breadcrumb {
+    display: none;
   }
 
   .features-grid {
