@@ -5,9 +5,189 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>我的项目</title>
-    <link rel="preload" as="image" href="image/project_bj.webp" fetchpriority="high">
     <link rel="stylesheet" href="shared_nav_light.css">
-    <style>body{background:url("image/project_bj.webp") center/cover no-repeat fixed;}.big-card{width:1200px;height:600px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.18);border-radius:24px;padding:32px;display:grid;grid-template-columns:repeat(2,1fr);gap:1.25rem;color:#222;box-shadow:0 10px 30px rgba(2,6,23,0.12);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);}.big-card h1{grid-column:1/-1;justify-self:center;text-align:center;margin:0;font-size:90px;color:#fff;letter-spacing:.02em;}.small-card{width:550px;height:100px;background:transparent;border:1px solid rgba(0,0,0,0.08);border-radius:16px;padding:20px 24px;display:flex;align-items:center;justify-content:space-between;color:#fff;font-size:30px;font-weight:600;box-shadow:0 6px 18px rgba(2,6,23,0.08);transition:transform 150ms ease;position:relative;overflow:hidden;}.small-card::before{content:"";position:absolute;inset:0;background:url("image/internet.webp") center/cover no-repeat;filter:blur(6px);z-index:0;}.small-card>*{position:relative;z-index:1;}.small-card:hover{transform:translateY(-2px);}a.small-card{text-decoration:none;color:inherit;}.small-card-icon{width:20px;height:20px;object-fit:contain;}</style>
+    <style>
+        /* [主题] Apple Minimalist · 纯白极简
+         * 变量与 jiaogt 发布页保持一致，便于全站统一 */
+        :root {
+            --bg: #ffffff;
+            --surface: #f5f5f7;
+            --primary: #0071e3;
+            --primary-strong: #0058b0;
+            --primary-soft: rgba(0, 113, 227, 0.08);
+            --text: #1d1d1f;
+            --text-muted: #86868b;
+            --border: rgba(0, 0, 0, 0.08);
+            --shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.14);
+            --shadow-sm: 0 8px 24px -12px rgba(0, 0, 0, 0.08);
+            
+        }
+
+        .project-card-address {
+            font-size: 10px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* [背景] 极淡蓝白光晕，几乎纯白但带微妙层次，避免大面积死白 */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            z-index: -2;
+            background:
+                radial-gradient(1100px 650px at 85% -8%, var(--primary-soft), transparent 55%),
+                radial-gradient(800px 500px at -8% 25%, var(--surface), transparent 60%),
+                var(--bg);
+        }
+
+        /* [布局] 覆盖 shared_nav_light.css 的 .page-content 居中，
+         * 改为顶部大留白 + 限宽居中，贴合全宽阅读习惯 */
+        .page-content {
+            min-height: calc(100vh - 64px);
+            display: block;
+            max-width: 1120px;
+            margin: 0 auto;
+            padding: 96px 28px 120px;
+        }
+
+        /* [标题区] */
+        .projects-head {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+
+        .projects-kicker {
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--primary);
+            margin-bottom: 14px;
+        }
+
+        .projects-title {
+            font-size: clamp(36px, 6vw, 56px);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.1;
+            margin: 0 0 16px;
+        }
+
+        .projects-sub {
+            font-size: 17px;
+            color: var(--text-muted);
+            max-width: 520px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* [卡片网格] */
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        /* [项目卡片] 浅灰底、squircle 圆角、柔和阴影 */
+        .project-card {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            padding: 32px;
+            border-radius: 22px;
+            background: var(--surface);
+            color: var(--text);
+            text-decoration: none;
+            transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+                        box-shadow 0.3s ease,
+                        background 0.3s ease;
+            will-change: transform;
+        }
+
+        .project-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
+            background: #ffffff;
+        }
+
+        .project-card-name {
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+
+        /* [箭头胶囊] hover 时位移 + 反色，平滑过渡 */
+        .project-card-arrow {
+            width: 44px;
+            height: 44px;
+            flex-shrink: 0;
+            display: grid;
+            place-items: center;
+            border-radius: 50%;
+            color: var(--primary);
+            background: rgba(0, 113, 227, 0.08);
+            transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+                        background 0.3s ease,
+                        color 0.3s ease;
+        }
+
+        .project-card:hover .project-card-arrow {
+            transform: translateX(4px);
+            background: var(--primary);
+            color: #ffffff;
+        }
+
+        /* [入场动画] 滚动触发淡入上移 */
+        .reveal {
+            opacity: 0;
+            transform: translateY(24px);
+            transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+                        transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .reveal.visible {
+            opacity: 1;
+            transform: none;
+        }
+
+        /* [响应式] 窄屏单列堆叠 */
+        @media (max-width: 640px) {
+            .page-content {
+                padding: 64px 20px 80px;
+            }
+            .projects-grid {
+                grid-template-columns: 1fr;
+            }
+            .project-card {
+                padding: 24px;
+            }
+            .project-card-name {
+                font-size: 20px;
+            }
+        }
+
+        /* [无障碍] 尊重减少动效偏好 */
+        @media (prefers-reduced-motion: reduce) {
+            .reveal {
+                opacity: 1;
+                transform: none;
+                transition: none;
+            }
+            .project-card:hover,
+            .project-card:hover .project-card-arrow {
+                transform: none;
+            }
+        }
+    </style>
 </head>
 
 <body>
@@ -16,9 +196,9 @@
         <a href="https://www.ljiao.me" class="brand" target="_blank" rel="noopener noreferrer">www.ljiao.me</a>
         <nav class="nav-links" role="navigation" aria-label="主导航">
             <a href="index.html" class="nav-link">首页</a>
-            <a href="about.html" class="nav-link">关于我</a>
+            <!-- <a href="about.html" class="nav-link">关于我</a> -->
             <a href="web_ku.html" class="nav-link">网页库</a>
-            <a href="myplace.html" class="nav-link">我的空间</a>
+            <!-- <a href="myplace.html" class="nav-link">我的空间</a> -->
             <a href="watermark_tool.html" class="nav-link">添加水印工具</a>
             <div class="nav-item nav-link">
                 联系我
@@ -33,15 +213,55 @@
     </div>
 </header>
     <main class="page-content">
-        <section class="big-card" aria-label="项目展示大卡片">
-            <h1>项目展示</h1>
-            <a href="project_1/index.html" class="small-card"><span>项目一</span><img src="image/jt_b.png" alt="点击前进"
-                    class="small-card-icon"></a>
-            <a href="https://github.com/fastjiao/myworkarea" target="_blank" rel="noopener noreferrer" class="small-card"><span>项目二</span><img src="image/jt_b.png" alt="点击前进"
-                    class="small-card-icon"></a>
+        <!-- [标题区] -->
+        <div class="projects-head reveal">
+            <p class="projects-kicker">PROJECTS</p>
+            <h1 class="projects-title">项目展示</h1>
+            <p class="projects-sub">个人作品与开源项目合集，点击卡片进入对应项目。</p>
+        </div>
 
-        </section>
+        <!-- [项目卡片网格] -->
+        <div class="projects-grid">
+            <a href="project_1/index.html" class="project-card reveal">
+                <span class="project-card-name">项目一</span>
+                <span class="project-card-arrow" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7"></path>
+                    </svg>
+                </span>
+            </a>
+            <a href="https://github.com/fastjiao/myworkarea" target="_blank" rel="noopener noreferrer" class="project-card reveal">
+                <p><span class="project-card-name">项目二</span></p>
+                <span class="project-card-address">开源地址：https://github.com/fastjiao/myworkarea</span>
+                <span class="project-card-arrow" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7"></path>
+                    </svg>
+                </span>
+            </a>
+        </div>
     </main>
+
+    <script>
+        /* [入场动画] IntersectionObserver 滚动触发；
+         * 不支持时直接显示，避免内容空白 */
+        (function () {
+            var els = document.querySelectorAll(".reveal");
+            if ("IntersectionObserver" in window) {
+                var io = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add("visible");
+                            io.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.15, rootMargin: "0px 0px -40px 0px" });
+                els.forEach(function (el) { io.observe(el); });
+            } else {
+                els.forEach(function (el) { el.classList.add("visible"); });
+            }
+        })();
+    </script>
 </body>
 
 </html>

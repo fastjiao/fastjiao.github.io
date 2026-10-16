@@ -26,6 +26,11 @@ body {
             justify-content: space-between;
             padding: 20px 24px;
             border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            /* [吸顶] 滚动时固定在顶部，需不透明背景避免内容透显 */
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: #000000;
         }
 
         .navbar-left {
@@ -641,9 +646,9 @@ body {
             border-radius: 12px;
             padding: 18px 8px;
             position: sticky;
-            top: 24px;
+            top: 100px;
             align-self: flex-start;
-            max-height: calc(100vh - 48px);
+            max-height: calc(100vh - 124px);
             overflow-y: auto;
             user-select: none;
         }
