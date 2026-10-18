@@ -812,7 +812,7 @@
                 } else {
                     if (cf) cf.style.display = 'none';
                     if (back) {
-                        back.setAttribute('href', 'index.html');
+                        back.setAttribute('href', '../../index.html');
                         back.onclick = null;
                     }
                 }
