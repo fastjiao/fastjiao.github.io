@@ -18,6 +18,11 @@
             box-sizing: border-box
         }
 
+        /* 防止背景光晕层（position:fixed inset:-20%）导致横向滚动 */
+        html {
+            overflow-x: hidden;
+        }
+
         /* 页面主体：近黑底色 + Inter/Geist 字体系列 */
         body {
             margin: 0;
@@ -248,102 +253,85 @@
             color: var(--text-primary);
         }
 
-        /* ===== 页面主体布局：CSS Grid 三栏 1:2:1 + 侧栏 sticky 跟随 ===== */
+        /* ===== 页面主体：单栏垂直流，大留白分隔各 section（避免板块化） ===== */
         .site-main {
-            padding: 1.5rem;
-            max-width: 1400px;
+            padding: 2rem 1.5rem 4rem;
+            max-width: 1100px;
             width: 100%;
             margin: 0 auto;
             position: relative;
-        }
-
-        /* 大屏 (>1024px)：三列 1:2:1，gap 控制间距 */
-        .site-main .layout {
-            display: grid;
-            grid-template-columns: 1fr 2fr 1fr;
-            gap: 1.5rem;
-            width: 100%;
-            position: relative;
-        }
-
-        /* 左侧栏：sticky 跟随滚动 */
-        .left-column {
             display: flex;
             flex-direction: column;
-            gap: 1.25rem;
-            min-width: 0;
-            position: sticky;
-            top: 80px;
-            z-index: 10;
+            gap: 3rem;
         }
 
-        /* 右侧栏：sticky 跟随滚动 */
-        .right-column {
+        /* ===== Hero 介绍区：头像 + 名字 + 简介 + 项目入口 融合为一个整体 ===== */
+        .hero-intro {
             display: flex;
-            flex-direction: column;
-            gap: 1.25rem;
-            min-width: 0;
-            position: sticky;
-            top: 80px;
-            z-index: 10;
-        }
-
-        /* 中间内容栈：自适应填充 */
-        .center-stack {
-            display: flex;
-            flex-direction: column;
-            gap: 1.25rem;
-            min-width: 0;
-            position: relative;
-            z-index: 10;
-        }
-
-        /* ===== 个人资料卡片（Linear 微边框 + 微弱环境光） ===== */
-        .profile-card {
-            width: 100%;
-            height: auto;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 24px;
-            display: flex;
-            flex-direction: column;
             align-items: center;
-            color: var(--text-primary);
-
+            gap: 2rem;
+            padding: 2.5rem 2rem;
+            background: rgb(20, 20, 26);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
             box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 8px 32px rgba(0, 0, 0, 0.35);
-            position: relative;
             transition: border-color 220ms ease, box-shadow 220ms ease;
         }
 
-        .profile-card:hover {
+        .hero-intro:hover {
             border-color: rgba(255, 255, 255, 0.14);
             box-shadow: 0 0 48px rgba(99, 102, 241, 0.06), 0 8px 32px rgba(0, 0, 0, 0.35);
         }
 
-        /* 个人介绍卡片 */
-        .middle-card {
-            width: 100%;
-            height: 200px;
-            min-width: 0;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--text-secondary);
-            text-align: left;
-            font-family: var(--font);
-            font-size: 1.05rem;
-            position: relative;
-            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 8px 32px rgba(0, 0, 0, 0.35);
-            transition: border-color 220ms ease;
+        .hero-avatar {
+            width: clamp(96px, 10vw + 30px, 140px);
+            height: clamp(96px, 10vw + 30px, 140px);
+            border-radius: 50%;
+            object-fit: cover;
+            flex-shrink: 0;
+            border: 2px solid rgba(255, 255, 255, 0.12);
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(168, 85, 247, 0.04));
         }
 
-        .middle-card:hover {
-            border-color: rgba(255, 255, 255, 0.14);
+        .hero-text {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .hero-text h1 {
+            margin: 0 0 0.5rem;
+            font-size: clamp(1.8rem, 3vw + 0.8rem, 2.6rem);
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: var(--text-primary);
+        }
+
+        .hero-text p {
+            margin: 0 0 1.2rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-size: 1rem;
+            max-width: 540px;
+        }
+
+        .hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.6rem 1.2rem;
+            border-radius: 10px;
+            background: rgba(99, 102, 241, 0.14);
+            color: #fff;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            transition: background 180ms ease, transform 180ms ease;
+        }
+
+        .hero-cta:hover {
+            background: rgba(99, 102, 241, 0.24);
+            transform: translateX(2px);
         }
 
         .photo-wall-card {
@@ -404,19 +392,31 @@
             object-fit: cover;
         }
 
+        /* ===== 日程工作台：日历 + 今日日程 融合为一个整体面板（非两个独立卡片） ===== */
+        .workbench {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 0;
+            background: rgb(20, 20, 26);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 8px 32px rgba(0, 0, 0, 0.35);
+            overflow: hidden;
+        }
+
         .calendar-panel {
             width: 100%;
             height: auto;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 16px;
+            background: transparent;
+            border: none;
+            border-right: 1px solid var(--glass-border);
+            border-radius: 0;
+            padding: 24px;
             color: var(--text-primary);
-            flex: 0 0 auto;
             display: flex;
             flex-direction: column;
             gap: 0.65rem;
-            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 8px 32px rgba(0, 0, 0, 0.35);
+            box-shadow: none;
         }
 
         .calendar-panel h3 {
@@ -533,94 +533,58 @@
             box-shadow: 0 0 6px rgba(99, 102, 241, 0.55);
         }
 
-        /* ===== 响应式布局：两档断点（桌面端优先） ===== */
-        /* [兼容] 超宽屏 (≥1600px)：内容封顶 1400px 居中，避免 2K/4K 拉得过宽 */
+        /* ===== 响应式布局 ===== */
+        /* [兼容] 超宽屏 (≥1600px)：内容封顶 1200px 居中 */
         @media (min-width:1600px) {
             .site-main {
-                max-width: 1400px;
-                padding: 2rem;
+                max-width: 1200px;
+                padding: 2.5rem 2rem 5rem;
             }
         }
 
-        /* 中屏 (768px–1024px)：两列，左+中并排，右栏跨整行移至下方 */
+        /* 中屏 (≤1024px)：workbench 日历+日程仍并排，整体收窄 */
         @media (max-width:1024px) {
             .site-main {
-                max-width: 1000px;
+                max-width: 920px;
             }
-
-            .site-main .layout {
-                grid-template-columns: 1fr 1fr;
-            }
-
-            .left-column {
-                position: sticky;
-                top: 80px;
-            }
-
-            .center-stack {
-                grid-column: 2;
-            }
-
-            .right-column {
-                grid-column: 1 / -1;
-                flex-direction: row;
-                flex-wrap: wrap;
-                gap: 1rem;
-                position: static;
-            }
-
-            .right-column .calendar-panel,
-            .right-column .schedule-card {
-                flex: 1 1 320px;
-                min-width: 0;
+            .hero-intro {
+                padding: 2rem 1.5rem;
+                gap: 1.5rem;
             }
         }
 
-        /* 小屏 (<768px)：单列堆叠，顺序：个人信息 → 图片 → 日历 */
+        /* 小屏 (≤768px)：hero 纵向堆叠，workbench 日历+日程上下堆叠 */
         @media (max-width:768px) {
             .site-main {
                 max-width: 100%;
-                padding: 1rem;
+                padding: 1.25rem 1rem 3rem;
+                gap: 2rem;
             }
-
-            .site-main .layout {
-                grid-template-columns: 1fr;
-                gap: 1.25rem;
-            }
-
-            .left-column,
-            .right-column,
-            .center-stack {
-                position: static;
-                grid-column: auto;
-            }
-
-            .right-column {
+            .hero-intro {
                 flex-direction: column;
+                text-align: center;
+                padding: 2rem 1.25rem;
             }
-
-            .right-column .calendar-panel,
-            .right-column .schedule-card {
-                flex: 0 0 auto;
-                min-width: 0;
+            .hero-text p {
+                margin-left: auto;
+                margin-right: auto;
             }
-
-            .middle-card {
-                height: auto;
-                min-height: 160px;
-                padding: 20px;
+            .workbench {
+                grid-template-columns: 1fr;
+            }
+            .calendar-panel {
+                border-right: none;
+                border-bottom: 1px solid var(--glass-border);
             }
         }
 
-        /* [兼容] 小平板/大手机 (≤600px)：在 768 与 480 之间补一档，防卡片过宽 */
+        /* [兼容] 小平板/大手机 (≤600px) */
         @media (max-width:600px) {
             .site-main {
-                padding: 1rem 0.75rem;
+                padding: 1rem 0.75rem 2.5rem;
+                gap: 1.75rem;
             }
-            .site-main .layout {
-                gap: 1rem;
-            }
-            .profile-card .avatar {
+            .hero-avatar {
                 width: 96px;
                 height: 96px;
             }
@@ -647,113 +611,23 @@
             }
         }
 
-        /* ===== 个人资料卡片细节 ===== */
-        .profile-card .avatar {
-            /* [兼容] 头像流式尺寸：小屏 88px → 大屏 128px */
-            width: clamp(88px, 8vw + 40px, 128px);
-            height: clamp(88px, 8vw + 40px, 128px);
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: 1rem;
-            border: 2px solid rgba(255, 255, 255, 0.12);
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(168, 85, 247, 0.04));
-        }
+        /* 个人资料与项目卡片已合并到 .hero-intro（避免独立卡片板块化） */
 
-        .profile-card h2 {
-            margin: 0 0 0.25rem;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-        }
-
-        .profile-card p {
-            color: var(--text-secondary);
-            line-height: 1.55;
-            text-align: center;
-            font-size: 0.93rem;
-        }
-
-        /* ===== 项目卡片（Linear 微光扫过效果） ===== */
-        .project-card {
-            width: 100%;
-            /* [兼容] 卡片宽度流式：小屏 280px → 大屏 400px */
-            max-width: clamp(280px, 30vw + 100px, 400px);
-            /* [兼容] 卡片高度流式：小屏 84px → 大屏 110px */
-            height: clamp(84px, 4vw + 60px, 110px);
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            color: var(--text-primary);
-            text-decoration: none;
-            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 8px 32px rgba(0, 0, 0, 0.35);
-            transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .project-card::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(120deg, transparent 30%, rgba(255, 255, 255, 0.025) 50%, transparent 70%);
-            transform: translateX(-100%);
-            transition: transform 500ms ease;
-        }
-
-        .project-card:hover::before {
-            transform: translateX(100%);
-        }
-
-        .project-card:hover {
-            transform: translateY(-2px);
-            border-color: rgba(99, 102, 241, 0.25);
-            box-shadow: 0 0 32px rgba(99, 102, 241, 0.08), 0 8px 32px rgba(0, 0, 0, 0.35);
-        }
-
-        .project-card .project-info {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            gap: 0.5rem;
-        }
-
-        .project-card h3 {
-            margin: 0;
-            font-size: 1.25rem;
-            font-weight: 600;
-            letter-spacing: -0.02em;
-        }
-
-        .project-card p {
-            margin: 0;
-            color: var(--text-secondary);
-            line-height: 1.55;
-            font-size: 0.91rem;
-        }
-
-        .project-jt {
-            margin: 0;
-            font-size: 17px;
-        }
-
-        /* ===== 今日日程卡片 ===== */
+        /* ===== 今日日程（workbench 子区域，无独立卡片边界） ===== */
         .schedule-card {
             width: 100%;
             min-height: 160px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 20px;
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 24px;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
+            align-items: flex-start;
+            justify-content: flex-start;
+            text-align: left;
             color: var(--text-primary);
-            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 8px 32px rgba(0, 0, 0, 0.35);
+            box-shadow: none;
         }
 
         .schedule-card h3 {
@@ -782,8 +656,7 @@
         /* [兼容] 触屏设备：关闭 hover 粘滞效果，避免点击后高亮卡住 */
         @media (hover: none) and (pointer: coarse) {
             .nav-link:hover,
-            .project-card:hover,
-            .middle-card:hover {
+            .hero-intro:hover {
                 transform: none;
             }
             .nav-link:hover::after {

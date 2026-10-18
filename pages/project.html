@@ -5,51 +5,36 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>我的项目</title>
-    <link rel="stylesheet" href="../shared/shared_nav_light.css">
+    <link rel="stylesheet" href="../shared/shared_shell.css">
+    <script src="../shared/nav.js" defer></script>
     <style>
-        /* [主题] Apple Minimalist · 纯白极简
-         * 变量与 jiaogt 发布页保持一致，便于全站统一 */
+        /* [主题] 暗色背景（shared_shell.css 接管）+ 浅色卡片亮岛
+         * 背景与导航栏全站统一，卡片保留 Apple Minimalist 浅灰质感形成层次 */
         :root {
-            --bg: #ffffff;
             --surface: #f5f5f7;
             --primary: #0071e3;
             --primary-strong: #0058b0;
             --primary-soft: rgba(0, 113, 227, 0.08);
-            --text: #1d1d1f;
-            --text-muted: #86868b;
-            --border: rgba(0, 0, 0, 0.08);
+            --text-dark: #1d1d1f;
+            --text-muted-dark: #86868b;
             --shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.14);
             --shadow-sm: 0 8px 24px -12px rgba(0, 0, 0, 0.08);
-            
         }
 
         .project-card-address {
             font-size: 10px;
-            color: var(--text-muted);
+            color: var(--text-muted-dark);
             margin-top: 4px;
         }
+
         body {
-            background: var(--bg);
-            color: var(--text);
+            color: var(--text-primary);
             font-family: system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
         }
 
-        /* [背景] 极淡蓝白光晕，几乎纯白但带微妙层次，避免大面积死白 */
-        body::before {
-            content: "";
-            position: fixed;
-            inset: 0;
-            z-index: -2;
-            background:
-                radial-gradient(1100px 650px at 85% -8%, var(--primary-soft), transparent 55%),
-                radial-gradient(800px 500px at -8% 25%, var(--surface), transparent 60%),
-                var(--bg);
-        }
-
-        /* [布局] 覆盖 shared_nav_light.css 的 .page-content 居中，
-         * 改为顶部大留白 + 限宽居中，贴合全宽阅读习惯 */
+        /* [布局] 顶部大留白 + 限宽居中，贴合全宽阅读习惯 */
         .page-content {
             min-height: calc(100vh - 64px);
             display: block;
@@ -69,7 +54,7 @@
             font-weight: 600;
             letter-spacing: 3px;
             text-transform: uppercase;
-            color: var(--primary);
+            color: var(--accent);
             margin-bottom: 14px;
         }
 
@@ -79,11 +64,12 @@
             letter-spacing: -0.02em;
             line-height: 1.1;
             margin: 0 0 16px;
+            color: var(--text-primary);
         }
 
         .projects-sub {
             font-size: 17px;
-            color: var(--text-muted);
+            color: var(--text-secondary);
             max-width: 520px;
             margin: 0 auto;
             line-height: 1.6;
@@ -96,7 +82,7 @@
             gap: 24px;
         }
 
-        /* [项目卡片] 浅灰底、squircle 圆角、柔和阴影 */
+        /* [项目卡片] 浅灰底、squircle 圆角、柔和阴影（暗色背景上的亮岛） */
         .project-card {
             display: flex;
             align-items: center;
@@ -105,7 +91,7 @@
             padding: 32px;
             border-radius: 22px;
             background: var(--surface);
-            color: var(--text);
+            color: var(--text-dark);
             text-decoration: none;
             transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
                         box-shadow 0.3s ease,
@@ -191,27 +177,6 @@
 </head>
 
 <body>
-    <header class="site-header" role="banner">
-    <div class="container">
-        <a href="https://www.ljiao.me" class="brand" target="_blank" rel="noopener noreferrer">www.ljiao.me</a>
-        <nav class="nav-links" role="navigation" aria-label="主导航">
-            <a href="../index.html" class="nav-link">首页</a>
-            <!-- <a href="about.html" class="nav-link">关于我</a> -->
-            <a href="web_ku/web_ku.html" class="nav-link">网页库</a>
-            <!-- <a href="myplace.html" class="nav-link">我的空间</a> -->
-            <a href="watermark_tool.html" class="nav-link">添加水印工具</a>
-            <div class="nav-item nav-link">
-                联系我
-                <ul class="dropdown-menu" aria-label="联系我下拉菜单">
-                    <li><a href="contact/contact_weixin.html">微信</a></li>
-                    <li><a href="contact/contact_qq.html">QQ</a></li>
-                    <li><a href="contact/contact_xhs.html">小红书</a></li>
-                    <li><a href="contact/contact_dy.html">抖音</a></li>
-                </ul>
-            </div>
-        </nav>
-    </div>
-</header>
     <main class="page-content">
         <!-- [标题区] -->
         <div class="projects-head reveal">

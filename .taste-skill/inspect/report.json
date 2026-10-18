@@ -1,0 +1,887 @@
+{
+ "url": "index.html",
+ "at": "2026-10-18T07:59:45.867Z",
+ "allow": [],
+ "viewports": [
+  {
+   "width": 1440,
+   "height": 900,
+   "load": "load",
+   "screens": 2,
+   "filled": [
+    0.55,
+    0.49
+   ],
+   "motion": {
+    "elements": 0,
+    "css": 0,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 1440,
+     "h": 900
+    },
+    "page": {
+     "height": 1181,
+     "screens": 1.3,
+     "words": 67,
+     "img": 5,
+     "video": 0,
+     "canvas": 1,
+     "svg": 1,
+     "sections": 3,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 5,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "touxiang.webp",
+      "photo_a.webp",
+      "photo_b.webp",
+      "default.webp",
+      "photo_d.webp"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [
+      "👋",
+      "🫣"
+     ]
+    },
+    "hero": {
+     "text": "伊教",
+     "words": 1,
+     "chars": 2,
+     "lines": 1,
+     "size": 46.8,
+     "vw": 3.3,
+     "font": "Inter",
+     "weight": 700,
+     "tracking": -0.03,
+     "leading": 1.2,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "left",
+     "position": "center",
+     "widthRatio": 0.55,
+     "top": 143,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "伊教",
+     "words": 1,
+     "lines": 1,
+     "size": 46.8,
+     "font": "Inter"
+    },
+    "headings": [
+     {
+      "text": "伊教",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 46.8,
+      "vw": 3.3,
+      "font": "Inter",
+      "weight": 700,
+      "tracking": -0.03,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "left",
+      "position": "center",
+      "widthRatio": 0.55,
+      "top": 143,
+      "tag": "h1",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 1,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 0,
+     "medianWords": null,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Inter",
+       "share": 0.99,
+       "mono": false
+      },
+      {
+       "family": "Arial",
+       "share": 0.01,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      13,
+      15,
+      16,
+      17,
+      18,
+      19,
+      20,
+      47
+     ],
+     "sizeCount": 8,
+     "notLoaded": [],
+     "body": null,
+     "measureChars": null,
+     "max": {
+      "size": 46.8,
+      "vw": 3.3,
+      "font": "Inter",
+      "text": "伊教"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.04,
+     "centerShare": 0.05,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#cfe5eb",
+     "bodyBgHsl": {
+      "h": 193,
+      "s": 0.41,
+      "l": 0.87
+     },
+     "dark": false,
+     "sectionBgs": [],
+     "textColors": [
+      {
+       "color": "#8a8f98",
+       "share": 0.45
+      },
+      {
+       "color": "#ededef",
+       "share": 0.42
+      },
+      {
+       "color": "#eeeeee",
+       "share": 0.09
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.05
+      }
+     ],
+     "button": null,
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 1,
+     "inHero": 1,
+     "radius": 10,
+     "height": 45,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "我的项目 →"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 7,
+     "shadowOverlay": 2,
+     "shadowSamples": [
+      "section.hero-intro → rgba(255, 255, 255, 0.03) 0px 1px 0px 0px, rgba(0, 0, 0, 0.35) 0px 8px 32px 0px",
+      "div.photo-wall-item → rgba(0, 0, 0, 0.22) 0px 6px 20px 0px",
+      "div.photo-wall-item → rgba(0, 0, 0, 0.22) 0px 6px 20px 0px",
+      "div.photo-wall-item → rgba(0, 0, 0, 0.22) 0px 6px 20px 0px"
+     ],
+     "gradients": 1,
+     "scrims": 0,
+     "gradientSamples": [
+      "div.bg-aurora → radial-gradient(42% 38% at 30% 34%, rgba(99, 102, 241, 0.2) 0%, rgba(0, 0, 0, 0) 70%), radial-gradient(38% 42%"
+     ],
+     "gradientText": 0,
+     "hairlines": 2,
+     "hairlineSamples": [
+      "header.site-header 1440px",
+      "div.calendar-panel 609px"
+     ],
+     "outlinedBoxes": 2,
+     "dashed": 0,
+     "blurred": 1,
+     "roundedBoxes": 6,
+     "boxRadius": 12,
+     "squareMedia": 1,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "canvas",
+      "ratio": 1
+     }
+    ],
+    "nav": {
+     "links": 9,
+     "fixed": true,
+     "height": 61,
+     "floatingPill": false,
+     "blur": true
+    },
+    "fontsLoaded": []
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 768,
+   "height": 1024,
+   "load": "load",
+   "screens": 2,
+   "filled": [
+    0.75,
+    0.64
+   ],
+   "motion": {
+    "elements": 0,
+    "css": 0,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 768,
+     "h": 1024
+    },
+    "page": {
+     "height": 1409,
+     "screens": 1.4,
+     "words": 67,
+     "img": 5,
+     "video": 0,
+     "canvas": 1,
+     "svg": 1,
+     "sections": 3,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 4,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "photo_a.webp",
+      "photo_b.webp",
+      "default.webp",
+      "photo_d.webp"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [
+      "👋",
+      "🫣"
+     ]
+    },
+    "hero": {
+     "text": "伊教",
+     "words": 1,
+     "chars": 2,
+     "lines": 1,
+     "size": 35.5,
+     "vw": 4.6,
+     "font": "Inter",
+     "weight": 700,
+     "tracking": -0.03,
+     "leading": 1.2,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "center",
+     "position": "center",
+     "widthRatio": 0.62,
+     "top": 237,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "伊教",
+     "words": 1,
+     "lines": 1,
+     "size": 35.5,
+     "font": "Inter"
+    },
+    "headings": [
+     {
+      "text": "伊教",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 35.5,
+      "vw": 4.6,
+      "font": "Inter",
+      "weight": 700,
+      "tracking": -0.03,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.62,
+      "top": 237,
+      "tag": "h1",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 1,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 1,
+     "medianWords": null,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Inter",
+       "share": 0.99,
+       "mono": false
+      },
+      {
+       "family": "Arial",
+       "share": 0.01,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      11,
+      12,
+      13,
+      14,
+      15,
+      16,
+      17,
+      36
+     ],
+     "sizeCount": 8,
+     "notLoaded": [],
+     "body": null,
+     "measureChars": null,
+     "max": {
+      "size": 35.5,
+      "vw": 4.6,
+      "font": "Inter",
+      "text": "伊教"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.04,
+     "centerShare": 0.28,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#cfe5eb",
+     "bodyBgHsl": {
+      "h": 193,
+      "s": 0.41,
+      "l": 0.87
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#14141a",
+       "top": 75,
+       "hsl": {
+        "h": 240,
+        "s": 0.13,
+        "l": 0.09
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#8a8f98",
+       "share": 0.45
+      },
+      {
+       "color": "#ededef",
+       "share": 0.42
+      },
+      {
+       "color": "#eeeeee",
+       "share": 0.09
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.05
+      }
+     ],
+     "button": null,
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 1,
+     "inHero": 1,
+     "radius": 10,
+     "height": 40,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "我的项目 →"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 7,
+     "shadowOverlay": 1,
+     "shadowSamples": [
+      "section.hero-intro → rgba(255, 255, 255, 0.03) 0px 1px 0px 0px, rgba(0, 0, 0, 0.35) 0px 8px 32px 0px",
+      "div.photo-wall-item → rgba(0, 0, 0, 0.22) 0px 6px 20px 0px",
+      "div.photo-wall-item → rgba(0, 0, 0, 0.22) 0px 6px 20px 0px",
+      "div.photo-wall-item → rgba(0, 0, 0, 0.22) 0px 6px 20px 0px"
+     ],
+     "gradients": 1,
+     "scrims": 0,
+     "gradientSamples": [
+      "div.bg-aurora → radial-gradient(42% 38% at 30% 34%, rgba(99, 102, 241, 0.2) 0%, rgba(0, 0, 0, 0) 70%), radial-gradient(38% 42%"
+     ],
+     "gradientText": 0,
+     "hairlines": 2,
+     "hairlineSamples": [
+      "header.site-header 768px",
+      "div.calendar-panel 735px"
+     ],
+     "outlinedBoxes": 2,
+     "dashed": 0,
+     "blurred": 1,
+     "roundedBoxes": 6,
+     "boxRadius": 12,
+     "squareMedia": 1,
+     "roundedMedia": 0,
+     "mediaRadius": 0,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "canvas",
+      "ratio": 1
+     }
+    ],
+    "nav": {
+     "links": 9,
+     "fixed": true,
+     "height": 55,
+     "floatingPill": false,
+     "blur": true
+    },
+    "fontsLoaded": []
+   },
+   "consoleErrors": []
+  },
+  {
+   "width": 390,
+   "height": 844,
+   "load": "load",
+   "screens": 3,
+   "filled": [
+    0.68,
+    0.79,
+    0.74
+   ],
+   "motion": {
+    "elements": 0,
+    "css": 0,
+    "transitions": 0,
+    "scripted": 0,
+    "videos": 0,
+    "playingVideos": 0
+   },
+   "metrics": {
+    "viewport": {
+     "w": 390,
+     "h": 844
+    },
+    "page": {
+     "height": 1765,
+     "screens": 2.1,
+     "words": 67,
+     "img": 5,
+     "video": 0,
+     "canvas": 1,
+     "svg": 1,
+     "sections": 3,
+     "horizontalOverflow": 0,
+     "overflowCulprits": [],
+     "uiFragments": 0,
+     "uiAbuse": false,
+     "realPictures": 4,
+     "videoCount": 0,
+     "uiPictures": 0,
+     "pictureSamples": [
+      "photo_a.webp",
+      "photo_b.webp",
+      "default.webp",
+      "photo_d.webp"
+     ],
+     "blendText": 0,
+     "sideScrollers": 0,
+     "brokenImages": [],
+     "emoji": [
+      "👋",
+      "🫣"
+     ]
+    },
+    "hero": {
+     "text": "伊教",
+     "words": 1,
+     "chars": 2,
+     "lines": 1,
+     "size": 25.2,
+     "vw": 6.5,
+     "font": "Inter",
+     "weight": 700,
+     "tracking": -0.03,
+     "leading": 1.2,
+     "upper": false,
+     "italic": false,
+     "mono": false,
+     "align": "center",
+     "position": "center",
+     "widthRatio": 0.85,
+     "top": 231,
+     "tag": "h1",
+     "kind": "heading"
+    },
+    "h1": {
+     "text": "伊教",
+     "words": 1,
+     "lines": 1,
+     "size": 25.2,
+     "font": "Inter"
+    },
+    "headings": [
+     {
+      "text": "伊教",
+      "words": 1,
+      "chars": 2,
+      "lines": 1,
+      "size": 25.2,
+      "vw": 6.5,
+      "font": "Inter",
+      "weight": 700,
+      "tracking": -0.03,
+      "leading": 1.2,
+      "upper": false,
+      "italic": false,
+      "mono": false,
+      "align": "center",
+      "position": "center",
+      "widthRatio": 0.85,
+      "top": 231,
+      "tag": "h1",
+      "kind": "heading"
+     }
+    ],
+    "headingSummary": {
+     "count": 1,
+     "maxLines": 1,
+     "over2Lines": 0,
+     "statements": 0,
+     "centered": 1,
+     "medianWords": null,
+     "mixedFontHeadings": 0
+    },
+    "type": {
+     "families": [
+      {
+       "family": "Inter",
+       "share": 0.99,
+       "mono": false
+      },
+      {
+       "family": "Arial",
+       "share": 0.01,
+       "mono": false
+      }
+     ],
+     "familyCount": 2,
+     "sizes": [
+      10,
+      12,
+      13,
+      14,
+      15,
+      25
+     ],
+     "sizeCount": 6,
+     "notLoaded": [],
+     "body": null,
+     "measureChars": null,
+     "max": {
+      "size": 25.2,
+      "vw": 6.5,
+      "font": "Inter",
+      "text": "伊教"
+     },
+     "monoShare": 0,
+     "monoProseShare": 0,
+     "monoFamilies": [],
+     "monoSamples": [],
+     "microLabels": 0,
+     "microLabelShare": 0,
+     "microSamples": [],
+     "upperShare": 0.04,
+     "centerShare": 0.28,
+     "smallText": 0
+    },
+    "eyebrows": [],
+    "numbered": [],
+    "color": {
+     "bodyBg": "#cfe5eb",
+     "bodyBgHsl": {
+      "h": 193,
+      "s": 0.41,
+      "l": 0.87
+     },
+     "dark": false,
+     "sectionBgs": [
+      {
+       "color": "#14141a",
+       "top": 85,
+       "hsl": {
+        "h": 240,
+        "s": 0.13,
+        "l": 0.09
+       }
+      }
+     ],
+     "textColors": [
+      {
+       "color": "#8a8f98",
+       "share": 0.45
+      },
+      {
+       "color": "#ededef",
+       "share": 0.42
+      },
+      {
+       "color": "#eeeeee",
+       "share": 0.09
+      },
+      {
+       "color": "#ffffff",
+       "share": 0.05
+      }
+     ],
+     "button": null,
+     "lowContrast": []
+    },
+    "buttons": {
+     "count": 1,
+     "inHero": 1,
+     "radius": 10,
+     "height": 36,
+     "withShadow": 0,
+     "withGradient": 0,
+     "mono": 0,
+     "upper": 0,
+     "heroLabels": [
+      "我的项目 →"
+     ]
+    },
+    "surfaces": {
+     "shadowStatic": 6,
+     "shadowOverlay": 1,
+     "shadowSamples": [
+      "section.hero-intro → rgba(255, 255, 255, 0.03) 0px 1px 0px 0px, rgba(0, 0, 0, 0.35) 0px 8px 32px 0px",
+      "div.photo-wall-item → rgba(0, 0, 0, 0.22) 0px 6px 20px 0px",
+      "div.photo-wall-item → rgba(0, 0, 0, 0.22) 0px 6px 20px 0px",
+      "div.photo-wall-item → rgba(0, 0, 0, 0.22) 0px 6px 20px 0px"
+     ],
+     "gradients": 2,
+     "scrims": 0,
+     "gradientSamples": [
+      "div.bg-aurora → radial-gradient(42% 38% at 30% 34%, rgba(99, 102, 241, 0.2) 0%, rgba(0, 0, 0, 0) 70%), radial-gradient(38% 42%",
+      "img.hero-avatar → linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(168, 85, 247, 0.04))"
+     ],
+     "gradientText": 0,
+     "hairlines": 2,
+     "hairlineSamples": [
+      "header.site-header 390px",
+      "div.calendar-panel 367px"
+     ],
+     "outlinedBoxes": 2,
+     "dashed": 0,
+     "blurred": 1,
+     "roundedBoxes": 6,
+     "boxRadius": 12,
+     "squareMedia": 1,
+     "roundedMedia": 4,
+     "mediaRadius": 12,
+     "textShadow": 0,
+     "cardRows": []
+    },
+    "heroMedia": [
+     {
+      "type": "canvas",
+      "ratio": 1
+     },
+     {
+      "type": "svg",
+      "ratio": 0.18
+     },
+     {
+      "type": "img",
+      "ratio": 0.15
+     },
+     {
+      "type": "img",
+      "ratio": 0.15
+     }
+    ],
+    "nav": {
+     "links": 9,
+     "fixed": true,
+     "height": 71,
+     "floatingPill": false,
+     "blur": true
+    },
+    "fontsLoaded": []
+   },
+   "consoleErrors": []
+  }
+ ],
+ "findings": [
+  {
+   "level": "FAIL",
+   "id": "emoji",
+   "width": 1440,
+   "message": "Emoji in the page: 👋 🫣",
+   "fix": "Remove. Use words or real imagery.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "gradient",
+   "width": 1440,
+   "message": "1 gradient fill(s): div.bg-aurora → radial-gradient(42% 38% at 30% 34%, rgba(99, 102, 241, 0.2) 0%, rgba(0, 0, 0, 0) 70%), radial-gradient(38% 42%",
+   "fix": "Use a flat colour or a real image. The only gradient allowed by default is a neutral scrim over a photo for legibility.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "shadow",
+   "width": 1440,
+   "message": "7 box-shadow(s) on elements at rest: section.hero-intro → rgba(255, 255, 255, 0.03) 0px 1px 0px 0px, rgba(0, 0, 0, 0.35) 0px 8px 32px 0px | div.photo-wall-item → rgba(0, 0, 0, 0.22) 0px 6px 20px 0px | div.photo-wall-item → rgba(0, 0, 0, 0.22) 0px 6px 20px 0px",
+   "fix": "Remove. Separate surfaces with a tone step or space. Shadows are for things that really float (menus, dialogs, sticky bars).",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "FAIL",
+   "id": "hairline",
+   "width": 1440,
+   "message": "2 thin rule(s)/divider line(s): header.site-header 1440px | div.calendar-panel 609px",
+   "fix": "Delete. Separate with space, a tone change, or scale. Lines are only for real tables and form fields.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "outlined-box",
+   "width": 1440,
+   "message": "2 box(es) drawn with a 1px outline.",
+   "fix": "Prefer a filled surface or no box.",
+   "alsoAt": [
+    768,
+    390
+   ]
+  },
+  {
+   "level": "WARN",
+   "id": "no-footage",
+   "width": 1440,
+   "message": "No video anywhere on the page.",
+   "fix": "Look for one honest clip with scripts/assets.mjs --video (the place, the material, the process) and use it as a muted loop with a poster frame. Defend its absence only if no clip fits the subject."
+  },
+  {
+   "level": "FAIL",
+   "id": "still-page",
+   "width": 1440,
+   "message": "Only 0 element(s) moved while the page loaded and scrolled.",
+   "fix": "Build the motion layer (SKILL.md step 9, references/motion.md): the signature move, an entrance for the parts of every section, feedback on every control, and one moving picture. Transform and opacity only, with a reduced-motion fallback."
+  }
+ ],
+ "images": [
+  {
+   "viewport": "desktop",
+   "width": 1440,
+   "fold": "C:\\Users\\15366\\Desktop\\html\\personal_space\\.taste-skill\\inspect\\desktop-fold.jpg",
+   "pages": [
+    "C:\\Users\\15366\\Desktop\\html\\personal_space\\.taste-skill\\inspect\\desktop-page-01.jpg"
+   ]
+  },
+  {
+   "viewport": "tablet",
+   "width": 768,
+   "fold": "C:\\Users\\15366\\Desktop\\html\\personal_space\\.taste-skill\\inspect\\tablet-fold.jpg",
+   "pages": [
+    "C:\\Users\\15366\\Desktop\\html\\personal_space\\.taste-skill\\inspect\\tablet-page-01.jpg"
+   ]
+  },
+  {
+   "viewport": "mobile",
+   "width": 390,
+   "fold": "C:\\Users\\15366\\Desktop\\html\\personal_space\\.taste-skill\\inspect\\mobile-fold.jpg",
+   "pages": [
+    "C:\\Users\\15366\\Desktop\\html\\personal_space\\.taste-skill\\inspect\\mobile-page-01.jpg"
+   ]
+  }
+ ]
+}

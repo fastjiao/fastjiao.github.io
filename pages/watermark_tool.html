@@ -5,6 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>图片加水印工具</title>
+    <link rel="stylesheet" href="../shared/shared_shell.css">
+    <script src="../shared/nav.js" defer></script>
     <style>
         /* ============================================================
            Apple 极简主义设计系统
@@ -47,133 +49,32 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
-            background: var(--bg-primary);
             color: var(--text-primary);
             height: 100vh;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            padding-bottom: 0;
             -webkit-font-smoothing: antialiased;
             -moz-osx-font-smoothing: grayscale;
             letter-spacing: -0.01em;
         }
 
-        /* ============================================================
-           顶部导航栏 - 毛玻璃效果
-           ============================================================ */
+        /* 限定导航栏作用域：覆盖本页 :root 的深色变量，让 shared_shell.css 导航栏用浅色文字 */
         .site-header {
-            width: 100%;
-            height: var(--header-h);
-            background: rgba(255, 255, 255, 0.72);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border-bottom: 1px solid var(--border);
+            --text-primary: #EDEDEF;
+            --text-secondary: #8A8F98;
+            --accent: #6366F1;
             flex-shrink: 0;
-            z-index: 100;
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-        }
-
-        .site-header .container {
-            width: 100%;
-            max-width: 1400px;
-            margin: 0 auto;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .brand {
-            font-weight: 700;
-            font-size: 17px;
-            color: var(--text-primary);
-            text-decoration: none;
-            letter-spacing: -0.02em;
-        }
-
-        .nav-links {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .nav-links .nav-item {
-            position: relative;
-        }
-
-        .nav-links a.nav-link,
-        .nav-links .nav-item>span.nav-link {
-            color: var(--text-secondary);
-            text-decoration: none;
-            padding: 7px 14px;
-            font-weight: 500;
-            font-size: 14px;
-            border-radius: 20px;
-            display: inline-block;
-            cursor: pointer;
-            transition: all 180ms ease;
-        }
-
-        .nav-links a.nav-link:hover,
-        .nav-links .nav-item>span.nav-link:hover {
-            color: var(--text-primary);
-            background: rgba(0, 0, 0, 0.04);
-        }
-
-        .nav-links a.nav-link.active {
-            color: var(--accent);
-            background: var(--accent-soft);
-        }
-
-        .nav-links .dropdown-menu {
-            position: absolute;
-            top: calc(100% + 6px);
-            left: 0;
-            min-width: 120px;
-            padding: 6px;
-            list-style: none;
-            background: rgba(255, 255, 255, 0.96);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-lg);
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-6px);
-            transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
-            pointer-events: none;
-            z-index: 20;
-        }
-
-        .nav-links .nav-item:hover .dropdown-menu,
-        .nav-links .nav-item:focus-within .dropdown-menu {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
-
-        .nav-links .dropdown-menu a {
-            display: block;
-            padding: 7px 12px;
-            border-radius: 8px;
-            color: var(--text-primary);
-            text-decoration: none;
-            font-size: 13px;
-            transition: background 120ms ease;
-        }
-
-        .nav-links .dropdown-menu a:hover {
-            background: var(--accent-soft);
-            color: var(--accent);
         }
 
         /* ============================================================
-           主容器 - Flexbox 左右分栏
+           主容器 - Flexbox 左右分栏（导航栏由 shared_shell.css + nav.js 注入）
            ============================================================ */
         .main-container {
             display: flex;
-            height: calc(100vh - var(--header-h));
+            flex: 1;
+            min-height: 0;
             overflow: hidden;
         }
 
@@ -1434,28 +1335,7 @@
 </head>
 
 <body>
-    <!-- ==================== 顶部导航栏 ==================== -->
-    <header class="site-header" role="banner">
-        <div class="container">
-            <a href="https://www.ljiao.me" class="brand" target="_blank" rel="noopener noreferrer">www.ljiao.me</a>
-            <nav class="nav-links" role="navigation" aria-label="主导航">
-                <a href="../index.html" class="nav-link">首页</a>
-                <a href="about.html" class="nav-link">关于我</a>
-                <a href="web_ku/web_ku.html" class="nav-link">网页库</a>
-                <a href="myplace.html" class="nav-link">我的空间</a>
-                <a href="watermark_tool.html" class="nav-link active">添加水印工具</a>
-                <!-- <div class="nav-item">
-                    <span class="nav-link">联系我</span>
-                    <ul class="dropdown-menu" aria-label="联系我下拉菜单">
-                        <li><a href="contact/contact_weixin.html">微信</a></li>
-                        <li><a href="contact/contact_qq.html">QQ</a></li>
-                        <li><a href="contact/contact_xhs.html">小红书</a></li>
-                        <li><a href="contact/contact_dy.html">抖音</a></li>
-                    </ul>
-                </div> -->
-            </nav>
-        </div>
-    </header>
+    <!-- 顶部导航栏由 shared/nav.js 自动注入（与全站统一） -->
 
     <!-- ==================== 主容器：毛玻璃侧边栏 + 内容区 ==================== -->
     <main class="main-container">

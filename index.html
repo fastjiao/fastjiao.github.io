@@ -8,6 +8,7 @@
     <link rel="preload" as="image" href="image/touxiang.webp" fetchpriority="high">
     <link rel="stylesheet" href="index_style.css">
     <script src="shared/photo-manager.js" defer></script>
+    <script src="shared/nav.js" defer></script>
 </head>
 
 <body>
@@ -15,110 +16,78 @@
     <div class="bg-aurora" aria-hidden="true"></div>
     <canvas class="bg-particles" aria-hidden="true"></canvas>
 
-    <!-- 页面导航 -->
-    <header class="site-header" role="banner">
-        <div class="container">
-            <a href="https://www.ljiao.me" class="brand" target="_blank" rel="noopener noreferrer">www.ljiao.me</a>
-            <nav class="nav-links" role="navigation" aria-label="主导航">
-                <a href="index.html" class="nav-link active">首页</a>
-                <!-- <a href="pages/about.html" class="nav-link">关于我</a> -->
-                <a href="pages/web_ku/web_ku.html" class="nav-link">网页库</a>
-                <!-- <a href="pages/myplace.html" class="nav-link">我的空间</a> -->   
-                <a href="jiaogt/jiaogt.html" class="nav-link">教公台</a>
-                <a href="pages/watermark_tool.html" class="nav-link">添加水印工具</a>
-                <div class="nav-item nav-link">
-                    联系我
-                    <ul class="dropdown-menu" aria-label="联系我下拉菜单">
-                        <li><a href="pages/contact/contact_weixin.html">微信</a></li>
-                        <li><a href="pages/contact/contact_qq.html">QQ</a></li>
-                        <li><a href="pages/contact/contact_xhs.html">小红书</a></li>
-                        <li><a href="pages/contact/contact_dy.html">抖音</a></li>
-                    </ul>
-                </div>
-            </nav>
-        </div>
-    </header>
+    <!-- 页面导航：由 shared/nav.js 自动注入（全站统一，含"我的项目"板块） -->
 
     <!-- 页面主体内容 -->
     <main class="site-main">
-        <div class="layout">
-            <div class="left-column">
-                <aside class="profile-card" aria-label="个人信息卡" onclick="window.location.href='admin.html'"
-                    style="cursor:pointer">
-                    <img src="image/touxiang.webp" alt="头像占位" class="avatar" width="80" height="80"
-                        fetchpriority="high">
-                    <h2>伊教</h2>
-                    <p>
-                        你好👋，我是伊教。这里是我的个人博客，分享开发与生活点滴🫣。
-                    </p>
-                </aside>
-                <a href="pages/project.html" class="project-card" aria-label="我的项目卡片">
-                    <div class="project-info">
-                        <h3>我的项目&nbsp;&nbsp;🕭</h3>
-                    </div>
-                    <div class="project-jt">
-                        <h3>→</h3>
-                    </div>
-                </a>
+        <!-- Hero 介绍区：头像 + 名字 + 简介 + 项目入口 融合为一个整体（避免独立卡片板块化） -->
+        <section class="hero-intro" aria-label="个人介绍" onclick="window.location.href='admin.html'"
+            style="cursor:pointer">
+            <img src="image/touxiang.webp" alt="头像" class="hero-avatar" width="120" height="120"
+                fetchpriority="high">
+            <div class="hero-text">
+                <h1>伊教</h1>
+                <p>你好👋，我是伊教。这里是我的个人博客，分享开发与生活点滴🫣。</p>
+                <a href="pages/project.html" class="hero-cta" onclick="event.stopPropagation()">我的项目&nbsp;→</a>
             </div>
-            <div class="center-stack">
-<section class="middle-card" aria-label="个人介绍卡片">
-                    啊哦，内容正在开发中，敬请期待！
-                </section>
-                <section class="photo-wall-card" aria-label="照片墙卡片">
-                    <svg class="photo-wall-rope" viewBox="0 0 520 220" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-                        <g transform="rotate(15 260 110)">
-                            <path d="M -10 98 C 70 70, 155 72, 225 92 C 290 112, 370 138, 530 118" fill="none"
-                                stroke="#A67C52" stroke-width="4.2" stroke-linecap="round" />
-                            <path d="M -10 98 C 70 70, 155 72, 225 92 C 290 112, 370 138, 530 118" fill="none"
-                                stroke="#C8A57B" stroke-width="2.3" stroke-linecap="round" stroke-dasharray="1 8"
-                                opacity="0.72" />
-                            <path d="M -10 98 C 70 72, 156 74, 226 93 C 291 112, 368 138, 530 118" fill="none"
-                                stroke="#8B5A2B" stroke-width="0.9" stroke-linecap="round" opacity="0.34" />
-                        </g>
-                    </svg>
-                    <div class="photo-wall-frame">
-                        <div class="photo-wall-item"><img src="image/photo_a.webp" alt="照片1" loading="lazy" width="150"
-                                height="100"></div>
-                        <div class="photo-wall-item"><img src="image/photo_b.webp" alt="照片2" loading="lazy" width="150"
-                                height="100"></div>
-                        <div class="photo-wall-item"><img src="image/default.webp" alt="照片3" loading="lazy" width="150"
-                                height="100"></div>
-                        <div class="photo-wall-item"><img src="image/photo_d.webp" alt="照片4" loading="lazy" width="150"
-                                height="100"></div>
-                    </div>
-                </section>
+        </section>
+
+        <!-- 照片墙主视觉：整体大图区，非独立小卡片 -->
+        <section class="photo-wall-card" aria-label="照片墙卡片">
+            <svg class="photo-wall-rope" viewBox="0 0 520 220" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+                <g transform="rotate(15 260 110)">
+                    <path d="M -10 98 C 70 70, 155 72, 225 92 C 290 112, 370 138, 530 118" fill="none"
+                        stroke="#A67C52" stroke-width="4.2" stroke-linecap="round" />
+                    <path d="M -10 98 C 70 70, 155 72, 225 92 C 290 112, 370 138, 530 118" fill="none"
+                        stroke="#C8A57B" stroke-width="2.3" stroke-linecap="round" stroke-dasharray="1 8"
+                        opacity="0.72" />
+                    <path d="M -10 98 C 70 72, 156 74, 226 93 C 291 112, 368 138, 530 118" fill="none"
+                        stroke="#8B5A2B" stroke-width="0.9" stroke-linecap="round" opacity="0.34" />
+                </g>
+            </svg>
+            <div class="photo-wall-frame">
+                <div class="photo-wall-item"><img src="image/photo_a.webp" alt="照片1" loading="lazy" width="150"
+                        height="100"></div>
+                <div class="photo-wall-item"><img src="image/photo_b.webp" alt="照片2" loading="lazy" width="150"
+                        height="100"></div>
+                <div class="photo-wall-item"><img src="image/default.webp" alt="照片3" loading="lazy" width="150"
+                        height="100"></div>
+                <div class="photo-wall-item"><img src="image/photo_d.webp" alt="照片4" loading="lazy" width="150"
+                        height="100"></div>
             </div>
-            <div class="right-column">
-                <section class="calendar-panel" aria-label="日历面板">
-                    <div class="calendar-header">
-                        <div>
-                            <h3>日历</h3>
-                            <p class="month-year">2026年 8月</p>
-                        </div>
-                        <div class="calendar-actions" aria-label="日历导航">
-                            <button type="button" data-calendar-prev aria-label="上一月">‹</button>
-                            <button type="button" data-calendar-next aria-label="下一月">›</button>
-                        </div>
+        </section>
+
+        <!-- 日程工作台：日历 + 今日日程 融合为一个整体面板（同一容器，非两个独立卡片） -->
+        <section class="workbench" aria-label="日程工作台">
+            <div class="calendar-panel" aria-label="日历面板">
+                <div class="calendar-header">
+                    <div>
+                        <h3>日历</h3>
+                        <p class="month-year">2026年 8月</p>
                     </div>
-                    <div class="calendar-weekdays calendar-grid" aria-hidden="true">
-                        <div class="calendar-day-name">日</div>
-                        <div class="calendar-day-name">一</div>
-                        <div class="calendar-day-name">二</div>
-                        <div class="calendar-day-name">三</div>
-                        <div class="calendar-day-name">四</div>
-                        <div class="calendar-day-name">五</div>
-                        <div class="calendar-day-name">六</div>
+                    <div class="calendar-actions" aria-label="日历导航">
+                        <button type="button" data-calendar-prev aria-label="上一月">‹</button>
+                        <button type="button" data-calendar-next aria-label="下一月">›</button>
                     </div>
-                    <div class="calendar-days calendar-grid" aria-label="日历网格"></div>
-                </section>
-                <section class="schedule-card" aria-label="今日日程">
-                    <h3>今日日程</h3>
-                    <div class="schedule-card-body" id="todayScheduleBody">
-                        <p>今天没有任务哦~</p>
-                    </div>
-                </section>
+                </div>
+                <div class="calendar-weekdays calendar-grid" aria-hidden="true">
+                    <div class="calendar-day-name">日</div>
+                    <div class="calendar-day-name">一</div>
+                    <div class="calendar-day-name">二</div>
+                    <div class="calendar-day-name">三</div>
+                    <div class="calendar-day-name">四</div>
+                    <div class="calendar-day-name">五</div>
+                    <div class="calendar-day-name">六</div>
+                </div>
+                <div class="calendar-days calendar-grid" aria-label="日历网格"></div>
             </div>
+            <div class="schedule-card" aria-label="今日日程">
+                <h3>今日日程</h3>
+                <div class="schedule-card-body" id="todayScheduleBody">
+                    <p>今天没有任务哦~</p>
+                </div>
+            </div>
+        </section>
     </main>
 
     <script>
@@ -306,106 +275,7 @@
             }
         })();
 
-        // ===== 背景星尘粒子系统（轻量 Canvas，随鼠标轻微扰动） =====
-        (function () {
-            const cv = document.querySelector('.bg-particles');
-            if (!cv) return;
-            const ctx = cv.getContext('2d');
-            let particles = [];
-            let W = 0, H = 0;
-            let mx = -9999, my = -9999;
-            let raf = null;
-            let last = 0;
-            const COLORS = ['99,102,241', '168,85,247', '14,165,233', '255,255,255'];
-
-            // 按屏幕面积自适应粒子数量，降低上限防止卡顿
-            function count() {
-                return Math.min(35, Math.max(15, Math.floor(W * H / 50000)));
-            }
-
-            function resize() {
-                W = window.innerWidth;
-                H = window.innerHeight;
-                const dpr = Math.min(window.devicePixelRatio || 1, 2);
-                cv.width = W * dpr;
-                cv.height = H * dpr;
-                cv.style.width = W + 'px';
-                cv.style.height = H + 'px';
-                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-                spawn();
-            }
-
-            function spawn() {
-                const n = count();
-                particles = [];
-                for (let i = 0; i < n; i++) {
-                    particles.push({
-                        x: Math.random() * W,
-                        y: Math.random() * H,
-                        r: 0.5 + Math.random() * 1.6,
-                        vx: (Math.random() - 0.5) * 0.16,
-                        vy: (Math.random() - 0.5) * 0.16,
-                        a: 0.12 + Math.random() * 0.42,
-                        c: COLORS[Math.floor(Math.random() * COLORS.length)],
-                        tw: Math.random() * Math.PI * 2
-                    });
-                }
-            }
-
-            function tick(t) {
-                const dt = Math.min(50, t - last);
-                last = t;
-                ctx.clearRect(0, 0, W, H);
-                for (let i = 0; i < particles.length; i++) {
-                    const p = particles[i];
-                    p.x += p.vx * (dt / 16);
-                    p.y += p.vy * (dt / 16);
-                    const dx = p.x - mx, dy = p.y - my;
-                    const dist2 = dx * dx + dy * dy;
-                    if (dist2 < 10000) {
-                        const d = Math.sqrt(dist2) || 1;
-                        p.x += (dx / d) * 0.5 * (1 - d / 100) * (dt / 16);
-                        p.y += (dy / d) * 0.5 * (1 - d / 100) * (dt / 16);
-                    }
-                    if (p.x < -10) p.x = W + 10;
-                    if (p.x > W + 10) p.x = -10;
-                    if (p.y < -10) p.y = H + 10;
-                    if (p.y > H + 10) p.y = -10;
-                    p.tw += 0.02 * (dt / 16);
-                    const alpha = p.a * (0.65 + 0.35 * Math.sin(p.tw));
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-                    ctx.fillStyle = 'rgba(' + p.c + ',' + alpha.toFixed(3) + ')';
-                    ctx.fill();
-                }
-                raf = requestAnimationFrame(tick);
-            }
-
-            // 页面不可见时暂停动画，彻底省电
-            function pause() {
-                if (raf) { cancelAnimationFrame(raf); raf = null; }
-            }
-            function resume() {
-                if (!raf) { last = performance.now(); raf = requestAnimationFrame(tick); }
-            }
-
-            document.addEventListener('visibilitychange', function () {
-                document.hidden ? pause() : resume();
-            });
-
-            window.addEventListener('resize', resize);
-            window.addEventListener('mousemove', function (e) {
-                mx = e.clientX;
-                my = e.clientY;
-            });
-
-            if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-                return;   // 用户系统设置了减少动效时直接关闭粒子
-            }
-
-            resize();
-            resume();
-        })();
+        // 背景星尘粒子动画由 shared/nav.js 统一接管（全站一致）
     </script>
 </body>
 
