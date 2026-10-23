@@ -367,11 +367,8 @@
                 li._d = item;
                 li._i = idx;
 
-                // 点击名称：打开链接
-                ns.addEventListener('click', function (e) {
-                    e.preventDefault();
-                    if (item.u && item.u !== '#') window.open(item.u, '_blank');
-                });
+                // 整行长按拖拽到左侧文件夹、短按打开网址（名称点击不再单独绑定）
+                bindRowDrag(li, item);
 
                 // 点击删除按钮：阻止冒泡，弹出确认
                 if (delBtn) {
@@ -493,6 +490,7 @@
                 row.className = 'tree-row';
                 if (f.id === currentFolder) row.classList.add('tree-row-active');
                 row.style.paddingLeft = (14 + depth * 20) + 'px';
+                row.setAttribute('data-drop-fid', f.id);   // 文件夹行放置区
 
                 var kids = childrenOf(f.id);
                 var hasKids = kids.length > 0;
@@ -564,6 +562,7 @@
                 homeRow.className = 'tree-row';
                 if (currentFolder === null) homeRow.classList.add('tree-row-active');
                 homeRow.style.paddingLeft = '14px';
+                homeRow.setAttribute('data-drop-fid', '');   // 首页 = 根目录放置区
                 var homeCaret = document.createElement('span');
                 homeCaret.className = 'tree-caret';
                 homeCaret.style.visibility = 'hidden';
@@ -1065,6 +1064,71 @@
                 if (moveBtn) moveBtn.addEventListener('click', actionMenuMove);
             }
 
+            /* ========== 复制链接至...（三个点菜单） ========== */
+            var copyState = null;
+
+            function actionMenuCopy() {
+                if (!actionMenuState || actionMenuState.isFolder) return;   // 仅链接可复制
+                copyState = { item: actionMenuState.item };
+                closeActionMenu();
+                renderCopyTargets();
+                document.getElementById('copyModal').classList.add('active');
+            }
+
+            function renderCopyTargets() {
+                var box = document.getElementById('copyTargetList');
+                if (!box) return;
+                box.innerHTML = '';
+                var root = document.createElement('div');
+                root.className = 'move-target-item';
+                root.textContent = '（根目录）';
+                root.addEventListener('click', function () { applyCopy(null); });
+                box.appendChild(root);
+                folders.forEach(function (f) {
+                    var d = document.createElement('div');
+                    d.className = 'move-target-item';
+                    d.textContent = '📁 ' + f.n;
+                    (function (id) {
+                        d.addEventListener('click', function () { applyCopy(id); });
+                    })(f.id);
+                    box.appendChild(d);
+                });
+            }
+
+            function applyCopy(targetFolderId) {
+                if (!copyState) return;
+                var item = copyState.item;
+                // 生成不冲突名称：若 all 中已存在相同 n+u，加「 (副本)」后缀递增，保持 n|u 唯一
+                var baseName = item.n;
+                var newName = baseName;
+                var k = 1;
+                while (all.some(function (l) { return l.n === newName && l.u === item.u; })) {
+                    newName = baseName + ' (副本' + (k > 1 ? k : '') + ')';
+                    k++;
+                }
+                all.push({ n: newName, u: item.u, folderId: targetFolderId });
+                var saved = loadUL();
+                saved.push({ url: item.u, name: newName, folderId: targetFolderId });
+                saveUL(saved);
+                invalidateCaches();
+                document.getElementById('copyModal').classList.remove('active');
+                copyState = null;
+                render();
+                updateCrumb();
+            }
+
+            function bindCopyModal() {
+                var cancelBtn = document.getElementById('copyCancel');
+                if (cancelBtn) {
+                    cancelBtn.addEventListener('click', function () {
+                        document.getElementById('copyModal').classList.remove('active');
+                        copyState = null;
+                    });
+                }
+                var copyBtn = document.getElementById('actionCopy');
+                if (copyBtn) copyBtn.addEventListener('click', actionMenuCopy);
+            }
+
             /* ========== 链接重命名 ========== */
             var renameLinkState = null;
 
@@ -1149,6 +1213,184 @@
                     }
                 }
                 document.getElementById('removeModal').classList.add('active');
+            }
+
+            /* ========== 跨栏长按拖拽：链接行 → 左侧文件夹（移动） ========== */
+            var rowDrag = {
+                active: false, long: false, timer: null,
+                startX: 0, startY: 0, ghost: null,
+                targetFid: undefined, targetRow: null,
+                item: null, rowEl: null, pointerId: null
+            };
+
+            // 直接把链接移动到目标文件夹（抽自 applyMove 的链接分支，供拖拽释放调用）
+            function moveLinkTo(item, targetFolderId) {
+                if (isPreset(item)) {
+                    var foundIdx = -1;
+                    for (var i = 0; i < movedPre.length; i++) {
+                        if (movedPre[i].n === item.n && movedPre[i].u === item.u) { foundIdx = i; break; }
+                    }
+                    var rec = { n: item.n, u: item.u, folderId: targetFolderId };
+                    if (foundIdx >= 0) movedPre[foundIdx] = rec; else movedPre.push(rec);
+                    saveMoved(movedPre);
+                } else {
+                    item.folderId = targetFolderId;
+                    var saved = loadUL();
+                    saved.forEach(function (s) {
+                        if (s.url === item.u && s.name === item.n) s.folderId = targetFolderId;
+                    });
+                    saveUL(saved);
+                }
+                invalidateCaches();
+                render();
+                updateCrumb();
+            }
+
+            function clearDropHighlight() {
+                var old = document.querySelectorAll('#sidebar-tree .tree-row.drop-target');
+                for (var i = 0; i < old.length; i++) old[i].classList.remove('drop-target');
+            }
+
+            function hitTestTreeRow(x, y) {
+                var rows = document.querySelectorAll('#sidebar-tree .tree-row');
+                for (var i = 0; i < rows.length; i++) {
+                    var rc = rows[i].getBoundingClientRect();
+                    if (x >= rc.left && x <= rc.right && y >= rc.top && y <= rc.bottom) {
+                        var fid = rows[i].getAttribute('data-drop-fid');
+                        return { row: rows[i], fid: fid === null ? undefined : (fid === '' ? null : fid) };
+                    }
+                }
+                return null;
+            }
+
+            function startRowDrag(e, li, item) {
+                rowDrag.active = true;
+                rowDrag.rowEl = li;
+                li.classList.add('dragging');
+                var ghost = document.createElement('div');
+                ghost.className = 'drag-ghost';
+                var gi = document.createElement('span');
+                gi.className = 'drag-ghost-icon';
+                gi.style.background = iconColor(item.n);
+                gi.textContent = firstChar(item.n);
+                var gt = document.createElement('span');
+                gt.textContent = item.n;
+                ghost.appendChild(gi);
+                ghost.appendChild(gt);
+                document.body.appendChild(ghost);
+                rowDrag.ghost = ghost;
+                try { li.setPointerCapture(e.pointerId); } catch (ex) { }
+                updateRowDrag(e);
+            }
+
+            function updateRowDrag(e) {
+                if (!rowDrag.ghost) return;
+                if (e.cancelable) e.preventDefault();
+                rowDrag.ghost.style.left = (e.clientX + 10) + 'px';
+                rowDrag.ghost.style.top = (e.clientY + 6) + 'px';
+                var hit = hitTestTreeRow(e.clientX, e.clientY);
+                clearDropHighlight();
+                if (hit) {
+                    hit.row.classList.add('drop-target');
+                    rowDrag.targetRow = hit.row;
+                    rowDrag.targetFid = hit.fid;
+                } else {
+                    rowDrag.targetRow = null;
+                    rowDrag.targetFid = undefined;
+                }
+            }
+
+            function endRowDrag(e) {
+                var li = rowDrag.rowEl;
+                if (li) li.classList.remove('dragging');
+                if (rowDrag.ghost) { rowDrag.ghost.remove(); rowDrag.ghost = null; }
+                clearDropHighlight();
+                if (li) { try { li.releasePointerCapture(e.pointerId); } catch (ex) { } }
+                var fid = rowDrag.targetFid;
+                var item = rowDrag.item;
+                if (fid !== undefined && item) {
+                    var curFid = folderIdOf(item);
+                    if ((curFid || null) !== (fid || null)) {
+                        moveLinkTo(item, fid);
+                    }
+                }
+                rowDrag.active = false;
+                rowDrag.long = false;
+                rowDrag.item = null;
+                rowDrag.rowEl = null;
+                rowDrag.targetRow = null;
+                rowDrag.targetFid = undefined;
+            }
+
+            function cancelRowDrag() {
+                if (rowDrag.rowEl) rowDrag.rowEl.classList.remove('dragging');
+                if (rowDrag.ghost) { rowDrag.ghost.remove(); rowDrag.ghost = null; }
+                clearDropHighlight();
+                rowDrag.active = false;
+                rowDrag.long = false;
+                rowDrag.item = null;
+                rowDrag.rowEl = null;
+                rowDrag.targetRow = null;
+                rowDrag.targetFid = undefined;
+            }
+
+            // 绑定链接行：短按打开网址，长按/拖动 → 跨栏移动到左侧文件夹
+            function bindRowDrag(li, item) {
+                li.addEventListener('pointerdown', function (e) {
+                    if (e.target.closest('.link-dots') || e.target.closest('.link-delete')) return;
+                    if (isSp(item.n)) return;
+                    if (rowDrag.item) return;            // 已有拖拽进行中
+                    rowDrag.long = false;
+                    rowDrag.active = false;
+                    rowDrag.startX = e.clientX;
+                    rowDrag.startY = e.clientY;
+                    rowDrag.item = item;
+                    rowDrag.rowEl = li;
+                    rowDrag.pointerId = e.pointerId;
+                    rowDrag.targetFid = undefined;
+                    rowDrag.targetRow = null;
+                    clearTimeout(rowDrag.timer);
+                    rowDrag.timer = setTimeout(function () {
+                        rowDrag.long = true;
+                        if (!rowDrag.active) startRowDrag(e, li, item);
+                    }, 300);
+                });
+
+                li.addEventListener('pointermove', function (e) {
+                    if (rowDrag.item !== item) return;
+                    if (!rowDrag.long) {
+                        var dx = e.clientX - rowDrag.startX;
+                        var dy = e.clientY - rowDrag.startY;
+                        if (Math.abs(dx) > 6 || Math.abs(dy) > 6) {
+                            rowDrag.long = true;
+                            clearTimeout(rowDrag.timer);
+                            if (!rowDrag.active) startRowDrag(e, li, item);
+                        } else return;
+                    }
+                    if (rowDrag.active) updateRowDrag(e);
+                });
+
+                li.addEventListener('pointerup', function (e) {
+                    if (rowDrag.item !== item) return;
+                    clearTimeout(rowDrag.timer);
+                    var wasActive = rowDrag.active;
+                    var wasLong = rowDrag.long;
+                    if (wasActive) {
+                        endRowDrag(e);
+                    } else if (!wasLong) {
+                        // 短按：打开网址
+                        if (item.u && item.u !== '#') window.open(item.u, '_blank');
+                    }
+                    rowDrag.active = false;
+                    rowDrag.long = false;
+                    rowDrag.item = null;
+                    rowDrag.rowEl = null;
+                });
+
+                li.addEventListener('pointercancel', function () {
+                    if (rowDrag.item !== item) return;
+                    cancelRowDrag();
+                });
             }
 
             /* ========== 长按拖动自定义排序（让位动画） ========== */
@@ -1467,6 +1709,7 @@
             bindRenameLinkModal();
             document.getElementById('actionRename').addEventListener('click', actionMenuRename);
             bindMoveModal();
+            bindCopyModal();
             document.getElementById('actionDelete').addEventListener('click', actionMenuDelete);
             document.addEventListener('click', function (e) {
                 if (!actionMenu.contains(e.target) && !e.target.closest('.link-dots, .folder-dots')) {

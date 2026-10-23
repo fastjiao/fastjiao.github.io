@@ -105,6 +105,7 @@
         <div class="action-menu" id="actionMenu">
             <button class="action-menu-item" id="actionRename">重命名</button>
             <button class="action-menu-item" id="actionMove">移动至...</button>
+            <button class="action-menu-item" id="actionCopy">复制到...</button>
             <button class="action-menu-item danger" id="actionDelete">删除</button>
         </div>
 
@@ -115,6 +116,17 @@
                 <div class="move-target-list" id="moveTargetList"></div>
                 <div class="modal-actions">
                     <button class="modal-btn cancel" id="moveCancel">取消</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== 复制目标弹窗 ========== -->
+        <div class="modal-overlay" id="copyModal">
+            <div class="modal-box" style="height:auto; min-height:220px;">
+                <h3 class="modal-title">复制链接至...</h3>
+                <div class="move-target-list" id="copyTargetList"></div>
+                <div class="modal-actions">
+                    <button class="modal-btn cancel" id="copyCancel">取消</button>
                 </div>
             </div>
         </div>
