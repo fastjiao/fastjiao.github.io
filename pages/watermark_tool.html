@@ -57,21 +57,21 @@
         }
 
         /* ============================================================
-           顶部导航栏 - 暗色毛玻璃，与全站暗色背景融合
+           顶部导航栏 - 透明 + 胶囊式 TAB + 1px 白线分隔 + 粘性
            ============================================================ */
         .site-header {
             width: 100%;
             height: var(--header-h);
-            background: rgba(8, 8, 8, 0.55);
-            backdrop-filter: blur(12px) saturate(160%);
-            -webkit-backdrop-filter: blur(12px) saturate(160%);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+            background: transparent;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
             flex-shrink: 0;
             z-index: 100;
             display: flex;
             align-items: center;
             padding: 0 20px;
-            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04), 0 8px 32px rgba(0, 0, 0, 0.42);
+            position: sticky;
+            top: 0;
         }
 
         .site-header .container {
@@ -91,67 +91,79 @@
             letter-spacing: -0.02em;
         }
 
+        /* 胶囊式 TAB 容器：外围 1px 白线包裹 */
         .nav-links {
             display: flex;
-            gap: 8px;
+            gap: 2px;
             align-items: center;
+            padding: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.55);
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
         }
 
         .nav-links .nav-item {
             position: relative;
         }
 
+        /* 未选中态：置灰、缩小、变细 */
         .nav-links a.nav-link,
         .nav-links .nav-item>span.nav-link {
-            color: #8A8F98;
+            color: rgba(255, 255, 255, 0.55);
             text-decoration: none;
-            padding: 7px 14px;
-            font-weight: 500;
-            font-size: 14px;
-            border-radius: 20px;
+            padding: 6px 16px;
+            font-weight: 400;
+            font-size: 0.88rem;
+            border-radius: 999px;
             display: inline-block;
             cursor: pointer;
-            transition: all 180ms ease;
+            transition: color 200ms ease, background 200ms ease, transform 200ms ease, font-size 200ms ease;
+            white-space: nowrap;
         }
 
         .nav-links a.nav-link:hover,
         .nav-links .nav-item>span.nav-link:hover {
-            color: #EDEDEF;
-            background: rgba(255, 255, 255, 0.06);
+            color: rgba(255, 255, 255, 0.92);
+            background: rgba(255, 255, 255, 0.1);
         }
 
+        /* 选中态：放大、加粗、高亮反白 */
         .nav-links a.nav-link.active {
-            color: #FFFFFF;
-            background: rgba(99, 102, 241, 0.14);
-            box-shadow: 0 0 16px rgba(99, 102, 241, 0.12);
+            color: #111111;
+            background: #FFFFFF;
+            font-weight: 700;
+            font-size: 0.95rem;
+            transform: scale(1.06);
+            box-shadow: 0 2px 12px rgba(255, 255, 255, 0.25);
         }
 
+        /* 联系我下拉菜单：纯白背景 + 渐入渐出 */
         .nav-links .dropdown-menu {
             position: absolute;
             top: calc(100% + 6px);
-            left: 0;
+            left: 50%;
             min-width: 120px;
             padding: 6px;
             list-style: none;
-            background: rgba(18, 18, 20, 0.94);
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: #FFFFFF;
+            border: 1px solid rgba(0, 0, 0, 0.06);
             border-radius: var(--radius-md);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.03);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
             opacity: 0;
             visibility: hidden;
-            transform: translateY(-6px);
-            transition: opacity 180ms ease, transform 180ms ease, visibility 180ms ease;
+            transform: translateX(-50%) translateY(-6px);
+            transition: opacity 220ms ease, transform 220ms ease, visibility 220ms ease;
             pointer-events: none;
-            z-index: 20;
+            z-index: 30;
         }
 
-        .nav-links .nav-item:hover .dropdown-menu,
-        .nav-links .nav-item:focus-within .dropdown-menu {
+        /* 由 JS 控制 .open 类触发 */
+        .nav-links .nav-item.open .dropdown-menu {
             opacity: 1;
             visibility: visible;
-            transform: translateY(0);
+            transform: translateX(-50%) translateY(0);
             pointer-events: auto;
         }
 
@@ -159,15 +171,15 @@
             display: block;
             padding: 7px 12px;
             border-radius: 8px;
-            color: #8A8F98;
+            color: #1D1D1F;
             text-decoration: none;
             font-size: 13px;
             transition: background 120ms ease, color 120ms ease;
         }
 
         .nav-links .dropdown-menu a:hover {
-            background: rgba(255, 255, 255, 0.08);
-            color: #EDEDEF;
+            background: rgba(0, 0, 0, 0.05);
+            color: #000000;
         }
 
         /* ============================================================
@@ -1445,9 +1457,8 @@
             <nav class="nav-links" role="navigation" aria-label="主导航">
                 <a href="../index.html" class="nav-link">首页</a>
                 <a href="web_ku/web_ku.html" class="nav-link">网页库</a>
-                <a href="project.html" class="nav-link">我的项目</a>
+                <a href="project.html" class="nav-link active">我的项目</a>
                 <a href="../jiaogt/jiaogt.html" class="nav-link">教公台</a>
-                <a href="watermark_tool.html" class="nav-link active">添加水印工具</a>
                 <div class="nav-item">
                     <span class="nav-link">联系我</span>
                     <ul class="dropdown-menu" aria-label="联系我下拉菜单">
@@ -3069,6 +3080,7 @@
         })();
     </script>
     <script src="../shared/bg-particles.js"></script>
+    <script src="../shared/shared_nav.js"></script>
 </body>
 
 </html>

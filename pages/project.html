@@ -71,22 +71,21 @@
             gap: 20px;
             padding: 32px;
             border-radius: 22px;
-            background: var(--glass-bg);
-            border: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid #FFFFFF;
             color: var(--text-primary);
             text-decoration: none;
-            transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1),
                         box-shadow 0.3s ease,
                         background 0.3s ease;
             will-change: transform;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
         }
 
         .project-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.5);
-            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 20px 50px -24px rgba(0, 0, 0, 0.5), 0 0 30px rgba(255, 255, 255, 0.12);
+            background: rgba(255, 255, 255, 0.22);
         }
 
         .project-card-name {
@@ -171,7 +170,6 @@
                 <a href="web_ku/web_ku.html" class="nav-link">网页库</a>
                 <a href="project.html" class="nav-link active">我的项目</a>
                 <a href="../jiaogt/jiaogt.html" class="nav-link">教公台</a>
-                <a href="watermark_tool.html" class="nav-link">添加水印工具</a>
                 <div class="nav-item nav-link">
                     联系我
                     <ul class="dropdown-menu" aria-label="联系我下拉菜单">
@@ -194,8 +192,9 @@
 
         <!-- [项目卡片网格] -->
         <div class="projects-grid">
-            <a href="../project_1/index.html" class="project-card reveal">
-                <span class="project-card-name">项目一</span>
+            <a href="https://github.com/fastjiao/fastjiao.github.io" target="_blank" rel="noopener noreferrer" class="project-card reveal">
+                <p><span class="project-card-name">本网页github地址</span></p>
+                <span class="project-card-address">https://github.com/fastjiao/fastjiao.github.io</span>
                 <span class="project-card-arrow" aria-hidden="true">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M5 12h14M12 5l7 7-7 7"></path>
@@ -203,8 +202,16 @@
                 </span>
             </a>
             <a href="https://github.com/fastjiao/myworkarea" target="_blank" rel="noopener noreferrer" class="project-card reveal">
-                <p><span class="project-card-name">项目二</span></p>
+                <p><span class="project-card-name">教公台github地址</span></p>
                 <span class="project-card-address">开源地址：https://github.com/fastjiao/myworkarea</span>
+                <span class="project-card-arrow" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M5 12h14M12 5l7 7-7 7"></path>
+                    </svg>
+                </span>
+            </a>
+            <a href="watermark_tool.html" class="project-card reveal">
+                <span class="project-card-name">添加水印工具</span>
                 <span class="project-card-arrow" aria-hidden="true">
                     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M5 12h14M12 5l7 7-7 7"></path>
@@ -215,6 +222,7 @@
     </main>
 
     <script src="../shared/bg-particles.js"></script>
+    <script src="../shared/shared_nav.js"></script>
     <script>
         /* [入场动画] IntersectionObserver 滚动触发；
          * 不支持时直接显示，避免内容空白 */
@@ -233,6 +241,35 @@
             } else {
                 els.forEach(function (el) { el.classList.add("visible"); });
             }
+        })();
+    </script>
+    <script>
+        /* ===== 项目卡片磁吸效果 =====
+         * 鼠标进入卡片中心 100px 范围内，卡片向鼠标偏移 30% 距离；
+         * 离开后由 CSS 弹簧曲线 transition 弹性回位。 */
+        (function () {
+            var cards = document.querySelectorAll('.project-card');
+            var RANGE = 100, STRENGTH = 0.3;
+            var pending = false, mx = 0, my = 0;
+            function update() {
+                pending = false;
+                cards.forEach(function (card) {
+                    var rect = card.getBoundingClientRect();
+                    var cx = rect.left + rect.width / 2;
+                    var cy = rect.top + rect.height / 2;
+                    var dx = mx - cx, dy = my - cy;
+                    var dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < RANGE) {
+                        card.style.transform = 'translate(' + (dx * STRENGTH).toFixed(1) + 'px,' + (dy * STRENGTH).toFixed(1) + 'px)';
+                    } else if (card.style.transform) {
+                        card.style.transform = '';
+                    }
+                });
+            }
+            document.addEventListener('mousemove', function (e) {
+                mx = e.clientX; my = e.clientY;
+                if (!pending) { pending = true; requestAnimationFrame(update); }
+            });
         })();
     </script>
 </body>

@@ -42,13 +42,45 @@
                 { n: 'AI去水印', u: 'https://magiceraser.org/zh/object-remover/' },
                 { n: '优智云家', u: 'https://go.kiwik.cn/app/wob/devices/4A3843D34040' },
                 { n: '百度', u: 'https://www.baddu.com', folderId: 'f_preset_default' },
-                { n: 'ieeee', u: 'https://www.qianwen.com', folderId: 'f_preset_tee' },
+                // { n: 'ieeee', u: 'https://www.qianwen.com', folderId: 'f_preset_tee' },
                 { n: '@@@@', u: '#' }  // 特殊占位项（会被隐藏）
             ];
 
             /* ========== 初始化状态 ========== */
             var list = document.getElementById('links-list');
             if (!list) return;
+
+            /* ========== 收藏夹预置链接（来自浏览器收藏夹导入，首次自动载入） ========== */
+            var BM_LINKS = [
+                { n: 'Skills 教程 | 菜鸟教程', u: 'https://www.runoob.com/vibe-coding/skills-agent.html', folderId: 'f_bm_ziyuan' },
+                { n: '免费4K高清壁纸-哲风壁纸', u: 'https://haowallpaper.com/', folderId: 'f_bm_ziyuan' },
+                { n: '看剧AI - KANJU.AI', u: 'https://kanju.ai/', folderId: 'f_bm_ziyuan' },
+                { n: '国家高等教育智慧教育平台', u: 'https://higher.smartedu.cn/', folderId: 'f_bm_pingtai' },
+                { n: 'Skill商店_CocoLoop', u: 'https://hub.cocoloop.cn/', folderId: 'f_bm_pingtai' },
+                { n: '新仓库', u: 'https://github.com/new', folderId: 'f_bm_pingtai' },
+                { n: '音效网站', u: 'https://uisfx.com/', folderId: 'f_bm_ui' },
+                { n: 'CocoLoop AI社区', u: 'https://www.cocoloop.cn/', folderId: 'f_bm_ui' },
+                { n: 'Three.js 组件与交互着色器', u: 'https://threeui.com/browse', folderId: 'f_bm_ui' },
+                { n: '站酷ZCOOL', u: 'https://www.zcool.com.cn/', folderId: 'f_bm_ui' },
+                { n: 'React Bits', u: 'https://www.reactbits.dev/get-started/index', folderId: 'f_bm_ui' },
+                { n: '花瓣网-图片采集', u: 'https://huaban.com/discovery', folderId: 'f_bm_ppt' },
+                { n: '全部Emoji | Emojiall', u: 'https://www.emojiall.com/zh-hans/all-emojis', folderId: 'f_bm_emoji' },
+                { n: 'GetEmoji', u: 'https://getemoji.com/', folderId: 'f_bm_emoji' },
+                { n: 'Emojipedia', u: 'https://emojipedia.org/', folderId: 'f_bm_emoji' },
+                { n: 'DeepSeek 开放平台', u: 'https://platform.deepseek.com/usage', folderId: 'f_bm_ziyuan' },
+                { n: '图片视频生成器 - LiblibAI', u: 'https://www.liblib.art/ai-tool/video-generator', folderId: 'f_bm_ziyuan' },
+                { n: '软考达人-刷题题库', u: 'https://ruankaodaren.com/exam/#/', folderId: 'f_bm_ruankao' },
+                { n: '软考资料下载-51CTO', u: 'https://rk.51cto.com/download?cateId=1&cid=120&tid=90', folderId: 'f_bm_ruankao' },
+                { n: '软考机考模拟系统-51CTO', u: 'https://rk.51cto.com/t/exam/computer-exam-login/id-16669.html', folderId: 'f_bm_ruankao' },
+                { n: 'C 标准库 stdio.h | 菜鸟教程', u: 'https://www.runoob.com/cprogramming/c-standard-library-stdio-h.html', folderId: null },
+                { n: 'GitHub 文件加速', u: 'https://ghproxy.net/', folderId: null },
+                { n: '大模型服务平台百炼控制台', u: 'https://bailian.console.aliyun.com/cn-beijing#/home', folderId: null },
+                { n: '公安部互联网+政务服务平台', u: 'https://ywtb.mps.gov.cn/', folderId: null },
+                { n: '茶汤 - 郁可唯', u: 'https://www.yinyueku.cn/', folderId: null },
+                { n: '友情链接-YHSome神秘空间', u: 'https://yhsome.github.io/friendlinks.html', folderId: null },
+                { n: 'Class Central', u: 'https://www.classcentral.com/', folderId: null }
+            ];
+            BM_LINKS.forEach(function (l) { PRE.push(l); });
 
             var all = PRE.slice();   // 全部链接（预置 + 自定义）
 
@@ -70,10 +102,29 @@
                 ];
                 var inited = false;
                 try { inited = localStorage.getItem('presetDefaultInited_v2') === '1'; } catch (e) { }
+                /* [已禁用] default/tee 预置文件夹不再自动创建
                 PRESETS.forEach(function (p) {
                     var has = folders.some(function (x) { return x.id === p.id; });
                     if (!has) {
                         folders.unshift({ id: p.id, n: p.n, parentId: null });
+                        saveFolders(folders);
+                        expandedSet.add(p.id);
+                    }
+                });
+                */
+                /* 收藏夹文件夹（带层级 parentId），首次自动创建 */
+                var BM_FOLDERS = [
+                    { id: 'f_bm_ziyuan', n: '资源', parentId: null },
+                    { id: 'f_bm_ppt', n: 'PPT制作', parentId: 'f_bm_ziyuan' },
+                    { id: 'f_bm_pingtai', n: '平台', parentId: 'f_bm_ziyuan' },
+                    { id: 'f_bm_ui', n: 'UI设计', parentId: 'f_bm_ziyuan' },
+                    { id: 'f_bm_emoji', n: 'email表情', parentId: 'f_bm_ziyuan' },
+                    { id: 'f_bm_ruankao', n: '软考', parentId: null }
+                ];
+                BM_FOLDERS.forEach(function (p) {
+                    var has = folders.some(function (x) { return x.id === p.id; });
+                    if (!has) {
+                        folders.push({ id: p.id, n: p.n, parentId: p.parentId });
                         saveFolders(folders);
                         expandedSet.add(p.id);
                     }
@@ -267,11 +318,19 @@
                 li.className = 'link-row';
                 if (isSp(item.n)) li.style.display = 'none';
 
-                // 图标
+                // 图标：自动识别网址 favicon，失败回退首字母
                 var ic = document.createElement('span');
                 ic.className = 'link-icon';
                 ic.style.background = iconColor(item.n);
                 ic.textContent = firstChar(item.n);
+                try {
+                    var purl = new URL(item.u);
+                    var fav = document.createElement('img');
+                    fav.src = purl.origin + '/favicon.ico';
+                    fav.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:contain;display:block;';
+                    fav.onerror = function () { fav.remove(); };
+                    fav.onload = function () { ic.textContent = ''; ic.appendChild(fav); };
+                } catch (e) { }
 
                 // 名称容器
                 var nw = document.createElement('div');
@@ -500,6 +559,25 @@
                 folders.forEach(function (f) {
                     if ((f.parentId || null) === null) roots.push(f);
                 });
+                /* 首页节点：侧栏第一行，点击回到根目录 */
+                var homeRow = document.createElement('div');
+                homeRow.className = 'tree-row';
+                if (currentFolder === null) homeRow.classList.add('tree-row-active');
+                homeRow.style.paddingLeft = '14px';
+                var homeCaret = document.createElement('span');
+                homeCaret.className = 'tree-caret';
+                homeCaret.style.visibility = 'hidden';
+                var homeIcon = document.createElement('span');
+                homeIcon.className = 'tree-icon';
+                homeIcon.textContent = '\uD83C\uDFE0';
+                var homeName = document.createElement('span');
+                homeName.className = 'tree-name';
+                homeName.textContent = '首页';
+                homeRow.appendChild(homeCaret);
+                homeRow.appendChild(homeIcon);
+                homeRow.appendChild(homeName);
+                homeRow.addEventListener('click', function () { exitFolder(); });
+                sb.appendChild(homeRow);
                 roots.forEach(function (f) {
                     sb.appendChild(mkTreeRow(f, 0));
                 });

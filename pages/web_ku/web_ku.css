@@ -13,14 +13,16 @@ body {
             background: #000000;
             color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-            min-height: 100vh;
+            height: 100vh;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
         }
 
         /* ========== 顶部导航栏 ========== */
         .navbar {
             width: 100%;
+            flex-shrink: 0;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -103,6 +105,10 @@ body {
         .main-content {
             flex: 1;
             min-width: 0;
+            height: 100%;
+            overflow-y: auto;
+            padding: 18px 24px;
+            background: transparent;
         }
 
         /* 页面标题区 */
@@ -630,25 +636,22 @@ body {
 
         /* ========== 左侧树状导航栏 ========= */
         .page-wrap {
+            flex: 1;
             width: 100%;
-            padding: 40px 24px 60px;
+            padding: 0;
             display: flex;
-            flex-wrap: wrap;
-            align-items: flex-start;
-            gap: 24px;
+            flex-wrap: nowrap;
+            align-items: stretch;
+            gap: 0;
+            overflow: hidden;
         }
 
         .sidebar {
             width: 280px;
             flex-shrink: 0;
-            background: #1A1A1A;
-            border: 1px solid #2D2D2D;
-            border-radius: 12px;
+            background: transparent;
+            border-right: 1px solid #FFFFFF;
             padding: 18px 8px;
-            position: sticky;
-            top: 100px;
-            align-self: flex-start;
-            max-height: calc(100vh - 124px);
             overflow-y: auto;
             user-select: none;
         }
@@ -687,17 +690,17 @@ body {
         }
 
         .tree-row:hover {
-            background: #242424;
+            background: rgba(255, 255, 255, 0.08);
             color: #ffffff;
         }
 
         .tree-row-active {
-            background: #24548E;
+            background: rgba(255, 255, 255, 0.12);
             color: #ffffff;
         }
 
         .tree-row-active:hover {
-            background: #24548E;
+            background: rgba(255, 255, 255, 0.15);
         }
 
         .tree-caret {
@@ -766,21 +769,36 @@ body {
 
         /* 小屏 (<768px)：单列堆叠，sidebar 全宽置顶取消 sticky，main 全宽在下 */
         @media (max-width:768px) {
+            body {
+                height: auto;
+                overflow: auto;
+            }
+
             .page-wrap {
+                flex: none;
                 padding: 20px 16px 40px;
                 gap: 16px;
+                flex-wrap: wrap;
+                align-items: flex-start;
+                overflow: visible;
+                height: auto;
             }
 
             .sidebar {
                 width: 100%;
                 flex-shrink: 1;
-                position: static;
-                max-height: none;
+                border-right: none;
+                border-bottom: 1px solid #FFFFFF;
+                overflow-y: visible;
+                height: auto;
             }
 
             .main-content {
                 width: 100%;
                 flex: 1 1 100%;
+                overflow-y: visible;
+                height: auto;
+                padding: 16px;
             }
 
             .navbar {
