@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>图片加水印工具</title>
+    <link rel="stylesheet" href="../shared/shared_theme.css">
     <style>
         /* ============================================================
            Apple 极简主义设计系统
@@ -47,7 +48,6 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Helvetica Neue", "PingFang SC", "Microsoft YaHei", sans-serif;
-            background: var(--bg-primary);
             color: var(--text-primary);
             height: 100vh;
             overflow: hidden;
@@ -57,20 +57,21 @@
         }
 
         /* ============================================================
-           顶部导航栏 - 毛玻璃效果
+           顶部导航栏 - 暗色毛玻璃，与全站暗色背景融合
            ============================================================ */
         .site-header {
             width: 100%;
             height: var(--header-h);
-            background: rgba(255, 255, 255, 0.72);
-            backdrop-filter: blur(20px) saturate(180%);
-            -webkit-backdrop-filter: blur(20px) saturate(180%);
-            border-bottom: 1px solid var(--border);
+            background: rgba(8, 8, 8, 0.55);
+            backdrop-filter: blur(12px) saturate(160%);
+            -webkit-backdrop-filter: blur(12px) saturate(160%);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
             flex-shrink: 0;
             z-index: 100;
             display: flex;
             align-items: center;
             padding: 0 20px;
+            box-shadow: 0 1px 0 rgba(255, 255, 255, 0.04), 0 8px 32px rgba(0, 0, 0, 0.42);
         }
 
         .site-header .container {
@@ -85,7 +86,7 @@
         .brand {
             font-weight: 700;
             font-size: 17px;
-            color: var(--text-primary);
+            color: #EDEDEF;
             text-decoration: none;
             letter-spacing: -0.02em;
         }
@@ -102,7 +103,7 @@
 
         .nav-links a.nav-link,
         .nav-links .nav-item>span.nav-link {
-            color: var(--text-secondary);
+            color: #8A8F98;
             text-decoration: none;
             padding: 7px 14px;
             font-weight: 500;
@@ -115,13 +116,14 @@
 
         .nav-links a.nav-link:hover,
         .nav-links .nav-item>span.nav-link:hover {
-            color: var(--text-primary);
-            background: rgba(0, 0, 0, 0.04);
+            color: #EDEDEF;
+            background: rgba(255, 255, 255, 0.06);
         }
 
         .nav-links a.nav-link.active {
-            color: var(--accent);
-            background: var(--accent-soft);
+            color: #FFFFFF;
+            background: rgba(99, 102, 241, 0.14);
+            box-shadow: 0 0 16px rgba(99, 102, 241, 0.12);
         }
 
         .nav-links .dropdown-menu {
@@ -131,12 +133,12 @@
             min-width: 120px;
             padding: 6px;
             list-style: none;
-            background: rgba(255, 255, 255, 0.96);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
+            background: rgba(18, 18, 20, 0.94);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
             border-radius: var(--radius-md);
-            box-shadow: var(--shadow-lg);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.03);
             opacity: 0;
             visibility: hidden;
             transform: translateY(-6px);
@@ -157,15 +159,15 @@
             display: block;
             padding: 7px 12px;
             border-radius: 8px;
-            color: var(--text-primary);
+            color: #8A8F98;
             text-decoration: none;
             font-size: 13px;
-            transition: background 120ms ease;
+            transition: background 120ms ease, color 120ms ease;
         }
 
         .nav-links .dropdown-menu a:hover {
-            background: var(--accent-soft);
-            color: var(--accent);
+            background: rgba(255, 255, 255, 0.08);
+            color: #EDEDEF;
         }
 
         /* ============================================================
@@ -1434,25 +1436,27 @@
 </head>
 
 <body>
+    <div class="bg-aurora" aria-hidden="true"></div>
+    <canvas class="bg-particles" aria-hidden="true"></canvas>
     <!-- ==================== 顶部导航栏 ==================== -->
     <header class="site-header" role="banner">
         <div class="container">
             <a href="https://www.ljiao.me" class="brand" target="_blank" rel="noopener noreferrer">www.ljiao.me</a>
             <nav class="nav-links" role="navigation" aria-label="主导航">
-                <a href="index.html" class="nav-link">首页</a>
-                <a href="about.html" class="nav-link">关于我</a>
-                <a href="web_ku.html" class="nav-link">网页库</a>
-                <a href="myplace.html" class="nav-link">我的空间</a>
+                <a href="../index.html" class="nav-link">首页</a>
+                <a href="web_ku/web_ku.html" class="nav-link">网页库</a>
+                <a href="project.html" class="nav-link">我的项目</a>
+                <a href="../jiaogt/jiaogt.html" class="nav-link">教公台</a>
                 <a href="watermark_tool.html" class="nav-link active">添加水印工具</a>
-                <!-- <div class="nav-item">
+                <div class="nav-item">
                     <span class="nav-link">联系我</span>
                     <ul class="dropdown-menu" aria-label="联系我下拉菜单">
-                        <li><a href="contact_weixin.html">微信</a></li>
-                        <li><a href="contact_qq.html">QQ</a></li>
-                        <li><a href="contact_xhs.html">小红书</a></li>
-                        <li><a href="contact_dy.html">抖音</a></li>
+                        <li><a href="contact/contact_weixin.html">微信</a></li>
+                        <li><a href="contact/contact_qq.html">QQ</a></li>
+                        <li><a href="contact/contact_xhs.html">小红书</a></li>
+                        <li><a href="contact/contact_dy.html">抖音</a></li>
                     </ul>
-                </div> -->
+                </div>
             </nav>
         </div>
     </header>
@@ -1875,7 +1879,7 @@
             IMAGE_SCALE_DEFAULT: 20,
             BATCH_MAX: 30,
             DRAG_THRESHOLD: 3,
-            ZIP_LIB_PATH: 'jszip.min.js',
+            ZIP_LIB_PATH: '../shared/jszip.min.js',
             ZIP_NAME_PREFIX: 'watermark_batch',
             DEFAULT_FONT: 'Microsoft YaHei, PingFang SC, sans-serif'
         };
@@ -3064,6 +3068,7 @@
             ensureZipLibLoaded();
         })();
     </script>
+    <script src="../shared/bg-particles.js"></script>
 </body>
 
 </html>

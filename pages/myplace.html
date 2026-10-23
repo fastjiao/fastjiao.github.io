@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+    <title>我的空间</title>
+    <link rel="stylesheet" href="../shared/shared_theme.css">
+    <style>
+        /* 卡片专用变量（导航栏与背景由 shared_theme.css 接管） */
+        :root {
+            --card-bg: #fff5c0;
+            --card-gap: 20px;
+        }
+
+        /* ===== 卡片通用样式 ===== */
+        .myplace-card {
+            position: absolute;
+            width: 250px;
+            height: 150px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 12px 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .myplace-card-introduce {
+            position: absolute;
+            width: 300px;
+            height: 150px;
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 12px 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            padding: 40px -5px;
+        }
+
+        .myplace-card-introduce-en {
+            font-size: 20px;
+            text-align: center;
+            color: #000000;
+        }
+
+        .myplace-card-introduce-cn {
+            font-size: 13px;
+            color: #000000;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .myplace-card-title {
+            margin: 0 0 8px 0;
+            font-size: 16px;
+            font-weight: 700;
+            color: #333;
+            text-align: center;
+        }
+
+        .myplace-card-body {
+            font-size: 13px;
+            line-height: 1.5;
+            color: #444;
+        }
+
+        .info-card {
+            position: absolute;
+            width: 250px;
+            height: auto;
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 12px 14px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+        }
+
+        .info-card-content {
+            text-align: center;
+            font-size: 20px;
+        }
+    </style>
+</head>
+
+
+<body>
+    <div class="bg-aurora" aria-hidden="true"></div>
+    <canvas class="bg-particles" aria-hidden="true"></canvas>
+
+    <header class="site-header" role="banner">
+        <div class="container">
+            <a href="https://www.ljiao.me" class="brand" target="_blank" rel="noopener noreferrer">www.ljiao.me</a>
+            <nav class="nav-links" role="navigation" aria-label="主导航">
+                <a href="../index.html" class="nav-link">首页</a>
+                <a href="web_ku/web_ku.html" class="nav-link">网页库</a>
+                <a href="project.html" class="nav-link">我的项目</a>
+                <a href="../jiaogt/jiaogt.html" class="nav-link">教公台</a>
+                <a href="watermark_tool.html" class="nav-link">添加水印工具</a>
+                <div class="nav-item nav-link">
+                    联系我
+                    <ul class="dropdown-menu" aria-label="联系我下拉菜单">
+                        <li><a href="contact/contact_weixin.html">微信</a></li>
+                        <li><a href="contact/contact_qq.html">QQ</a></li>
+                        <li><a href="contact/contact_xhs.html">小红书</a></li>
+                        <li><a href="contact/contact_dy.html">抖音</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 介绍卡片 -->
+    <div class="myplace-card-introduce myplace-card--intro" style="left: 100px; top: 100px;">
+
+        <div class="myplace-card-introduce-en">
+            We don't know what we've got until we lose it.
+        </div>
+        <div class="myplace-card-introduce-cn">
+            我们直到失去才知道自己拥有什么。
+        </div>
+    </div>
+
+    <!-- 信息卡片--><!-- 左侧第二个-->
+    <div class="info-card" style="left: 120px; top: 270px;">
+        <h3 class="myplace-card-title">信息</h3>
+        <div class="myplace-card-body">
+            <div class="info-card-content">发表一篇说说</div>
+        </div>
+    </div>
+
+    <!-- 添加卡片-->
+    <div class="myplace-card myplace-card--add" style="left: 415px; top: 100px;">
+        <h3 class="myplace-card-title">添加</h3>
+        <div class="myplace-card-body"><!-- 占位：后续开发 --></div>
+    </div>
+
+    <script src="../shared/bg-particles.js"></script>
+</body>
+
+</html>

@@ -5,30 +5,29 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>lovejiao管理平台</title>
+    <link rel="stylesheet" href="../shared/shared_theme.css">
     <style>
-        /* 页面基础样式 */
+        /* 页面基础样式（背景由 shared_theme.css 接管暗色极光） */
         body {
             margin: 0;
             padding: 0;
             font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-            background: #f5f7fa;
         }
 
-        /* 顶部标题样式 - 100px 优设标题黑，黑色，水平居中 */
+        /* 顶部标题样式 - 100px 优设标题黑，水平居中，融入暗色背景 */
         .title {
             font-size: 100px;
             /* 字体大小 100px */
             font-family: "优设标题黑";
             /* 字体样式：优设标题黑 */
-            color: black;
-            /* 字体颜色：黑色 */
+            color: var(--text-primary);
+            /* 字体颜色：浅色，适配暗色背景 */
             text-align: center;
             /* 水平居中 */
             margin: 0;
             padding: 20px 0;
-            background: #f5f7fa;
-            /* 标题背景色 */
-            border-bottom: 1px solid #e5e5e5;
+            /* 标题透明背景，融入暗色极光 */
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         }
 
         /* 主体布局：左侧导航 + 右侧内容区 */
@@ -291,6 +290,8 @@
 </head>
 
 <body>
+    <div class="bg-aurora" aria-hidden="true"></div>
+    <canvas class="bg-particles" aria-hidden="true"></canvas>
     <!-- 顶部标题 -->
     <div class="title">lovejiao管理平台</div>
 
@@ -342,7 +343,7 @@
                     <div class="photo-wall-item" data-index="0">
                         <span class="photo-label">照片1</span>
                         <div class="photo-preview">
-                            <img src="image/photo_a.webp" alt="照片1" loading="lazy">
+                            <img src="../image/photo_a.webp" alt="照片1" loading="lazy">
                         </div>
                         <div class="photo-info">照片1 - 首页照片墙第1张</div>
                         <button class="photo-btn" type="button">修改图片</button>
@@ -351,7 +352,7 @@
                     <div class="photo-wall-item" data-index="1">
                         <span class="photo-label">照片2</span>
                         <div class="photo-preview">
-                            <img src="image/photo_b.webp" alt="照片2" loading="lazy">
+                            <img src="../image/photo_b.webp" alt="照片2" loading="lazy">
                         </div>
                         <div class="photo-info">照片2 - 首页照片墙第2张</div>
                         <button class="photo-btn" type="button">修改图片</button>
@@ -360,7 +361,7 @@
                     <div class="photo-wall-item" data-index="2">
                         <span class="photo-label">照片3</span>
                         <div class="photo-preview">
-                            <img src="image/default.webp" alt="照片3" loading="lazy">
+                            <img src="../image/default.webp" alt="照片3" loading="lazy">
                         </div>
                         <div class="photo-info">照片3 - 首页照片墙第3张</div>
                         <button class="photo-btn" type="button">修改图片</button>
@@ -369,7 +370,7 @@
                     <div class="photo-wall-item" data-index="3">
                         <span class="photo-label">照片4</span>
                         <div class="photo-preview">
-                            <img src="image/photo_d.webp" alt="照片4" loading="lazy">
+                            <img src="../image/photo_d.webp" alt="照片4" loading="lazy">
                         </div>
                         <div class="photo-info">照片4 - 首页照片墙第4张</div>
                         <button class="photo-btn" type="button">修改图片</button>
@@ -383,7 +384,7 @@
     <input type="file" id="file-input" class="file-input-hidden" accept="image/*">
 
     <!-- 引入共享的图片管理模块（IndexedDB 持久化存储） -->
-    <script src="photo-manager.js" defer></script>
+    <script src="../shared/photo-manager.js" defer></script>
     <script>
         // ===== GitHub 远程上传配置（融合自 p.html） =====
         const GITHUB_OWNER = "fastjiao";                    // 仓库所有者
@@ -570,7 +571,7 @@
             li.addEventListener('click', () => {
                 // "返回首页"特殊处理 - 直接跳转 index.html
                 if (li.dataset.target === 'back-home') {
-                    window.location.href = 'index.html';
+                    window.location.href = '../index.html';
                     return;
                 }
                 menuItems.forEach(x => x.classList.remove('active'));
@@ -586,6 +587,7 @@
         // 页面加载时读取已保存的图片
         loadSavedPhotos();
     </script>
+    <script src="../shared/bg-particles.js"></script>
 </body>
 
 </html>
