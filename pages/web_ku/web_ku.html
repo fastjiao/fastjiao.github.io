@@ -21,10 +21,23 @@
                 <span id="crumb-folder" style="display:none;"></span>
             </div>
         </div>
-        <div class="navbar-right">
-            <button class="nav-btn" id="btn-add-link">添加链接</button>
-            <button class="nav-btn" id="btn-new-folder">新建文件夹</button>
-            <button class="nav-btn" id="btn-manage">管理链接</button>
+        <!-- 中间胶囊式 TAB：与首页导航完全一致 -->
+        <div class="navbar-center">
+            <nav class="nav-links" role="navigation" aria-label="主导航">
+                <a href="../../index.html" class="nav-link">首页</a>
+                <a href="web_ku.html" class="nav-link active">网页库</a>
+                <a href="../project.html" class="nav-link">我的项目</a>
+                <a href="../../jiaogt/jiaogt.html" class="nav-link">教公台</a>
+                <div class="nav-item nav-link">
+                    联系我
+                    <ul class="dropdown-menu" aria-label="联系我下拉菜单">
+                        <li><a href="../contact/contact_weixin.html">微信</a></li>
+                        <li><a href="../contact/contact_qq.html">QQ</a></li>
+                        <li><a href="../contact/contact_xhs.html">小红书</a></li>
+                        <li><a href="../contact/contact_dy.html">抖音</a></li>
+                    </ul>
+                </div>
+            </nav>
         </div>
     </nav>
 
@@ -39,9 +52,23 @@
 
     <main class="main-content">
         <!-- 页面标题 -->
-        <div class="page-header">
-            <h1 class="page-title">网页库</h1>
-            <p class="page-desc">保存和管理常用网页链接，支持用文件夹分类整理</p>
+        <!-- ===== 粘性吸顶区：标题+描述+操作按钮 + 列表表头 ===== -->
+        <div class="sticky-top">
+            <div class="page-header">
+                <div class="page-header-text">
+                    <h1 class="page-title">网页库</h1>
+                    <p class="page-desc">保存和管理常用网页链接，支持用文件夹分类整理</p>
+                </div>
+                <div class="page-header-actions">
+                    <button class="nav-btn" id="btn-add-link">添加链接</button>
+                    <button class="nav-btn" id="btn-new-folder">新建文件夹</button>
+                    <button class="nav-btn" id="btn-manage">管理链接</button>
+                </div>
+            </div>
+            <!-- 列表表头 -->
+            <div class="list-header">
+                <span class="list-header-name">链接名称</span>
+            </div>
         </div>
 
         <!-- ========== 添加新链接弹窗 ========== -->
@@ -63,12 +90,6 @@
                     <button class="modal-btn confirm" id="addLinkConfirm">确认</button>
                 </div>
             </div>
-        </div>
-
-        <!-- 列表表头 -->
-        <div class="list-header">
-            <span class="list-header-name">链接名称</span>
-
         </div>
 
         <!-- 链接列表（由 JS 动态渲染） -->
@@ -148,6 +169,7 @@
     </div>
 
     <script src="web_ku.js" defer></script>
+    <script src="../../shared/shared_nav.js"></script>
 </body>
 
 </html>
