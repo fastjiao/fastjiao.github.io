@@ -1890,7 +1890,7 @@
             IMAGE_SCALE_DEFAULT: 20,
             BATCH_MAX: 30,
             DRAG_THRESHOLD: 3,
-            ZIP_LIB_PATH: '../shared/jszip.min.js',
+            ZIP_LIB_PATH: window.__VIEW_BASE__ ? new URL('../shared/jszip.min.js', window.__VIEW_BASE__).href : '../shared/jszip.min.js',
             ZIP_NAME_PREFIX: 'watermark_batch',
             DEFAULT_FONT: 'Microsoft YaHei, PingFang SC, sans-serif'
         };

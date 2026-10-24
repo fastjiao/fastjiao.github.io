@@ -889,7 +889,7 @@
                 } else {
                     if (cf) cf.style.display = 'none';
                     if (back) {
-                        back.setAttribute('href', '../../index.html');
+                        back.setAttribute('href', window.__VIEW_BASE__ ? '#/' : '../../index.html');
                         back.onclick = null;
                     }
                 }
@@ -1711,11 +1711,15 @@
             bindMoveModal();
             bindCopyModal();
             document.getElementById('actionDelete').addEventListener('click', actionMenuDelete);
-            document.addEventListener('click', function (e) {
+            var docClickHandler = function (e) {
                 if (!actionMenu.contains(e.target) && !e.target.closest('.link-dots, .folder-dots')) {
                     closeActionMenu();
                 }
-            });
+            };
+            document.addEventListener('click', docClickHandler);
+            // 注册清理：切走 web_ku 时移除 document 级监听器，避免累积干扰其他视图
+            if (!window.__viewCleanups) window.__viewCleanups = [];
+            window.__viewCleanups.push(function () { document.removeEventListener('click', docClickHandler); });
             document.getElementById('btn-new-folder').addEventListener('click', openNewFolder);
             document.getElementById('btn-manage').addEventListener('click', toggleManageMode);
 

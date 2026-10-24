@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Lovejiao</title>
+    <!-- 壳只加载公共主题（含导航栏样式）；各视图特有 CSS 由 router 按需注入 -->
+    <link rel="stylesheet" href="shared/shared_theme.css">
+    <style>
+        /* [SPA 壳] 视图容器过渡动画：切换时淡出 180ms 再替换内容再淡入 */
+        #view { transition: opacity .18s ease; }
+        #view.leaving { opacity: 0; }
+        /* web_ku 视图保留自带导航栏，隐藏壳导航栏 */
+        body.view-webku > .site-header { display: none; }
+        /* 首页视图需要 index_style.css 的三栏布局，由 router 加载首页时按需注入 */
+    </style>
+</head>
+
+<body>
+    <!-- 页面背景（常驻，不随视图切换重载） -->
+    <div class="bg-aurora" aria-hidden="true"></div>
+    <canvas class="bg-particles" aria-hidden="true"></canvas>
+
+    <!-- 顶部导航栏（常驻） -->
+    <header class="site-header" role="banner">
+        <div class="container">
+            <a href="https://www.ljiao.me" class="brand" target="_blank" rel="noopener noreferrer">www.ljiao.me</a>
+            <nav class="nav-links" role="navigation" aria-label="主导航">
+                <!-- data-route 指定 hash 路由；href 保留真实路径用于无 JS 降级 -->
+                <a href="index.html" class="nav-link" data-route="#/">首页</a>
+                <a href="pages/web_ku/web_ku.html" class="nav-link" data-route="#/web_ku">网页库</a>
+                <a href="pages/project.html" class="nav-link" data-route="#/project">我的项目</a>
+                <a href="jiaogt/jiaogt.html" class="nav-link">教公台</a>
+                <div class="nav-item nav-link">
+                    联系我
+                    <ul class="dropdown-menu" aria-label="联系我下拉菜单">
+                        <li><a href="pages/contact/contact_weixin.html" data-route="#/contact/weixin">微信</a></li>
+                        <li><a href="pages/contact/contact_qq.html" data-route="#/contact/qq">QQ</a></li>
+                        <li><a href="pages/contact/contact_xhs.html" data-route="#/contact/xhs">小红书</a></li>
+                        <li><a href="pages/contact/contact_dy.html" data-route="#/contact/dy">抖音</a></li>
+                    </ul>
+                </div>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 视图容器：各页面主体注入此处 -->
+    <main id="view"></main>
+
+    <!-- 壳公共脚本：背景粒子 + 导航交互 + SPA 路由 -->
+    <script src="shared/bg-particles.js"></script>
+    <script src="shared/shared_nav.js"></script>
+    <script src="shared/router.js"></script>
+</body>
+
+</html>
