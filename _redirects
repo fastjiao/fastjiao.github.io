@@ -1,0 +1,6 @@
+# Weekly reports live on the GitHub Pages project site.
+# This file only affects the Cloudflare Pages custom domain (www.ljiao.me).
+# When that domain expires, fastjiao.github.io keeps working unchanged.
+/hotspot-radar     https://fastjiao.github.io/hotspot-radar/  302
+/hotspot-radar/    https://fastjiao.github.io/hotspot-radar/  302
+/hotspot-radar/*   https://fastjiao.github.io/hotspot-radar/:splat  302
